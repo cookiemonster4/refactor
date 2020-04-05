@@ -1,0 +1,125 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dataCardParentLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:layout_constraintTop_toBottomOf="parent">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/buildingDataCard"
+        android:layout_width="match_parent"
+        android:layout_height="238dp"
+        app:layout_constraintTop_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/buildingStateColor"
+            android:layout_width="9dp"
+            android:layout_height="match_parent"
+            android:background="@color/lowRisk"
+            android:contentDescription="@string/status_color" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/dataTypeImage"
+                android:layout_width="66dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="72dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@string/type_image"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/closeButton"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:background="@drawable/cancel"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/readMore"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="75dp"
+                android:layout_height="37dp"
+                android:text="@string/read_more_hebrew"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/dataType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:text="@string/data_card_title"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:id="@+id/knowledgeType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="סוג ידיעה" />
+
+                <TextView
+                    android:id="@+id/eAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="גודל הקבוצה" />
+
+                <TextView
+                    android:id="@+id/type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="סוג הקבוצה" />
+
+                <TextView
+                    android:id="@+id/range"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="טווח"
+                    android:textColor="@android:color/secondary_text_light" />
+
+                <TextView
+                    android:id="@+id/moreContent"
+                    android:layout_width="145dp"
+                    android:layout_height="177dp"
+                    android:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n\n ועוד מלא"
+                    android:visibility="gone"
+                    tools:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n ועוד מלא"
+                    tools:visibility="visible" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

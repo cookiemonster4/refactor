@@ -1,0 +1,39 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:color">@color/primaryTextColor</item>
+        <item name="android:editTextColor">@color/primaryTextColor</item>
+        <item name="android:textColor">@android:color/background_dark</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="floatingActionButtonStyle">FloatingButtonStyle</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle</item>
+    </style>
+
+    <style name="AppButton" parent="AppTheme">
+        <item name="materialThemeOverlay">@style/ButtonThemeOverlay</item>
+    </style>
+
+    <style name="ButtonThemeOverlay">
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="android:textAppearanceButton">@android:color/background_dark</item>
+    </style>
+
+    <style name="FloatingButtonStyle" parent="Widget.Design.FloatingActionButton">
+        <item name="colorOnSecondary">@null</item>
+        <item name="rippleColor">#000000</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+    </style>
+
+    <style name="AlertDialogTheme" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="colorAccent">@color/dialogButtonText</item>
+    </style>
+
+    <style name="CheckBoxStyle" parent="AppTheme">
+        <item name="android:buttonTint">@color/colorPrimary</item>
+    </style>
+</resources>

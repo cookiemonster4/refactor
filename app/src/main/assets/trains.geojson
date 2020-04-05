@@ -1,0 +1,106 @@
+[
+    {
+      "type": "Feature",
+      "properties": {
+        "train": "yes",
+        "name": "תל אביב סבידור מרכז",
+        "name:he": "תל אביב סבידור מרכז",
+        "name:ru": "Тель Авив Савидор Центр",
+        "public_transport": "station",
+        "wikipedia": "he:תחנת הרכבת תל אביב מרכז",
+        "name:en": "Tel Aviv Savidor Center",
+        "wikidata": "Q2915697",
+        "website": "https://www.rail.co.il/HE/Stations/Pages/3700.aspx",
+        "@id": "node/2930618402",
+        "railway": "station",
+	"latitude": 32.084243,
+	"longitude": 34.798311
+      },
+      "geometry": {
+        "coordinates": [
+          34.798311,
+          32.084243
+        ],
+        "type": "Point"
+      },
+      "id": "0f937c2e8d48ccf5047ec96b422098b6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "train": "yes",
+        "wheelchair": "limited",
+        "name": "תל אביב השלום",
+        "name:he": "תל אביב השלום",
+        "public_transport": "station",
+        "wikipedia": "he:תחנת הרכבת תל אביב השלום",
+        "name:en": "Tel Aviv Hashalom",
+        "wikidata": "Q2474209",
+        "website": "https://www.rail.co.il/HE/Stations/Pages/4600.aspx",
+        "@id": "node/2930618403",
+        "railway": "station",
+	"latitude": 32.073559,
+	"longitude": 34.793164
+      },
+      "geometry": {
+        "coordinates": [
+          34.793164,
+          32.073559
+        ],
+        "type": "Point"
+      },
+      "id": "1b4c0eb25cbc0407369caa9c4e668295"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "operator": "Israel Railways",
+        "train": "yes",
+        "name": "תל אביב אוניברסיטה",
+        "name:he": "תל אביב אוניברסיטה",
+        "public_transport": "station",
+        "wikipedia": "he:תחנת הרכבת תל אביב אוניברסיטה",
+        "name:en": "Tel Aviv University",
+        "wikidata": "Q2915693",
+        "website": "https://www.rail.co.il/HE/Stations/Pages/3600.aspx",
+        "@id": "node/2930618401",
+        "railway": "station",
+	"latitude": 32.103706,
+	"longitude": 34.80461
+      },
+      "geometry": {
+        "coordinates": [
+          34.80461,
+          32.103706
+        ],
+        "type": "Point"
+      },
+      "id": "7b5e69bae68fb65d74113802c224967e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "wikipedia:he": "תחנת הרכבת תל אביב ההגנה",
+        "train": "yes",
+        "name": "תל אביב - ההגנה",
+        "name:he": "תל אביב - ההגנה",
+        "public_transport": "station",
+        "wikipedia": "he:תחנת הרכבת תל אביב ההגנה",
+        "name:en": "TelAviv -HaHagana",
+        "wikidata": "Q1840615",
+        "website": "https://www.rail.co.il/stations/tel-aviv-hahagana",
+        "@id": "node/3978658308",
+        "railway": "station",
+	"latitude": 32.054149,
+	"longitude": 34.784801
+      },
+      "geometry": {
+        "coordinates": [
+          34.784801,
+          32.054149
+        ],
+        "type": "Point"
+      },
+      "id": "dd791d984839359c9e58183280499126"
+    }
+  ]

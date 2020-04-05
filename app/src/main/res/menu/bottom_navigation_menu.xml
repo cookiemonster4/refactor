@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/alerts"
+        android:icon="@drawable/ic_alert"
+        android:title="@string/alerts" />
+    <item
+        android:id="@+id/visibility_status"
+        android:icon="@drawable/ic_visibility_off"
+        android:title="@string/invisible"
+        />
+
+    <item
+        android:id="@+id/define_area"
+        android:icon="@drawable/ic_pencil"
+        android:title="@string/area_of_interest" />
+</menu>

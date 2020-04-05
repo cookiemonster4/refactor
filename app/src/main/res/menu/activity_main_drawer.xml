@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:title="@string/layers_item">
+        <menu>
+            <group
+                android:id="@+id/nav_layers"
+                android:checkableBehavior="all" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/filterButton"
+        android:title="filter" />
+    <item android:title="סינון חדש">
+        <menu>
+            <group
+                android:id="@+id/filter_options"
+                android:checkableBehavior="all" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/settings"
+        android:title="הגדרות">
+        <menu>
+            <group>
+                <item
+                    android:id="@+id/define_area"
+                    android:title="הגדר תחום התעניינות" />
+                <item
+                    android:id="@+id/coverage_settings"
+                    android:title="הגדר טווח ורזולוציה לאזור איום" />
+            </group>
+        </menu>
+    </item>
+    <item android:title="מבנים">
+        <menu>
+            <group android:id="@+id/nav_experiments">
+                <item
+                    android:id="@+id/threat_list_menu_item"
+                    android:title="@string/threat_list" />
+                <item
+                    android:id="@+id/threat_select_location_buildings"
+                    android:title="@string/threats_on_map_with_location_buildings" />
+
+                <item
+                    android:id="@+id/point_coverage"
+                    android:title="@string/calculate_point_coverage" />
+            </group>
+
+        </menu>
+    </item>
+</menu>

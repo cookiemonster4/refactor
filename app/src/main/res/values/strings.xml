@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">WoW</string>
+
+    <string name="style_url">mapbox://styles/wowdev/ck2abkdff0mc91clfa04mr7ff</string>
+    <string name="permission_not_granted">Can\'t find location, permission not granted</string>
+    <string name="json_field_region_name">region_name</string>
+    <string name="region_name">Tel Aviv Yafo erea</string>
+    <string name="charset">UTF-8</string>
+    <string name="turn_on_location">שירותי המיקום כבויים, האם תרצה להפעיל אותם?</string>
+    <string name="yes_hebrew">כן</string>
+    <string name="no_thanks_hebrew">לא, תודה</string>
+    <string name="turn_on_location_title">הפעלת שירותי מיקום</string>
+    <string name="data_card_title">כרטיסיית בניין</string>
+    <string name="type_image">תמונת מהות</string>
+    <string name="time_passed">זמן שעבר</string>
+    <string name="status_color">status color</string>
+    <string name="read_more_hebrew">קרא עוד</string>
+    <string name="read_less_hebrew">קרא פחות</string>
+    <string name="layers_item">שכבות</string>
+    <string name="layer_name">שכבת מבנים</string>
+    <string name="appbar_scrolling_view_behavior" translatable="false">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+    <string name="threat_list">רשימת מבנים</string>
+    <string name="threats_on_map">מבנים על המפה</string>
+    <string name="threat_level_color">Threat Level Color</string>
+    <string name="threats_on_map_with_location_buildings">מבנים שולטים על נקודה</string>
+    <string name="threats_on_map_with_location">מבנים על נקודה</string>
+    <string name="max_value_text">ערך מקסימלי:</string>
+    <string name="min_value_text">ערך מינימלי:</string>
+    <string name="area_not_defined">תחום עניין לא הוגדר, האם תרצה להגדיר כעת?</string>
+    <string name="notification_accepted">דיווח התקבל</string>
+    <string name="goto_location">עבור לנ.צ</string>
+    <string name="inside_threat_notification_title">מבנה</string>
+    <string name="inside_threat_notification_content">אתה נמצא בטווח יעיל של מבנה</string>
+    <string name="show_hide_threats_coverage">הצג / הסתר כיסוי מבנים</string>
+    <string name="calculate_point_coverage">חישוב טווח יעיל</string>
+    <string name="calculate_all_coverage">חשב מבנים לשכבת אויב</string>
+    <string name="nameStr">namestr</string>
+    <string name="eAmount">eAmount</string>
+    <string name="knowledgeType">knowledgeType</string>
+    <string name="type">type</string>
+    <string name="range">range</string>
+    <string name="eAmount_title">גודל קבוצה</string>
+    <string name="knowledgeType_title">סוג ידיעה</string>
+    <string name="type_title">סוג קבוצה</string>
+    <string name="range_title">טווח</string>
+    <string name="map_types">סוג מפה</string>
+    <string name="visible">גלוי</string>
+    <string name="invisible">נסתר</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="area_of_interest">תחום עניין</string>
+    <string name="alerts">התראות</string>
+    <string name="empty_alerts_message">אין התראות</string>
+    <string name="empty_buildings_message">אין בניינים</string>
+    <string name="select_all">בחר הכל</string>
+    <string name="empty_building_name">מבנה</string>
+</resources>
