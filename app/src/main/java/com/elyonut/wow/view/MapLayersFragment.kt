@@ -41,7 +41,12 @@ class MapLayersFragment: DialogFragment() {
         initClickInterface()
 
         mapLayersAdapter =
-            MapLayersAdapter(context!!, mapsList, onClickHandler)
+            MapLayersAdapter(context!!, mapsList, onClickHandler, MapLayersAdapter.MapLayerClickListener { mapLayerId ->
+                onMapLayerClicked(mapLayerId)
+                var clickedLayer = mapsList.find { item -> item.id == mapLayerId }
+                mapLayersAdapter?.selectedItemIndex = mapsList.indexOf(clickedLayer)
+                mapLayersAdapter?.notifyDataSetChanged()
+            })
         mapLayersRecyclerView.adapter = mapLayersAdapter
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
@@ -54,6 +59,10 @@ class MapLayersFragment: DialogFragment() {
         window.attributes = params
 
         return view
+    }
+
+    private fun onMapLayerClicked(mapLayerId: String) {
+        sharedViewModel.mapStyleURL.value = mapLayerId
     }
 
     private fun initClickInterface() {
