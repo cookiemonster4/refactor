@@ -9,7 +9,7 @@
             type="com.elyonut.wow.model.MapLayer" />
         
       <variable
-          name="listener"
+          name="clickListener"
           type="com.elyonut.wow.adapter.MapLayersAdapter.MapLayerClickListener" />
     </data>
 
@@ -23,7 +23,7 @@
             android:id="@+id/map_item_frame"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{() -> listener.onClick(mapLayer)}"
+            android:onClick="@{() -> clickListener.onClick(mapLayer)}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
