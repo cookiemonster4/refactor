@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import com.elyonut.wow.databinding.FragmentMapLayersBinding
-import com.elyonut.wow.interfaces.OnClickInterface
+import com.elyonut.wow.model.MapLayer
 import com.elyonut.wow.viewModel.MapLayersViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
@@ -41,8 +41,8 @@ class MapLayersFragment : DialogFragment() {
         binding.mapLayersViewModel = mapLayersViewModel
 
         mapLayersAdapter =
-            MapLayersAdapter(context!!, MapLayersAdapter.MapLayerClickListener { mapLayerId ->
-                onMapLayerClicked(mapLayerId)
+            MapLayersAdapter(context!!, MapLayersAdapter.MapLayerClickListener { mapLayer ->
+                onMapLayerClicked(mapLayer)
             })
 
         binding.mapLayersList.adapter = mapLayersAdapter
@@ -66,18 +66,14 @@ class MapLayersFragment : DialogFragment() {
         return binding.root
     }
 
-    private fun onMapLayerClicked(mapLayerId: String) {
-        sharedViewModel.mapStyleURL.value = mapLayerId
-
-        val clickedLayer =
-            mapLayersViewModel.mapLayers?.value?.find { item -> item.id == mapLayerId }
+    private fun onMapLayerClicked(mapLayer: MapLayer) {
+        sharedViewModel.mapStyleURL.value = mapLayer.id
 
         mapLayersAdapter?.setClickedPosition(
             mapLayersViewModel.mapLayers?.value?.indexOf(
-                clickedLayer
+                mapLayer
             )!!
         )
-        mapLayersAdapter?.notifyDataSetChanged()
     }
 
     private fun setDialogPosition() {

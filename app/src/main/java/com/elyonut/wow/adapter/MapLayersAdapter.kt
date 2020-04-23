@@ -63,10 +63,11 @@ class MapLayersAdapter(
 
     fun setClickedPosition(position: Int) {
         selectedItemIndex = position
+        notifyDataSetChanged()
     }
 
-    class MapLayerClickListener(val clickListener: (mapLayerId: String) -> Unit) {
-        fun onClick(mapLayer: MapLayer) = clickListener(mapLayer.id)
+    class MapLayerClickListener(val clickListener: (mapLayer: MapLayer) -> Unit) {
+        fun onClick(mapLayer: MapLayer) = clickListener(mapLayer)
     }
 }
 
