@@ -40,7 +40,8 @@
     <string name="type">type</string>
     <string name="range">range</string>
     <string name="eAmount_title">גודל קבוצה</string>
-    <string name="knowledgeType_title">סוג ידיעה</string>
+    <!--    <string name="knowledgeType_title">סוג ידיעה</string>-->
+    <string name="knowledgeType_title">סוג ידיעה: %s</string>
     <string name="type_title">סוג קבוצה</string>
     <string name="range_title">טווח</string>
     <string name="map_types">סוג מפה</string>
