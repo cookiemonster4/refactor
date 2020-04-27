@@ -15,6 +15,7 @@ import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
 import com.elyonut.wow.model.Threat
+import com.elyonut.wow.model.ThreatFeaturesAdapter
 import com.elyonut.wow.utilities.BuildingTypeMapping
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
@@ -47,6 +48,7 @@ class DataCardFragment : Fragment() {
 
         val threat: Threat = arguments!!.getParcelable("threat")
         binding.threat = threat
+        binding.threatFeaturesAdapter = ThreatFeaturesAdapter(threat)
 
         view.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
@@ -61,28 +63,28 @@ class DataCardFragment : Fragment() {
     private fun initThreatInfo(view: View, threat: Threat) {
         val feature = threat.feature.properties()
         val featureName = feature?.get(getString(R.string.nameStr))?.asString
+        val featureType = feature?.get(getString(R.string.type))?.asString
 
 //databinding
-        view.dataType.text = if (featureName.isNullOrBlank()) {
-            getString(R.string.empty_building_name)
-        } else {
-            featureName
-        }
+//        view.dataType.text = if (featureName.isNullOrBlank()) {
+//            getString(R.string.empty_building_name)
+//        } else {
+//            featureName
+//        }
 //databinding
-        view.knowledgeType.text =
-            getString(R.string.knowledgeType_title) + ": " + feature?.get(getString(R.string.knowledgeType))?.asString
-        view.eAmount.text =
-            getString(R.string.eAmount_title) + ": " + feature?.get(getString(R.string.eAmount))?.asString
-        view.type.text =
-            getString(R.string.type_title) + ": " + feature?.get(getString(R.string.type))?.asString
-        view.range.text =
-            getString(R.string.range_title) + ": " + feature?.get(getString(R.string.range))?.asString
+//        view.knowledgeType.text =
+//            getString(R.string.knowledgeType_title) + ": " + feature?.get(getString(R.string.knowledgeType))?.asString
+//        view.eAmount.text =
+//            getString(R.string.eAmount_title) + ": " + feature?.get(getString(R.string.eAmount))?.asString
+//        view.type.text =
+//            getString(R.string.type_title) + ": " + featureType
+//        view.range.text =
+//            getString(R.string.range_title) + ": " + feature?.get(getString(R.string.range))?.asString
 
         view.buildingStateColor.background.setColorFilter(
             Threat.color(threat),
             PorterDuff.Mode.MULTIPLY
         )//databinding
-        val featureType = feature?.get(getString(R.string.type))?.asString
         view.dataTypeImage.setImageResource(BuildingTypeMapping.mapping[featureType]!!)
     }
 

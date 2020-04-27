@@ -7,6 +7,14 @@
         <variable
             name="threat"
             type="com.elyonut.wow.model.Threat" />
+
+        <variable
+            name="threatFeaturesAdapter"
+            type="com.elyonut.wow.model.ThreatFeaturesAdapter" />
+
+        <variable
+            name="dataCardViewModel"
+            type="com.elyonut.wow.viewModel.DataCardViewModel" />
     </data>
 
     <FrameLayout
@@ -64,17 +72,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/readMore"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="75dp"
-                    android:layout_height="37dp"
-                    android:text="@string/read_more_hebrew"
-                    android:textColor="@android:color/secondary_text_light"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -91,33 +88,33 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:text="@{threat.type}"
+                        android:text="@{threatFeaturesAdapter.name}"
                         android:textSize="22sp" />
 
                     <TextView
                         android:id="@+id/knowledgeType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="סוג ידיעה" />
-                    <!--                        android:text="@{@string/knowledgeType_title()}" />-->
+                        android:text="@{@string/knowledgeType_title(threatFeaturesAdapter.knowledgeType)}" />
+                    <!--                        android:text="סוג ידיעה" />-->
 
                     <TextView
                         android:id="@+id/eAmount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="גודל הקבוצה" />
+                        android:text="@{@string/eAmount_title(threatFeaturesAdapter.eAmount)}" />
 
                     <TextView
                         android:id="@+id/type"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="סוג הקבוצה" />
+                        android:text="@{@string/type_title(threatFeaturesAdapter.type)}" />
 
                     <TextView
                         android:id="@+id/range"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="טווח"
+                        android:text="@{@string/range_title(threatFeaturesAdapter.range)}"
                         android:textColor="@android:color/secondary_text_light" />
 
                     <TextView
@@ -131,6 +128,18 @@
                     <!--                    android:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n\n ועוד מלא"-->
 
                 </LinearLayout>
+                <!--                android:onClick="@{dataCardViewModel.readMoreButtonClicked()}"-->
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/readMore"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="75dp"
+                    android:layout_height="37dp"
+                    android:text="@string/read_more_hebrew"
+                    android:textColor="@android:color/secondary_text_light"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
     </FrameLayout>

@@ -72,3 +72,23 @@ class Threat() : Parcelable {
         }
     }
 }
+
+class ThreatFeaturesAdapter
+    (threat: Threat) {
+    var name: String
+    var knowledgeType: String
+    var eAmount: String
+    var type: String
+    var range: String
+
+    init {
+        val feature = threat.feature.properties()
+        name = feature?.get("namestr")?.asString ?: "מבנה"
+        knowledgeType =
+            feature?.get("knowledgeType")?.asString ?: "סוג ידיעה" // Should be intelligence type ??
+        eAmount = feature?.get("eAmount")?.asString ?: "גודל קבוצה"
+        type = feature?.get("type")?.asString ?: "סוג קבוצה"
+        range = feature?.get("range")?.asString ?: "טווח"
+
+    }
+}
