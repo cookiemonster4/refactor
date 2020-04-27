@@ -85,10 +85,10 @@ class ThreatFeaturesAdapter
         val feature = threat.feature.properties()
         name = feature?.get("namestr")?.asString ?: "מבנה"
         knowledgeType =
-            feature?.get("knowledgeType")?.asString ?: "סוג ידיעה" // Should be intelligence type ??
-        eAmount = feature?.get("eAmount")?.asString ?: "גודל קבוצה"
-        type = feature?.get("type")?.asString ?: "סוג קבוצה"
-        range = feature?.get("range")?.asString ?: "טווח"
+            feature?.get("knowledgeType")?.asString ?: "" // TODO Should be data type ??
+        eAmount = feature?.get("eAmount")?.asString ?: ""
+        type = feature?.get("type")?.asString ?: ""
+        range = feature?.get("range")?.asString ?: ""
 
     }
 }

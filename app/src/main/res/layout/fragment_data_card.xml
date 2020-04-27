@@ -72,6 +72,17 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/readMore"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="75dp"
+                    android:layout_height="37dp"
+                    android:text="@string/read_more_hebrew"
+                    android:textColor="@android:color/secondary_text_light"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -130,16 +141,7 @@
                 </LinearLayout>
                 <!--                android:onClick="@{dataCardViewModel.readMoreButtonClicked()}"-->
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/readMore"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="75dp"
-                    android:layout_height="37dp"
-                    android:text="@string/read_more_hebrew"
-                    android:textColor="@android:color/secondary_text_light"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
     </FrameLayout>

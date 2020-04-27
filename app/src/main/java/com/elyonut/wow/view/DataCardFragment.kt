@@ -30,85 +30,67 @@ class DataCardFragment : Fragment() {
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var dataCardViewModel: DataCardViewModel
     private lateinit var sharedViewModel: SharedViewModel
+    private lateinit var binding: FragmentDataCardBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
-        val binding: FragmentDataCardBinding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_data_card, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_data_card, container, false)
 
-        val view = binding.root
         dataCardViewModel =
             ViewModelProvider.AndroidViewModelFactory.getInstance(activity!!.application)
                 .create(DataCardViewModel::class.java)
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
-        val threat: Threat = arguments!!.getParcelable("threat")
+        val threat: Threat = arguments!!.getParcelable("threat")!!
         binding.threat = threat
         binding.threatFeaturesAdapter = ThreatFeaturesAdapter(threat)
 
-        view.buildingDataCard.layoutParams =
+        binding.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
-        initObservers(view)
-        initReadMoreButton(view)
-        initClosingCard(view)
-        initThreatInfo(view, threat)
+        initObservers()
+        initReadMoreButton()
+        initClosingCard()
+        initThreatInfo(threat)
 
-        return view
+        return binding.root
     }
 
-    private fun initThreatInfo(view: View, threat: Threat) {
+    private fun initThreatInfo(threat: Threat) {
         val feature = threat.feature.properties()
-        val featureName = feature?.get(getString(R.string.nameStr))?.asString
         val featureType = feature?.get(getString(R.string.type))?.asString
 
-//databinding
-//        view.dataType.text = if (featureName.isNullOrBlank()) {
-//            getString(R.string.empty_building_name)
-//        } else {
-//            featureName
-//        }
-//databinding
-//        view.knowledgeType.text =
-//            getString(R.string.knowledgeType_title) + ": " + feature?.get(getString(R.string.knowledgeType))?.asString
-//        view.eAmount.text =
-//            getString(R.string.eAmount_title) + ": " + feature?.get(getString(R.string.eAmount))?.asString
-//        view.type.text =
-//            getString(R.string.type_title) + ": " + featureType
-//        view.range.text =
-//            getString(R.string.range_title) + ": " + feature?.get(getString(R.string.range))?.asString
-
-        view.buildingStateColor.background.setColorFilter(
+        binding.buildingStateColor.background.setColorFilter(
             Threat.color(threat),
             PorterDuff.Mode.MULTIPLY
         )//databinding
-        view.dataTypeImage.setImageResource(BuildingTypeMapping.mapping[featureType]!!)
+
+        binding.dataTypeImage.setImageResource(BuildingTypeMapping.mapping[featureType]!!)
     }
 
-    private fun initObservers(view: View) {
+    private fun initObservers() {
         dataCardViewModel.isReadMoreButtonClicked.observe(
             viewLifecycleOwner,
-            Observer<Boolean> { extendDataCard(view) })
+            Observer<Boolean> { extendDataCard() })
         dataCardViewModel.shouldCloseCard.observe(viewLifecycleOwner, Observer<Boolean> {
             closeCard()
         })
     }
 
-    //databinding???
-    private fun extendDataCard(view: View) {
+    private fun extendDataCard() {
         if (dataCardViewModel.isReadMoreButtonClicked.value!!) {
-            view.buildingDataCard.layoutParams =
+            binding.buildingDataCard.layoutParams =
                 dataCardViewModel.getRelativeLayoutParams(EXPENDED_CARD_SIZE_RELATION_TO_SCREEN)
-            view.moreContent.visibility = View.VISIBLE
-            view.readMore.text = getString(R.string.read_less_hebrew)
+            binding.moreContent.visibility = View.VISIBLE
+            binding.readMore.text = getString(R.string.read_less_hebrew)
         } else {
-            view.buildingDataCard.layoutParams =
+            binding.buildingDataCard.layoutParams =
                 dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
-            view.moreContent.visibility = View.GONE
-            view.readMore.text = getString(R.string.read_more_hebrew)
+            binding.moreContent.visibility = View.GONE
+            binding.readMore.text = getString(R.string.read_more_hebrew)
         }
     }
 
@@ -117,32 +99,32 @@ class DataCardFragment : Fragment() {
             ?.commit()
     }
 
-    private fun initReadMoreButton(view: View) {
-        view.readMore.setOnClickListener {
-            dataCardViewModel.readMoreButtonClicked(view.moreContent)
+    private fun initReadMoreButton() {
+        binding.readMore.setOnClickListener {
+            dataCardViewModel.readMoreButtonClicked(binding.moreContent)
         }
     }
 
-    private fun initClosingCard(view: View) {
-        initCloseCardByClickOnMap(view)
-        initCloseCardButton(view)
-        initFlingCloseListener(view)
+    private fun initClosingCard() {
+        initCloseCardByClickOnMap()
+        initCloseCardButton()
+        initFlingCloseListener()
     }
 
-    private fun initCloseCardByClickOnMap(view: View) {
-        view.setOnClickListener {
+    private fun initCloseCardByClickOnMap() {
+        binding.root.setOnClickListener {
             dataCardViewModel.close()
         }
     }
 
-    private fun initCloseCardButton(view: View) {
-        view.closeButton?.setOnClickListener {
+    private fun initCloseCardButton() {
+        binding.closeButton.setOnClickListener {
             onCloseCard()
         }
     }
 
-    private fun initFlingCloseListener(view: View) {
-        view.buildingDataCard.setOnTouchListener(object :
+    private fun initFlingCloseListener() {
+        binding.buildingDataCard.setOnTouchListener(object :
             OnSwipeTouchListener(this@DataCardFragment.context!!) {
             override fun onSwipeRight() {
                 super.onSwipeRight()
