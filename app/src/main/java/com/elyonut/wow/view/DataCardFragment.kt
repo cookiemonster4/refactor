@@ -19,7 +19,6 @@ import com.elyonut.wow.model.ThreatFeaturesAdapter
 import com.elyonut.wow.utilities.BuildingTypeMapping
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
-import kotlinx.android.synthetic.main.fragment_data_card.view.*
 
 // const variables
 private const val CARD_SIZE_RELATION_TO_SCREEN = 0.33
@@ -66,7 +65,7 @@ class DataCardFragment : Fragment() {
         binding.buildingStateColor.background.setColorFilter(
             Threat.color(threat),
             PorterDuff.Mode.MULTIPLY
-        )//databinding
+        )
 
         binding.dataTypeImage.setImageResource(BuildingTypeMapping.mapping[featureType]!!)
     }
@@ -74,8 +73,8 @@ class DataCardFragment : Fragment() {
     private fun initObservers() {
         dataCardViewModel.isReadMoreButtonClicked.observe(
             viewLifecycleOwner,
-            Observer<Boolean> { extendDataCard() })
-        dataCardViewModel.shouldCloseCard.observe(viewLifecycleOwner, Observer<Boolean> {
+            Observer { extendDataCard() })
+        dataCardViewModel.shouldCloseCard.observe(viewLifecycleOwner, Observer {
             closeCard()
         })
     }
@@ -136,6 +135,7 @@ class DataCardFragment : Fragment() {
                 onCloseCard()
             }
         })
+
     }
 
     private fun onCloseCard() {

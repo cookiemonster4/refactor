@@ -12,9 +12,6 @@
             name="threatFeaturesAdapter"
             type="com.elyonut.wow.model.ThreatFeaturesAdapter" />
 
-        <variable
-            name="dataCardViewModel"
-            type="com.elyonut.wow.viewModel.DataCardViewModel" />
     </data>
 
     <FrameLayout
@@ -107,7 +104,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{@string/knowledgeType_title(threatFeaturesAdapter.knowledgeType)}" />
-                    <!--                        android:text="סוג ידיעה" />-->
 
                     <TextView
                         android:id="@+id/eAmount"
@@ -136,11 +132,8 @@
                         app:moreContentFormatted="@{threat}"
                         tools:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n ועוד מלא"
                         tools:visibility="visible" />
-                    <!--                    android:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n\n ועוד מלא"-->
 
                 </LinearLayout>
-                <!--                android:onClick="@{dataCardViewModel.readMoreButtonClicked()}"-->
-
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
