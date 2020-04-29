@@ -26,7 +26,7 @@ class DataCardViewModel(application: Application) : AndroidViewModel(application
         shouldCloseCard.value = true
     }
 
-    fun getRelativeLayoutParams(sizeRelativelyToScreen: Double): FrameLayout.LayoutParams {
+    fun getRelativeLayoutParams(sizeRelativelyToScreen: Double): FrameLayout.LayoutParams { // TODO Should this be here ???
         return FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             (getDeviceHeight() * sizeRelativelyToScreen).toInt()
