@@ -16,7 +16,6 @@ import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.model.ThreatFeaturesAdapter
-import com.elyonut.wow.utilities.BuildingTypeMapping
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
@@ -45,29 +44,25 @@ class DataCardFragment : Fragment() {
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
         val threat: Threat = arguments!!.getParcelable("threat")!!
+
         binding.threat = threat
         binding.threatFeaturesAdapter = ThreatFeaturesAdapter(threat)
-
+        binding.dataCardViewModel = dataCardViewModel
         binding.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
+
         initObservers()
-        initReadMoreButton()
         initClosingCard()
-        initThreatInfo(threat)
+        initBuildingStateColor(threat)
 
         return binding.root
     }
 
-    private fun initThreatInfo(threat: Threat) {
-        val feature = threat.feature.properties()
-        val featureType = feature?.get(getString(R.string.type))?.asString
-
+    private fun initBuildingStateColor(threat: Threat) {
         binding.buildingStateColor.background.setColorFilter(
             Threat.color(threat),
             PorterDuff.Mode.MULTIPLY
         )
-
-        binding.dataTypeImage.setImageResource(BuildingTypeMapping.mapping[featureType]!!)
     }
 
     private fun initObservers() {
@@ -96,12 +91,6 @@ class DataCardFragment : Fragment() {
     private fun closeCard() {
         activity?.supportFragmentManager?.beginTransaction()?.remove(this@DataCardFragment)
             ?.commit()
-    }
-
-    private fun initReadMoreButton() {
-        binding.readMore.setOnClickListener {
-            dataCardViewModel.readMoreButtonClicked(binding.moreContent)
-        }
     }
 
     private fun initClosingCard() {
