@@ -55,7 +55,7 @@ class ThreatFragment : Fragment() {
             else -> GridLayoutManager(context, columnCount)
         }
 
-        threatsRecyclerView.adapter = ThreatRecyclerViewAdapter(threatDataset, listener, context!!)
+        threatsRecyclerView.adapter = ThreatAdapter(listener, context!!)
         setFragmentContent()
 
         return binding.root
