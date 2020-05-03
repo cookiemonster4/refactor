@@ -17,7 +17,15 @@ import java.util.*
 class AlertsAdapter(
     var context: Context,
     private val clickListener: AlertClickListener
-) : ListAdapter<AlertModel, AlertsAdapter.AlertsViewHolder>(AlertDiffCallback()) {
+) : RecyclerView.Adapter<AlertsAdapter.AlertsViewHolder>() {
+
+    var data = listOf<AlertModel>()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    override fun getItemCount() = data.size
 
     class AlertsViewHolder private constructor(private val binding: AlertItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -54,7 +62,7 @@ class AlertsAdapter(
     }
 
     override fun onBindViewHolder(holder: AlertsViewHolder, position: Int) {
-        val item = getItem(position)
+        val item = data[position]
         holder.bind(item, context, clickListener)
     }
 

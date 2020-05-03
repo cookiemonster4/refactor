@@ -73,7 +73,7 @@ class AlertsFragment : Fragment() {
 
         alertsViewModel.getAlerts().observe(viewLifecycleOwner, Observer {
             it?.let {
-                adapter.submitList(it)
+                adapter.data = it
             }
         })
 
