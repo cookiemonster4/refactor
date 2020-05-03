@@ -159,6 +159,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.threatAlerts.observe(this, Observer {
             sendNotification(it)
         })
+        mapViewModel.shouldDisableAreaSelection.observe(this, Observer {
+            if (it) {
+                disableAreaSelection(binding.root)
+            }
+        })
 
         sharedViewModel.selectedLayerId.observe(this, Observer {
             it?.let { mapViewModel.layerSelected(it) }
@@ -186,7 +191,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (it) {
-                enableAreaSelection(binding.root, it)
+                enableAreaSelection()
             }
         })
 
@@ -564,24 +569,38 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    private fun enableAreaSelection(view: View, shouldEnable: Boolean) {
-        if (shouldEnable) {
-            val areaSelectionBinding = DataBindingUtil.inflate<AreaSelectionBinding>(
-                layoutInflater,
-                R.layout.area_selection,
-                binding.mainMapLayout,
-                true
-            )
+    //    private fun enableAreaSelection(view: View, shouldEnable: Boolean) {
+    private fun enableAreaSelection() {
+//        if (shouldEnable) {
+        val areaSelectionBinding = DataBindingUtil.inflate<AreaSelectionBinding>(
+            layoutInflater,
+            R.layout.area_selection,
+            binding.mainMapLayout,
+            true
+        )
 
-            areaSelectionBinding.mapViewModel = mapViewModel
-            initCancelAreaButton(areaSelectionBinding)
-            initApplyAreaButton(areaSelectionBinding)
-            mapViewModel.removeAreaFromMap()
-        } else {
-            binding.mainMapLayout.removeView(view.findViewById(R.id.area_mode)) //???
-            sharedViewModel.shouldDefineArea.value = false
-        }
+        areaSelectionBinding.mapViewModel = mapViewModel
+        initCancelAreaButton(areaSelectionBinding)
+        initApplyAreaButton(areaSelectionBinding)
+        mapViewModel.removeAreaFromMap()
+        enableAreaSelectionMode(true)
+//        } else {
+//            binding.mainMapLayout.removeView(view.findViewById(R.id.area_mode)) //???
+//            sharedViewModel.shouldDefineArea.value = false
+//        }
+//
+//        binding.navigationButton.isEnabled = !shouldEnable
+//        binding.currentLocation.isEnabled = !shouldEnable
+//        mapViewModel.isAreaSelectionMode = shouldEnable
+    }
 
+    fun disableAreaSelection(view: View) {
+        binding.mainMapLayout.removeView(view.findViewById(R.id.area_mode)) // Should I use data binding???
+        enableAreaSelectionMode(false)
+        sharedViewModel.shouldDefineArea.value = false //??
+    }
+
+    fun enableAreaSelectionMode(shouldEnable: Boolean) {
         binding.navigationButton.isEnabled = !shouldEnable
         binding.currentLocation.isEnabled = !shouldEnable
         mapViewModel.isAreaSelectionMode = shouldEnable
@@ -591,14 +610,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     private fun initApplyAreaButton(areaSelectionBinding: AreaSelectionBinding) { // How to bind? need to call enableAreaSelection
         areaSelectionBinding.applyArea.setOnClickListener {
             mapViewModel.saveAreaOfInterest()
-            enableAreaSelection(areaSelectionBinding.root, false)
+//            enableAreaSelection(areaSelectionBinding.root, false)
         }
     }
 
     private fun initCancelAreaButton(areaSelectionBinding: AreaSelectionBinding) { // How to bind? need to call enableAreaSelection
         areaSelectionBinding.cancelArea.setOnClickListener {
             mapViewModel.cancelAreaSelection()
-            enableAreaSelection(areaSelectionBinding.root, false)
+//            enableAreaSelection(areaSelectionBinding.root, false)
         }
     }
 

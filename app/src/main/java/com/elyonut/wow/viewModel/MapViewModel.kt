@@ -98,6 +98,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
+    var shouldDisableAreaSelection = MutableLiveData<Boolean>()
 
     init {
         logger.initLogger()
@@ -437,6 +438,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             areaOfInterest.value = Polygon.fromLngLats(listOf(lineLayerPointList))
         }
+        shouldDisableAreaSelection.value = true
     }
 
     fun cancelAreaSelection() {
@@ -444,6 +446,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         currentLineLayerPointList = ArrayList()
         circleSource.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         fillSource.setGeoJson(makePolygonFeatureCollection(lineLayerPointList))
+        shouldDisableAreaSelection.value = true
     }
 
     private fun makeLineFeatureCollection(pointArrayList: ArrayList<Point>): FeatureCollection {
