@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -15,58 +16,90 @@ import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.AlertsManager
 import com.elyonut.wow.viewModel.AlertsViewModelFactory
 import com.elyonut.wow.R
+import com.elyonut.wow.adapter.AlertsAdapter
+import com.elyonut.wow.databinding.FragmentAlertsBinding
 import com.elyonut.wow.interfaces.OnClickInterface
+import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.viewModel.AlertsViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
 class AlertsFragment : Fragment() {
     private var listener: OnAlertsFragmentInteractionListener? = null
-    private lateinit var alertsRecyclerView: RecyclerView
     private lateinit var noAlertsMessage: TextView
     private lateinit var onClickHandler: OnClickInterface
-    private var layoutManager: RecyclerView.LayoutManager? = null
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var alertsViewModel: AlertsViewModel
     private lateinit var alertsManager: AlertsManager
+    private lateinit var  adapter: AlertsAdapter
+    private lateinit var binding: FragmentAlertsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_alerts, container, false)
+        binding = DataBindingUtil.inflate(
+            inflater, R.layout.fragment_alerts, container, false
+        )
+
+        val application = requireNotNull(this.activity).application
 
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
         alertsManager = sharedViewModel.alertsManager
-        initClickInterface()
 
         alertsViewModel = ViewModelProviders.of(
             this,
             AlertsViewModelFactory(
-                activity!!.application,
-                alertsManager,
-                onClickHandler
+                application,
+                alertsManager
             )
         ).get(AlertsViewModel::class.java)
 
-        alertsRecyclerView = view.findViewById(R.id.alerts_list)
-        noAlertsMessage = view.findViewById(R.id.no_alerts_message)
+        adapter = AlertsAdapter(
+            context!!,
+            AlertsAdapter.AlertClickListener(
+                { onDeleteClick(it) },
+                { onZoomClick(it) },
+                { onAcceptClick(it) })
+        )
 
-        alertsRecyclerView.setHasFixedSize(true)
-        layoutManager = LinearLayoutManager(context)
-        alertsRecyclerView.layoutManager = layoutManager
-        alertsRecyclerView.itemAnimator = DefaultItemAnimator()
-        alertsRecyclerView.adapter = alertsViewModel.alertsAdapter
+        binding.alertsList.adapter = adapter
+
+        noAlertsMessage = binding.noAlertsMessage
 
         setFragmentContent()
         setObservers()
 
-        return view
+        alertsViewModel.getAlerts().observe(viewLifecycleOwner, Observer {
+            it?.let {
+                adapter.submitList(it)
+            }
+        })
+
+        binding.lifecycleOwner = this
+
+        val manager = LinearLayoutManager(context)
+        binding.alertsList.layoutManager = manager
+
+        return binding.root
+    }
+
+    private fun onDeleteClick(alert: AlertModel) {
+        alertsViewModel.deleteAlertClicked(alertsViewModel.getAlerts().value!!.indexOf(alert))
+        setFragmentContent()
+    }
+
+    private fun onZoomClick(alert: AlertModel) {
+        alertsViewModel.zoomToLocationClicked(alert)
+    }
+
+    private fun onAcceptClick(alert: AlertModel) {
+        alertsViewModel.acceptAlertClicked(alert)
     }
 
     private fun initClickInterface() {
-        onClickHandler = object : OnClickInterface {
+         onClickHandler = object : OnClickInterface {
             override fun setClick(view: View, position: Int) {
                 when (view.id) {
                     R.id.deleteAlert -> {
@@ -85,26 +118,29 @@ class AlertsFragment : Fragment() {
     }
 
     private fun setFragmentContent() {
-        if (alertsManager.alerts.value!!.isEmpty()) {
-            alertsRecyclerView.visibility = View.GONE
-            noAlertsMessage.visibility = View.VISIBLE
+        if (alertsViewModel.getAlerts().value!!.isEmpty()) {
+            binding.alertsList.visibility = View.GONE
+            binding.noAlertsMessage.visibility = View.VISIBLE
         } else {
-            alertsRecyclerView.visibility = View.VISIBLE
-            noAlertsMessage.visibility = View.GONE
+            binding.alertsList.visibility = View.VISIBLE
+            binding.noAlertsMessage.visibility = View.GONE
         }
     }
 
     private fun setObservers() {
         alertsManager.isAlertAccepted.observe(this, Observer {
-            alertsViewModel.setAlertAccepted()
+//            alertsViewModel.setAlertAccepted()
+//            adapter.notifyDataSetChanged()
         })
 
         alertsManager.isAlertAdded.observe(this, Observer {
-            alertsViewModel.addAlert()
+            //            alertsViewModel.addAlert()
         })
 
         alertsManager.deletedAlertPosition.observe(this, Observer {
-            alertsViewModel.deleteAlert(it)
+            //            alertsViewModel.deleteAlert(it)
+//            adapter.notifyItemRemoved(it)
+//            adapter.notifyItemRangeChanged(it, alertsViewModel.getAlerts().value!!.count())
         })
     }
 
