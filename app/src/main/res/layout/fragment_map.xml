@@ -6,6 +6,9 @@
 
     <data>
 
+        <variable
+            name="mapViewModel"
+            type="com.elyonut.wow.viewModel.MapViewModel" />
     </data>
 
     <FrameLayout
@@ -39,20 +42,10 @@
                 android:layout_margin="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
+                android:onClick="@{() -> mapViewModel.focusOnMyLocationClicked()}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/navigationButton"
                 app:layout_constraintEnd_toEndOf="@+id/mainMapView" />
-
-            <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-            <!--                android:id="@+id/radiusLayer"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:layout_margin="16dp"-->
-            <!--                android:layout_marginEnd="16dp"-->
-            <!--                android:layout_marginBottom="8dp"-->
-            <!--                android:src="@drawable/bullseye"-->
-            <!--                app:layout_constraintBottom_toTopOf="@+id/currentLocation"-->
-            <!--                app:layout_constraintEnd_toEndOf="@+id/mainMapView" />-->
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/navigationButton"
@@ -83,8 +76,8 @@
                 android:id="@+id/fragmentParent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:elevation="6dp"
+                android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="@+id/mainMapView"
                 app:layout_constraintTop_toTopOf="parent" />
 

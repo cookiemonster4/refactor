@@ -88,9 +88,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapView = binding.mainMapView
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
+        binding.mapViewModel = mapViewModel
         initArea()
         setObservers()
-        initFocusOnMyLocationButton()
         initBroadcastReceiver()
         initMapLayersButton()
 
@@ -386,13 +386,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.locationAdapter!!.getCurrentLocation().observe(this, locationObserver)
     }
 
-    private fun initFocusOnMyLocationButton() {
-        binding.currentLocation.setOnClickListener {
-            mapViewModel.focusOnMyLocationClicked()
-        }
-    }
-
-    private fun initMapLayersButton() {
+    private fun initMapLayersButton() { // Data binding? is there a way use?
         binding.mapLayers.setOnClickListener {
             openDialogFragment(MapLayersFragment())
         }
@@ -593,7 +587,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.isAreaSelectionMode = shouldEnable
     }
 
-    private fun initApplyAreaButton(areaSelectionBinding: AreaSelectionBinding) { // MVVM ? applyClicked function?
+    // MVVM ? applyClicked function?
+    private fun initApplyAreaButton(areaSelectionBinding: AreaSelectionBinding) { // How to bind? need to call enableAreaSelection
         areaSelectionBinding.applyArea.setOnClickListener {
             mapViewModel.saveAreaOfInterest()
             enableAreaSelection(areaSelectionBinding.root, false)
