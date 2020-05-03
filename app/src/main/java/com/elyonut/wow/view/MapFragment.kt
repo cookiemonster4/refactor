@@ -579,7 +579,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 true
             )
 
-            initUndoButton(areaSelectionBinding)
+            areaSelectionBinding.mapViewModel = mapViewModel
             initCancelAreaButton(areaSelectionBinding)
             initApplyAreaButton(areaSelectionBinding)
             mapViewModel.removeAreaFromMap()
@@ -593,12 +593,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.isAreaSelectionMode = shouldEnable
     }
 
-    private fun initUndoButton(areaSelectionBinding: AreaSelectionBinding) {
-        areaSelectionBinding.undo.setOnClickListener {
-            mapViewModel.undo()
-        }
-    }
-
     private fun initApplyAreaButton(areaSelectionBinding: AreaSelectionBinding) { // MVVM ? applyClicked function?
         areaSelectionBinding.applyArea.setOnClickListener {
             mapViewModel.saveAreaOfInterest()
@@ -606,7 +600,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    private fun initCancelAreaButton(areaSelectionBinding: AreaSelectionBinding) {
+    private fun initCancelAreaButton(areaSelectionBinding: AreaSelectionBinding) { // How to bind? need to call enableAreaSelection
         areaSelectionBinding.cancelArea.setOnClickListener {
             mapViewModel.cancelAreaSelection()
             enableAreaSelection(areaSelectionBinding.root, false)
