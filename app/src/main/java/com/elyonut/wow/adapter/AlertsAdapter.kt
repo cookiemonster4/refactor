@@ -77,13 +77,3 @@ class AlertsAdapter(
     }
 }
 
-class AlertDiffCallback : DiffUtil.ItemCallback<AlertModel>() {
-    override fun areItemsTheSame(oldItem: AlertModel, newItem: AlertModel): Boolean {
-//        return oldItem.alertID == newItem.alertID
-        return oldItem == newItem
-    }
-
-    override fun areContentsTheSame(oldItem: AlertModel, newItem: AlertModel): Boolean {
-        return oldItem == newItem
-    }
-}

@@ -63,26 +63,8 @@ class AlertFragment(private var alert: AlertModel) : Fragment() {
             AlertsAdapter.AlertClickListener({}, { onZoomClick(it) }, { onAcceptClick(it) })
 
         setObservers()
-//        initView(view)
 
-        return return binding.root
-    }
-
-    private fun initView(view: View) {
-//        Picasso.with(context).load(alert.image).into(view.alert_image)
-//        view.alert_message.text = alert.message
-//        view.current_time.text = alert.time
-        view.deleteAlert.visibility = View.GONE
-
-//        if (!alert.isRead) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                view.card_view?.setCardBackgroundColor(context!!.getColor(R.color.unreadMessage))
-//            }
-//        } else {
-//            view.card_view?.setCardBackgroundColor(Color.WHITE)
-//        }
-
-      //  initViewButtons(view)
+        return binding.root
     }
 
     private fun setObservers() {
@@ -99,16 +81,6 @@ class AlertFragment(private var alert: AlertModel) : Fragment() {
 
     private fun onAcceptClick(alert: AlertModel) {
         alertViewModel.acceptAlertClicked(alert)
-    }
-
-    private fun initViewButtons(view: View) {
-        view.zoomToLocation.setOnClickListener {
-            alertViewModel.zoomToLocationClicked(alert)
-        }
-
-        view.alertAccepted.setOnClickListener {
-            alertViewModel.acceptAlertClicked(alert)
-        }
     }
 
     private fun removeAlert() {

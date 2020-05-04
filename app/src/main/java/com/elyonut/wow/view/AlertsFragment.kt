@@ -25,12 +25,10 @@ import com.elyonut.wow.viewModel.SharedViewModel
 
 class AlertsFragment : Fragment() {
     private var listener: OnAlertsFragmentInteractionListener? = null
-    private lateinit var noAlertsMessage: TextView
-    private lateinit var onClickHandler: OnClickInterface
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var alertsViewModel: AlertsViewModel
     private lateinit var alertsManager: AlertsManager
-    private lateinit var  adapter: AlertsAdapter
+    private lateinit var adapter: AlertsAdapter
     private lateinit var binding: FragmentAlertsBinding
 
     override fun onCreateView(
@@ -66,14 +64,16 @@ class AlertsFragment : Fragment() {
 
         binding.alertsList.adapter = adapter
 
-        noAlertsMessage = binding.noAlertsMessage
-
-        setFragmentContent()
-        setObservers()
-
         alertsViewModel.getAlerts().observe(viewLifecycleOwner, Observer {
             it?.let {
-                adapter.data = it
+                if (it.isEmpty()) {
+                    binding.alertsList.visibility = View.GONE
+                    binding.noAlertsMessage.visibility = View.VISIBLE
+                } else {
+                    adapter.data = it
+                    binding.alertsList.visibility = View.VISIBLE
+                    binding.noAlertsMessage.visibility = View.GONE
+                }
             }
         })
 
@@ -87,7 +87,6 @@ class AlertsFragment : Fragment() {
 
     private fun onDeleteClick(alert: AlertModel) {
         alertsViewModel.deleteAlertClicked(alertsViewModel.getAlerts().value!!.indexOf(alert))
-        setFragmentContent()
     }
 
     private fun onZoomClick(alert: AlertModel) {
@@ -96,52 +95,6 @@ class AlertsFragment : Fragment() {
 
     private fun onAcceptClick(alert: AlertModel) {
         alertsViewModel.acceptAlertClicked(alert)
-    }
-
-    private fun initClickInterface() {
-         onClickHandler = object : OnClickInterface {
-            override fun setClick(view: View, position: Int) {
-                when (view.id) {
-                    R.id.deleteAlert -> {
-                        alertsViewModel.deleteAlertClicked(position)
-                        setFragmentContent()
-                    }
-                    R.id.zoomToLocation -> {
-                        alertsViewModel.zoomToLocationClicked(alertsManager.alerts.value!![position])
-                    }
-                    R.id.alertAccepted -> {
-                        alertsViewModel.acceptAlertClicked(alertsManager.alerts.value!![position])
-                    }
-                }
-            }
-        }
-    }
-
-    private fun setFragmentContent() {
-        if (alertsViewModel.getAlerts().value!!.isEmpty()) {
-            binding.alertsList.visibility = View.GONE
-            binding.noAlertsMessage.visibility = View.VISIBLE
-        } else {
-            binding.alertsList.visibility = View.VISIBLE
-            binding.noAlertsMessage.visibility = View.GONE
-        }
-    }
-
-    private fun setObservers() {
-        alertsManager.isAlertAccepted.observe(this, Observer {
-//            alertsViewModel.setAlertAccepted()
-//            adapter.notifyDataSetChanged()
-        })
-
-        alertsManager.isAlertAdded.observe(this, Observer {
-            //            alertsViewModel.addAlert()
-        })
-
-        alertsManager.deletedAlertPosition.observe(this, Observer {
-            //            alertsViewModel.deleteAlert(it)
-//            adapter.notifyItemRemoved(it)
-//            adapter.notifyItemRangeChanged(it, alertsViewModel.getAlerts().value!!.count())
-        })
     }
 
     override fun onAttach(context: Context) {

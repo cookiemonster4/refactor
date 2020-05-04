@@ -12,23 +12,10 @@ import com.elyonut.wow.view.AlertsFragment
 import java.util.*
 
 class AlertsViewModel(application: Application, var alertsManager: AlertsManager): AndroidViewModel(application) {
-//    val alerts = alertsManager.alerts
 
     fun getAlerts(): LiveData<LinkedList<AlertModel>> {
         return alertsManager.alerts
     }
-//    fun addAlert() {
-//        alertsAdapter?.notifyItemInserted(0)
-//    }
-//
-    fun setAlertAccepted() {
-//        alertsAdapter?.notifyDataSetChanged()
-    }
-//
-//    fun deleteAlert(position: Int) {
-//        alertsAdapter?.notifyItemRemoved(position)
-//        alertsAdapter?.notifyItemRangeChanged(position, alertsManager.alerts.value!!.count())
-//    }
 
     fun zoomToLocationClicked(alert: AlertModel) {
         alertsManager.zoomToLocation(alert)
