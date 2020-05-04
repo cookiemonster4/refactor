@@ -76,8 +76,8 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/readMore"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="75dp"
-                    android:layout_height="37dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/read_more_hebrew"
                     android:textColor="@android:color/secondary_text_light"
                     android:textSize="12sp"
