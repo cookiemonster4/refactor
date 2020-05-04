@@ -73,7 +73,7 @@ class Threat() : Parcelable {
     }
 }
 
-class ThreatFeaturesAdapter
+class ThreatFeaturesParser
     (threat: Threat) {
     var name: String
     var knowledgeType: String

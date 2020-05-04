@@ -10,7 +10,7 @@
 
         <variable
             name="threatFeaturesAdapter"
-            type="com.elyonut.wow.model.ThreatFeaturesAdapter" />
+            type="com.elyonut.wow.model.ThreatFeaturesParser" />
 
         <variable
             name="dataCardViewModel"
@@ -109,7 +109,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{@string/knowledgeType_title(threatFeaturesAdapter.knowledgeType)}" />
-                    <!--                        android:text="סוג ידיעה" />-->
 
                     <TextView
                         android:id="@+id/eAmount"
