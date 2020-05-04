@@ -76,8 +76,8 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/readMore"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="75dp"
-                    android:layout_height="37dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/read_more_hebrew"
                     android:textColor="@android:color/secondary_text_light"
                     android:textSize="12sp"
@@ -136,7 +136,7 @@
                         android:layout_height="177dp"
                         android:visibility="gone"
                         app:moreContentFormatted="@{threat}"
-                        tools:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n ועוד מלא"
+                        tools:text="לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית נולום ארווס סאפיאן - פוסיליס קוויס, אקווזמן קוואזי במר מודוף. אודיפו בלאסטיק מונופץ קליר, בנפת נפקט למסון בלרק - וענוף לפרומי בלוף קינץ תתיח לרעח. לת צשחמי הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק."
                         tools:visibility="visible" />
 
                 </LinearLayout>
