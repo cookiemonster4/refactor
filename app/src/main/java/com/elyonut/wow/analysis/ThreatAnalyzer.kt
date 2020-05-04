@@ -304,8 +304,9 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         threat.name = "איום " + index.toString() // feature.id()
         threat.feature = feature
         threat.isLos = isLos
-        threat.height = height
         val threatFeatureProperties = threat.feature.properties()
+        threat.type = threatFeatureProperties?.get("type")?.asString ?: ""
+        threat.height = height
         threat.latitude = threatFeatureProperties?.get("latitude")?.asDouble ?: 0.0
         threat.longitude = threatFeatureProperties?.get("longitude")?.asDouble ?: 0.0
         threat.eAmount = threatFeatureProperties?.get("eAmount")?.asString ?: ""

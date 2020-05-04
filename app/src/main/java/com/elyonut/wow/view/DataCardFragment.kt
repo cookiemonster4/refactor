@@ -15,7 +15,6 @@ import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
 import com.elyonut.wow.model.Threat
-import com.elyonut.wow.model.ThreatFeaturesParser
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
