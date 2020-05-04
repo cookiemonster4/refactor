@@ -581,16 +581,16 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         areaSelectionBinding.mapViewModel = mapViewModel
         mapViewModel.enableAreaSelection()
-        enableAreaSelectionMode(true)
+        defineAreaSelectionMode(true)
     }
 
     private fun disableAreaSelection() {
         binding.mainMapLayout.removeView(areaSelectionBinding.areaMode)
-        enableAreaSelectionMode(false)
+        defineAreaSelectionMode(false)
         sharedViewModel.shouldDefineArea.value = false
     }
 
-    private fun enableAreaSelectionMode(shouldEnable: Boolean) {
+    private fun defineAreaSelectionMode(shouldEnable: Boolean) {
         binding.navigationButton.isEnabled = !shouldEnable
         binding.currentLocation.isEnabled = !shouldEnable
         mapViewModel.isAreaSelectionMode = shouldEnable

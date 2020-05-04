@@ -59,7 +59,7 @@ class DataCardFragment : Fragment() {
     }
 
     private fun initBuildingStateColor(threat: Threat) {
-        binding.buildingStateColor.background.setColorFilter(
+            binding.buildingStateColor.background.setColorFilter(
             Threat.color(threat),
             PorterDuff.Mode.MULTIPLY
         )
