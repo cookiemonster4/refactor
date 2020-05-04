@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="mapViewModel"
             type="com.elyonut.wow.viewModel.MapViewModel" />
@@ -38,6 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
+                android:onClick="@{() -> mapViewModel.cancelAreaClicked()}"
                 android:text="ביטול" />
 
             <com.google.android.material.button.MaterialButton
@@ -47,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
+                android:onClick="@{() -> mapViewModel.applyAreaClicked()}"
                 android:text="אישור" />
         </LinearLayout>
 
