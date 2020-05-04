@@ -26,21 +26,44 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         return filterWithLOS(features, currentLocation)
     }
 
-    fun getThreatFeaturesConstruction(currentLocation: LatLng, featureModels: List<FeatureModel>): List<FeatureModel> {
+    fun getThreatFeaturesConstruction(
+        currentLocation: LatLng,
+        featureModels: List<FeatureModel>
+    ): List<FeatureModel> {
         return filterWithLOSModelFeatures(featureModels, currentLocation)
     }
 
-    fun calculateCoverage(currentLocation: LatLng, rangeMeters: Double, pointResolutionMeters: Double): List<Coordinate> {
+    fun calculateCoverage(
+        currentLocation: LatLng,
+        rangeMeters: Double,
+        pointResolutionMeters: Double
+    ): List<Coordinate> {
         val square = calculateCoverageSquare(currentLocation, rangeMeters, pointResolutionMeters)
 
         return filterWithLOSCoordinates(square, currentLocation)
     }
 
-    fun calculateCoverageAlpha(currentLocation: LatLng, rangeMeters: Double, pointResolutionMeters: Double, heightMeters: Double): List<Coordinate> {
-        return filterWithLOSCoordinatesAlpha(currentLocation, rangeMeters, pointResolutionMeters, heightMeters, true)
+    fun calculateCoverageAlpha(
+        currentLocation: LatLng,
+        rangeMeters: Double,
+        pointResolutionMeters: Double,
+        heightMeters: Double
+    ): List<Coordinate> {
+        return filterWithLOSCoordinatesAlpha(
+            currentLocation,
+            rangeMeters,
+            pointResolutionMeters,
+            heightMeters,
+            true
+        )
     }
 
-    fun calculateCoverageAlpha(featureModels: List<FeatureModel>, rangeMeters: Double, pointResolutionMeters: Double, heightMeters: Double){
+    fun calculateCoverageAlpha(
+        featureModels: List<FeatureModel>,
+        rangeMeters: Double,
+        pointResolutionMeters: Double,
+        heightMeters: Double
+    ) {
         featureModels.forEach { featureModel ->
             val threatType = featureModel.properties?.get("type")?.asString
             if (threatType != null && !threatType.contains("mikush")) {
@@ -49,7 +72,7 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
                 val buildingsAtZone = topographyService.getBuildingsAtZone(featureModel)
 
                 logger.info("calculating $threatType, $threatRangeMeters meters, ${buildingsAtZone.size} buildings")
-                buildingsAtZone.forEach{ building ->
+                buildingsAtZone.forEach { building ->
 
                     val corners = topographyService.getCoordinates(building.coordinates)
                     corners.forEach { bc ->
@@ -75,7 +98,12 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         currentLocation: LatLng
     ): List<Feature> {
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
-        return buildingFeatureCollection.filter { topographyService.isThreatBuilding(currentLocationCoord, it) }
+        return buildingFeatureCollection.filter {
+            topographyService.isThreatBuilding(
+                currentLocationCoord,
+                it
+            )
+        }
     }
 
     private fun filterWithLOSModelFeatures(
@@ -83,8 +111,14 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         currentLocation: LatLng
     ): List<FeatureModel> {
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
-        return buildingFeatureCollection.parallelStream().filter { featureModel-> topographyService.isThreat(currentLocationCoord, featureModel) }.collect(
-            Collectors.toList())
+        return buildingFeatureCollection.parallelStream().filter { featureModel ->
+            topographyService.isThreat(
+                currentLocationCoord,
+                featureModel
+            )
+        }.collect(
+            Collectors.toList()
+        )
     }
 
     private fun filterWithLOSCoordinates(
@@ -96,7 +130,12 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         val currentLocationExploded =
             topographyService.explodeLocationCoordinate(currentLocationCoord)
 
-        return coverageSquare.filter{coord -> topographyService.isLOS(coord, currentLocationExploded)}
+        return coverageSquare.filter { coord ->
+            topographyService.isLOS(
+                coord,
+                currentLocationExploded
+            )
+        }
 
 /*        return coverageSquare.parallelStream().filter{coord -> topographyService.isLOS(coord, currentLocationExploded)}.collect(
             Collectors.toList())*/
@@ -110,16 +149,19 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         fromCache: Boolean
     ): List<Coordinate> {
         // First, if requested, attempt to load from cache
-        val featureIdAtLocation = topographyService.featureIdAtLocation(currentLocation.longitude, currentLocation.latitude)
+        val featureIdAtLocation = topographyService.featureIdAtLocation(
+            currentLocation.longitude,
+            currentLocation.latitude
+        )
 
         var visiblePoints: List<Coordinate>? = null
-        if(featureIdAtLocation != null && fromCache){ // we store only features in cache
-                visiblePoints = CoverageCacheManager.getCoverage(
-                    featureIdAtLocation,
-                    rangeMeters,
-                    pointResolutionMeters,
-                    heightMeters
-                )
+        if (featureIdAtLocation != null && fromCache) { // we store only features in cache
+            visiblePoints = CoverageCacheManager.getCoverage(
+                featureIdAtLocation,
+                rangeMeters,
+                pointResolutionMeters,
+                heightMeters
+            )
         }
 
         // Either fromCache was false or the object was not found, so
@@ -130,11 +172,25 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
                 Coordinate(currentLocation.latitude, currentLocation.longitude)
             val currentLocationExploded =
                 topographyService.explodeLocationCoordinate(currentLocationCoord)
-            visiblePoints = filterWithLOSCoordinatesAlpha(currentLocationExploded, rangeMeters, pointResolutionMeters, heightMeters)
+            visiblePoints = filterWithLOSCoordinatesAlpha(
+                currentLocationExploded,
+                rangeMeters,
+                pointResolutionMeters,
+                heightMeters
+            )
 
             if (featureIdAtLocation != null && fromCache) { // we store only features in cache
-                CoverageCacheManager.removeCoverage(featureIdAtLocation, heightMeters) //remove any existing points (lower resolution / range) on the same height
-                CoverageCacheManager.addCoverage(featureIdAtLocation, rangeMeters, pointResolutionMeters, heightMeters, visiblePoints)
+                CoverageCacheManager.removeCoverage(
+                    featureIdAtLocation,
+                    heightMeters
+                ) //remove any existing points (lower resolution / range) on the same height
+                CoverageCacheManager.addCoverage(
+                    featureIdAtLocation,
+                    rangeMeters,
+                    pointResolutionMeters,
+                    heightMeters,
+                    visiblePoints
+                )
             }
         }
 
@@ -151,7 +207,7 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
     ) {
         // First, if requested, attempt to load from cache
         var visiblePoints: List<Coordinate>? = null
-        if(fromCache){ // we store only features in cache
+        if (fromCache) { // we store only features in cache
             visiblePoints = CoverageCacheManager.getCoverage(
                 featureIdAtLocation,
                 rangeMeters,
@@ -164,11 +220,25 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         // call forceMissionCoverage to create it
 
         if (visiblePoints == null || visiblePoints.isEmpty()) {
-            visiblePoints = filterWithLOSCoordinatesAlpha(explodedCoordinates, rangeMeters, pointResolutionMeters, heightMeters)
+            visiblePoints = filterWithLOSCoordinatesAlpha(
+                explodedCoordinates,
+                rangeMeters,
+                pointResolutionMeters,
+                heightMeters
+            )
 
             if (fromCache) { // we store only features in cache
-                CoverageCacheManager.removeCoverage(featureIdAtLocation, heightMeters) //remove any existing points (lower resolution / range) on the same height
-                CoverageCacheManager.addCoverage(featureIdAtLocation, rangeMeters, pointResolutionMeters, heightMeters, visiblePoints)
+                CoverageCacheManager.removeCoverage(
+                    featureIdAtLocation,
+                    heightMeters
+                ) //remove any existing points (lower resolution / range) on the same height
+                CoverageCacheManager.addCoverage(
+                    featureIdAtLocation,
+                    rangeMeters,
+                    pointResolutionMeters,
+                    heightMeters,
+                    visiblePoints
+                )
             }
         }
     }
@@ -180,27 +250,38 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         heightMeters: Double
     ): List<Coordinate> {
 
-        if(heightMeters != Constants.DEFAULT_COVERAGE_HEIGHT_METERS) {
+        if (heightMeters != Constants.DEFAULT_COVERAGE_HEIGHT_METERS) {
             explodedCoordinates.forEach { bc -> bc.heightMeters = heightMeters }
         }
         val visiblePoints = ArrayList<Coordinate>()
         explodedCoordinates.forEach { origin ->
-            visiblePoints.addAll(calculateVisibleProjections(origin, rangeMeters, pointResolutionMeters))
+            visiblePoints.addAll(
+                calculateVisibleProjections(
+                    origin,
+                    rangeMeters,
+                    pointResolutionMeters
+                )
+            )
         }
 
         //return visiblePoints
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            visiblePoints.parallelStream().filter { coordinate -> !topographyService.isInsideBuilding(coordinate)  }.collect(Collectors.toList())
+            visiblePoints.parallelStream()
+                .filter { coordinate -> !topographyService.isInsideBuilding(coordinate) }
+                .collect(Collectors.toList())
         } else {
             TODO("VERSION.SDK_INT < N")
         } // filter buildings
     }
 
 
-
-    fun featureToThreat(feature: Feature, currentLocation: LatLng, isLos: Boolean, index: Int = 1): Threat {
+    fun featureToThreat(
+        feature: Feature,
+        currentLocation: LatLng,
+        isLos: Boolean,
+        index: Int = 1
+    ): Threat {
         val threat = Threat()
-        // threat.radius = feature.getNumberProperty("radius").toDouble()
         val height = feature.getNumberProperty("height").toDouble()
         threat.level = getThreatLevel(height)
 
@@ -209,24 +290,36 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         val featureLongitude = geometryCoordinates[0].longitude
         val featureLocation = LatLng(featureLatitude, featureLongitude)
 
-        threat.location = GeoLocation(LocationType.Polygon, geometryCoordinates as ArrayList<Coordinate>)
+        threat.location =
+            GeoLocation(LocationType.Polygon, geometryCoordinates as ArrayList<Coordinate>)
         threat.distanceMeters = currentLocation.distanceTo(featureLocation)
-        threat.azimuth = bearingToAzimuth(TurfMeasurement.bearing(
-            Point.fromLngLat(currentLocation.longitude, currentLocation.latitude),
-            Point.fromLngLat(featureLongitude, featureLatitude)))
+        threat.azimuth = bearingToAzimuth(
+            TurfMeasurement.bearing(
+                Point.fromLngLat(currentLocation.longitude, currentLocation.latitude),
+                Point.fromLngLat(featureLongitude, featureLatitude)
+            )
+        )
         threat.creator = "ישראל ישראלי"
         threat.description = "תיאור"
         threat.name = "איום " + index.toString() // feature.id()
         threat.feature = feature
         threat.isLos = isLos
         threat.height = height
+        val threatFeatureProperties = threat.feature.properties()
+        threat.latitude = threatFeatureProperties?.get("latitude")?.asDouble ?: 0.0
+        threat.longitude = threatFeatureProperties?.get("longitude")?.asDouble ?: 0.0
+        threat.eAmount = threatFeatureProperties?.get("eAmount")?.asString ?: ""
+        threat.namestr = threatFeatureProperties?.get("namestr")?.asString ?: ""
+        threat.knowledgeType = threatFeatureProperties?.get("knowledgeType")?.asString ?: ""
+        threat.range = threatFeatureProperties?.get("range")?.asDouble ?: 0.0
 
         return threat
     }
 
     private fun bearingToAzimuth(bearing: Double): Double {
         var angle = bearing % 360;
-        if (angle < 0) { angle += 360; }
+        if (angle < 0) {
+            angle += 360; }
         return angle
     }
 
@@ -247,19 +340,11 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
 
     }
 
-
-    private fun getFeatures(): FeatureCollection {
-        val stream: InputStream = App.resourses.assets.open("features.geojson")
-        val size = stream.available()
-        val buffer = ByteArray(size)
-        stream.read(buffer)
-        stream.close()
-        val jsonObj = String(buffer, charset("UTF-8"))
-        return FeatureCollection.fromJson(jsonObj)
-    }
-
-    private fun calculateCoverageSquare(currentLocation: LatLng, rangeMeters: Double, pointResolutionMeters: Double): List<Coordinate> {
-
+    private fun calculateCoverageSquare(
+        currentLocation: LatLng,
+        rangeMeters: Double,
+        pointResolutionMeters: Double
+    ): List<Coordinate> {
 
         val top = topographyService.destinationPoint(
             currentLocation.latitude,
@@ -291,14 +376,27 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         val bottomRight = Coordinate(bottom.latitude, right.longitude)
         val bottomLeft = Coordinate(bottom.latitude, left.longitude)
 
-        val square = getGridPoints(topLeft, topRight, bottomRight, bottomLeft, pointResolutionMeters)
+        val square =
+            getGridPoints(topLeft, topRight, bottomRight, bottomLeft, pointResolutionMeters)
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
-        val filteredByDistance = square.parallelStream().filter { coordinate ->  topographyService.distanceMeters(currentLocationCoord ,coordinate) <= rangeMeters }.collect(Collectors.toList())
+        val filteredByDistance = square.parallelStream().filter { coordinate ->
+            topographyService.distanceMeters(
+                currentLocationCoord,
+                coordinate
+            ) <= rangeMeters
+        }.collect(Collectors.toList())
 
         return filteredByDistance
     }
 
-    private fun getGridPoints(topLeft: Coordinate, topRight: Coordinate, bottomRight: Coordinate, bottomLeft: Coordinate, pointResolutionMeters: Double): ArrayList<Coordinate> {
+    // TODO There are some problems here
+    private fun getGridPoints(
+        topLeft: Coordinate,
+        topRight: Coordinate,
+        bottomRight: Coordinate,
+        bottomLeft: Coordinate,
+        pointResolutionMeters: Double
+    ): ArrayList<Coordinate> {
         val ans = ArrayList<Coordinate>()
 
         val leftBearing =
@@ -308,10 +406,29 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         var runningLeft = bottomLeft
         var runningRight = bottomRight
         do {
-            val coordinates = topographyService.calcRoutePointsLinear(runningLeft, runningRight, false, pointResolutionMeters)
-            ans.addAll(coordinates.parallelStream().filter { coordinate -> !topographyService.isInsideBuilding(coordinate)  }.collect(Collectors.toList()))
-            runningLeft = topographyService.destinationPoint(runningLeft.latitude,runningLeft.longitude, pointResolutionMeters, leftBearing)
-            runningRight = topographyService.destinationPoint(runningRight.latitude, runningRight.longitude, pointResolutionMeters, rightBearing)
+            val coordinates = topographyService.calcRoutePointsLinear(
+                runningLeft,
+                runningRight,
+                false,
+                pointResolutionMeters
+            )
+            ans.addAll(
+                coordinates.parallelStream()
+                    .filter { coordinate -> !topographyService.isInsideBuilding(coordinate) }
+                    .collect(Collectors.toList())
+            )
+            runningLeft = topographyService.destinationPoint(
+                runningLeft.latitude,
+                runningLeft.longitude,
+                pointResolutionMeters,
+                leftBearing
+            )
+            runningRight = topographyService.destinationPoint(
+                runningRight.latitude,
+                runningRight.longitude,
+                pointResolutionMeters,
+                rightBearing
+            )
         } while (runningLeft.latitude < topLeft.latitude && runningRight.latitude < topRight.latitude)
 
         return ans
@@ -324,8 +441,14 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
     ): List<Coordinate> {
         val visibleProjections: ArrayList<Coordinate> = ArrayList()
         for (bearing in 0..359 step 2) {
-            val outer: Coordinate = topographyService.destinationPoint(center.latitude, center.longitude, rangeMeters, bearing.toDouble())
-            val projection = topographyService.calcRoutePointsLinear(center, outer, false, pointResolutionMeters)
+            val outer: Coordinate = topographyService.destinationPoint(
+                center.latitude,
+                center.longitude,
+                rangeMeters,
+                bearing.toDouble()
+            )
+            val projection =
+                topographyService.calcRoutePointsLinear(center, outer, false, pointResolutionMeters)
             visibleProjections.addAll(topographyService.getVisiblePoints(center, projection))
             /*val bestAlpha = topographyService.getProjectionBestAlpha(center, projection)
             visibleProjections.addAll(projection.filter { current -> topographyService.isPointVisible(center, current, bestAlpha) })*/

@@ -5,9 +5,6 @@
         <variable
             name="threat"
             type="com.elyonut.wow.model.Threat" />
-        <variable
-            name="threatFeaturesAdapter"
-            type="com.elyonut.wow.model.ThreatFeaturesParser" />
     </data>
 
     <LinearLayout

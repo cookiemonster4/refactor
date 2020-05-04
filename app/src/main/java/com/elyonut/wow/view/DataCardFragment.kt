@@ -46,7 +46,6 @@ class DataCardFragment : Fragment() {
         val threat: Threat = arguments!!.getParcelable("threat")!!
 
         binding.threat = threat
-        binding.threatFeaturesAdapter = ThreatFeaturesParser(threat)
         binding.dataCardViewModel = dataCardViewModel
         binding.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)

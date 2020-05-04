@@ -18,6 +18,12 @@ class Threat() : Parcelable {
     var azimuth: Double = 0.0
     var type: String = ""
     var height: Double = 0.0
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
+    var eAmount: String = ""
+    var namestr: String = "" // Is it the same as name?? (probably yes)
+    var knowledgeType: String = ""
+    var range: Double = 0.0 // Is it double or int?
 
     constructor(parcel: Parcel) : this() {
         name = parcel.readString()
@@ -32,6 +38,12 @@ class Threat() : Parcelable {
         azimuth = parcel.readDouble()
         type = parcel.readString()
         height = parcel.readDouble()
+        latitude = parcel.readDouble()
+        longitude = parcel.readDouble()
+        eAmount = parcel.readString()
+        namestr = parcel.readString()
+        knowledgeType = parcel.readString()
+        range = parcel.readDouble()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -47,6 +59,12 @@ class Threat() : Parcelable {
         parcel.writeDouble(azimuth)
         parcel.writeString(type)
         parcel.writeDouble(height)
+        parcel.writeDouble(latitude)
+        parcel.writeDouble(longitude)
+        parcel.writeString(eAmount)
+        parcel.writeString(namestr)
+        parcel.writeString(knowledgeType)
+        parcel.writeDouble(range)
     }
 
     override fun describeContents(): Int {
@@ -70,25 +88,5 @@ class Threat() : Parcelable {
                 ThreatLevel.High -> RiskStatus.HIGH.color
             }
         }
-    }
-}
-
-class ThreatFeaturesParser
-    (threat: Threat) {
-    var name: String
-    var knowledgeType: String
-    var eAmount: String
-    var type: String
-    var range: String
-
-    init {
-        val feature = threat.feature.properties()
-        name = feature?.get("namestr")?.asString ?: "מבנה"
-        knowledgeType =
-            feature?.get("knowledgeType")?.asString ?: "" // TODO Should be data type ??
-        eAmount = feature?.get("eAmount")?.asString ?: ""
-        type = feature?.get("type")?.asString ?: ""
-        range = feature?.get("range")?.asString ?: ""
-
     }
 }

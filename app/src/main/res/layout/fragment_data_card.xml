@@ -9,10 +9,6 @@
             type="com.elyonut.wow.model.Threat" />
 
         <variable
-            name="threatFeaturesAdapter"
-            type="com.elyonut.wow.model.ThreatFeaturesParser" />
-
-        <variable
             name="dataCardViewModel"
             type="com.elyonut.wow.viewModel.DataCardViewModel" />
     </data>
@@ -58,7 +54,7 @@
                     android:id="@+id/dataTypeImage"
                     android:layout_width="66dp"
                     android:layout_height="70dp"
-                    android:imageUrl="@{dataCardViewModel.getImageUrl(threatFeaturesAdapter.type)}"
+                    android:imageUrl="@{dataCardViewModel.getImageUrl(threat.type)}"
                     android:layout_marginTop="72dp"
                     android:layout_marginEnd="8dp"
                     android:contentDescription="@string/type_image"
@@ -101,32 +97,32 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:text="@{threatFeaturesAdapter.name}"
+                        android:text="@{threat.namestr}"
                         android:textSize="22sp" />
 
                     <TextView
                         android:id="@+id/knowledgeType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/knowledgeType_title(threatFeaturesAdapter.knowledgeType)}" />
+                        android:text="@{@string/knowledgeType_title(threat.knowledgeType)}" />
 
                     <TextView
                         android:id="@+id/eAmount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/eAmount_title(threatFeaturesAdapter.eAmount)}" />
+                        android:text="@{@string/eAmount_title(threat.eAmount)}" />
 
                     <TextView
                         android:id="@+id/type"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/type_title(threatFeaturesAdapter.type)}" />
+                        android:text="@{@string/type_title(threat.type)}" />
 
                     <TextView
                         android:id="@+id/range"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/range_title(threatFeaturesAdapter.range)}"
+                        android:text="@{@string/range_title(threat.range)}"
                         android:textColor="@android:color/secondary_text_light" />
 
                     <TextView
