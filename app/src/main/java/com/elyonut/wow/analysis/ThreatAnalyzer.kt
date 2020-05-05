@@ -274,12 +274,10 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         } // filter buildings
     }
 
-
     fun featureToThreat(
         feature: Feature,
         currentLocation: LatLng,
-        isLos: Boolean,
-        index: Int = 1
+        isLos: Boolean
     ): Threat {
         val threat = Threat()
         val height = feature.getNumberProperty("height").toDouble()
@@ -289,7 +287,9 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         val featureLatitude = geometryCoordinates[0].latitude
         val featureLongitude = geometryCoordinates[0].longitude
         val featureLocation = LatLng(featureLatitude, featureLongitude)
+        val threatFeatureProperties = feature.properties()
 
+        threat.feature = feature
         threat.location =
             GeoLocation(LocationType.Polygon, geometryCoordinates as ArrayList<Coordinate>)
         threat.distanceMeters = currentLocation.distanceTo(featureLocation)
@@ -301,16 +301,14 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
         )
         threat.creator = "ישראל ישראלי"
         threat.description = "תיאור"
-        threat.name = "איום " + index.toString() // feature.id()
-        threat.feature = feature
+        threat.id = threatFeatureProperties?.get("id")?.asString ?: ""
+        threat.name = threatFeatureProperties?.get("namestr")?.asString ?: ""
         threat.isLos = isLos
-        val threatFeatureProperties = threat.feature.properties()
         threat.type = threatFeatureProperties?.get("type")?.asString ?: ""
         threat.height = height
         threat.latitude = threatFeatureProperties?.get("latitude")?.asDouble ?: 0.0
         threat.longitude = threatFeatureProperties?.get("longitude")?.asDouble ?: 0.0
         threat.eAmount = threatFeatureProperties?.get("eAmount")?.asString ?: ""
-        threat.namestr = threatFeatureProperties?.get("namestr")?.asString ?: ""
         threat.knowledgeType = threatFeatureProperties?.get("knowledgeType")?.asString ?: ""
         threat.range = threatFeatureProperties?.get("range")?.asDouble ?: 0.0
 
