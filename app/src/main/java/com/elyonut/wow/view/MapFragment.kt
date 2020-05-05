@@ -234,16 +234,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private fun sendNotification(threatAlerts: ArrayList<Threat>) {
         threatAlerts.forEach { threat ->
-            if (shouldSendAlert(threat.id)) {
+            if (shouldSendAlert(threat.feature.id()!!)) {
 
                 val message =
-                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.id)
-
-
+                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.feature.id()!!)
                 val featureType =
                     threat.type
                 addAlertToContainer(
-                    threat.id,
+                    threat.feature.id()!!,
                     message,
                     BuildingTypeMapping.mapping[featureType]!!
                 )

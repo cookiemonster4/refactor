@@ -54,17 +54,19 @@
                     android:id="@+id/dataTypeImage"
                     android:layout_width="66dp"
                     android:layout_height="70dp"
-                    android:imageUrl="@{dataCardViewModel.getImageUrl(threat.type)}"
-                    android:layout_marginTop="72dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="8dp"
                     android:contentDescription="@string/type_image"
+                    android:imageUrl="@{dataCardViewModel.getImageUrl(threat.type)}"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintStart_toEndOf="@+id/linearLayout"
+                    app:layout_constraintTop_toTopOf="@+id/linearLayout" />
 
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/closeButton"
                     android:layout_width="15dp"
                     android:layout_height="15dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/cancel"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -74,23 +76,27 @@
                     style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:onClick="@{() -> dataCardViewModel.readMoreButtonClicked()}"
                     android:text="@string/read_more_hebrew"
                     android:textColor="@android:color/secondary_text_light"
                     android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:onClick="@{() -> dataCardViewModel.readMoreButtonClicked()}"/>
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:id="@+id/linearLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
                     android:layout_marginBottom="16dp"
                     android:orientation="vertical"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/readMore"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    app:layout_constraintTop_toBottomOf="@+id/closeButton">
 
                     <TextView
                         android:id="@+id/dataType"
@@ -127,7 +133,7 @@
 
                     <TextView
                         android:id="@+id/moreContent"
-                        android:layout_width="145dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="177dp"
                         android:visibility="gone"
                         app:moreContentFormatted="@{threat}"
