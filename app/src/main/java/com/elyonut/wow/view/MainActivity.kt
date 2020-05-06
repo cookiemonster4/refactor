@@ -4,16 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
-import android.view.SubMenu
 import android.view.WindowManager
 import android.widget.CheckBox
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
-import androidx.core.view.forEach
 import androidx.core.view.get
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
@@ -33,12 +30,10 @@ import com.elyonut.wow.utilities.Menus
 import com.elyonut.wow.viewModel.MainActivityViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import com.mapbox.geojson.Polygon
 import com.mapbox.mapboxsdk.Mapbox
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import java.util.*
 
@@ -47,7 +42,6 @@ class MainActivity : AppCompatActivity(),
     NavigationView.OnNavigationItemSelectedListener,
     ThreatFragment.OnListFragmentInteractionListener,
     MapFragment.OnMapFragmentInteractionListener,
-    FilterFragment.OnFragmentInteractionListener,
     BottomNavigationView.OnNavigationItemSelectedListener,
     AlertsFragment.OnAlertsFragmentInteractionListener,
     AlertFragment.OnAlertFragmentInteractionListener {
@@ -78,7 +72,6 @@ class MainActivity : AppCompatActivity(),
         initAreaOfInterest()
         initToolbar()
         initNavigationMenu()
-        initFilterSection()
         initBottomNavigationView()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -91,27 +84,10 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        mainViewModel.chosenTypeToFilter.observe(this, Observer<Pair<String, Boolean>> {
-            mainViewModel.chosenTypeToFilter.value?.let {
-                sharedViewModel.chosenTypeToFilter.value = it
-            }
-        })
-
-        mainViewModel.isSelectAllChecked.observe(this, Observer {
-            sharedViewModel.isSelectAllChecked.value = it
-            filterAllClicked(it)
-        })
-
         mainViewModel.selectedExperimentalOption.observe(
             this,
             Observer { sharedViewModel.selectedExperimentalOption.value = it }
         )
-
-        mainViewModel.filterSelected.observe(this, Observer {
-            if (it) {
-                filterButtonClicked()
-            }
-        })
 
         mainViewModel.shouldDefineArea.observe(this, Observer {
             if (it) {
@@ -174,15 +150,6 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun filterButtonClicked() {
-        val filterFragment = FilterFragment.newInstance()
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.apply {
-            add(R.id.fragmentMenuParent, filterFragment).commit()
-            addToBackStack(filterFragment.javaClass.simpleName)
-        }
-    }
-
     private fun coverageSettingsButtonClicked() {
         val coverageSettingsFragment = CoverageSettingsFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -218,31 +185,6 @@ class MainActivity : AppCompatActivity(),
                     (::onNavigationItemSelected)(menuItem)
                 }
             }
-        }
-    }
-
-    private fun initFilterSection() {
-        val layerTypeValues = mainViewModel.getLayerTypeValues()?.toTypedArray()
-        addSubMenuItem(navigationView.menu.getItem(Menus.FILTER_SUB_MENU).subMenu, R.id.select_all, getString(R.string.select_all) )
-        layerTypeValues?.forEachIndexed { index, buildingType ->
-            addSubMenuItem(navigationView.menu.getItem(Menus.FILTER_SUB_MENU).subMenu, index, buildingType)
-        }
-    }
-
-    private fun addSubMenuItem(subMenu: SubMenu, id: Int, name: String) {
-        val menuItem = subMenu.add(R.id.filter_options, id, Menu.NONE, name)
-        val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox
-        checkBoxView.tag = name
-        menuItem.actionView = checkBoxView
-        checkBoxView.setOnCheckedChangeListener { _, _ ->
-            (::onNavigationItemSelected)(menuItem)
-        }
-    }
-
-    private fun filterAllClicked(shouldFilter: Boolean) {
-        val menu = navigationView.menu
-        menu.getItem(Menus.FILTER_SUB_MENU).subMenu.forEach { menuItem ->
-            (menuItem.actionView as MaterialCheckBox).isChecked = shouldFilter
         }
     }
 
@@ -287,9 +229,6 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onMapFragmentInteraction() {
-    }
-
-    override fun onFilterFragmentInteraction() {
     }
 
     override fun onDataCardFragmentInteraction() {

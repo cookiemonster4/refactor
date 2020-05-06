@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationAdapter
@@ -96,6 +97,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
+    var locationObserver: Observer<Location?>? = null
 
     init {
         logger.initLogger()
@@ -153,11 +155,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         locationAdapter!!.startLocationService()
-        locationAdapter!!.getCurrentLocation().observeForever {
+        locationObserver = Observer<Location?> {
             if (it != null) {
                 changeLocation(it)
             }
         }
+        locationAdapter!!.getCurrentLocation().observeForever(locationObserver!!)
         isLocationAdapterInitialized.value = true
     }
 
@@ -317,54 +320,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun setLayerVisibility(layerId: String, visibility: PropertyValue<String>) {
         val layer = map.style?.getLayer(layerId)
         layer?.setProperties(visibility)
-    }
-
-    // TODO remove filter
-    fun applyFilter(
-        loadedStyle: Style,
-        layerId: String,
-        propertyId: String,
-        isStringType: Boolean,
-        numericType: NumericFilterTypes,
-        stringValue: String,
-        specificValue: Number,
-        minValue: Number,
-        maxValue: Number
-    ) {
-        if (isStringType) {
-            FilterHandler.filterLayerByStringProperty(loadedStyle, layerId, propertyId, stringValue)
-        } else {
-            when (numericType) {
-                NumericFilterTypes.RANGE -> {
-                    FilterHandler.filterLayerByNumericRange(
-                        loadedStyle,
-                        layerId,
-                        propertyId,
-                        minValue,
-                        maxValue
-                    )
-                }
-                NumericFilterTypes.LOWER -> {
-                    FilterHandler.filterLayerByMaxValue(loadedStyle, layerId, propertyId, maxValue)
-                }
-                NumericFilterTypes.GREATER -> {
-                    FilterHandler.filterLayerByMinValue(loadedStyle, layerId, propertyId, minValue)
-                }
-                NumericFilterTypes.SPECIFIC -> {
-                    FilterHandler.filterLayerBySpecificNumericProperty(
-                        loadedStyle,
-                        layerId,
-                        propertyId,
-                        specificValue
-                    )
-                }
-            }
-        }
-    }
-
-    // TODO remove filter
-    fun removeFilter(style: Style, layerId: String) {
-        FilterHandler.removeFilter(style, layerId)
     }
 
     fun filterLayerByType(newFilter: Pair<String, Boolean>) {
@@ -560,10 +515,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun clean() {
-        locationAdapter?.cleanLocation()
-    }
-
     // Beggining of onMapClick by our beloved uniqAI
     fun updateThreatFeaturesBuildings(mapView: MapView, latLng: LatLng) {
 
@@ -598,7 +549,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         if (calcThreatCoverageTask != null && calcThreatCoverageTask!!.status != AsyncTask.Status.FINISHED) {
             return //Returning as the current task execution is not finished yet.
         }
-        
+
         calcThreatCoverageTask = CalcThreatCoverageAsync(this, progressBar)
         calcThreatCoverageTask!!.execute(
             ThreatCoverageData(
@@ -632,8 +583,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
     }
-    // End of beloved uniqAI onMapClick
-    
+
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
         val location = locationAdapter?.getCurrentLocation()!!.value
@@ -650,6 +600,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         return threatAnalyzer.featureToThreat(building, currentLocation, isLOS)
     }
+    // End of beloved uniqAI onMapClick
 
     // TODO restructure, part to alertManager. create function zoomOnGivenLocation
     fun setZoomLocation(threatID: String) {
@@ -713,6 +664,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             style.addLayerAt(layer, style.layers.size - 1)
+        }
+    }
+
+    fun clean() {
+        locationAdapter?.cleanLocation()
+
+        if (locationObserver != null) {
+            locationAdapter!!.getCurrentLocation().removeObserver(locationObserver!!)
         }
     }
 }

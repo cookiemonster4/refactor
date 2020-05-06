@@ -179,19 +179,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             Observer<Threat> { onListFragmentInteraction(it) }
         )
 
-        sharedViewModel.shouldApplyFilter.observe(this,
-            Observer<Boolean> { filter(it) }
-        )
-
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (it) {
                 enableAreaSelection(view, it)
             }
-        })
-
-        sharedViewModel.chosenTypeToFilter.observe(this, Observer<Pair<String, Boolean>> {
-            mapViewModel.filterLayerByType(it)
-
         })
 
         sharedViewModel.isSelectAllChecked.observe(this, Observer {
@@ -311,25 +302,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     }
 
-    // TODO Remove filter
-    private fun filter(shouldApplyFilter: Boolean) {
-        if (!shouldApplyFilter) {
-            mapViewModel.removeFilter(map.style!!, sharedViewModel.layerToFilterId)
-        } else {
-            mapViewModel.applyFilter(
-                map.style!!,
-                sharedViewModel.layerToFilterId,
-                sharedViewModel.chosenPropertyId,
-                sharedViewModel.isStringType,
-                sharedViewModel.numericType,
-                sharedViewModel.chosenPropertyValue,
-                sharedViewModel.specificValue,
-                sharedViewModel.minValue,
-                sharedViewModel.maxValue
-            )
-        }
-    }
-
     // TODO Maybe navigation
     private fun showDescriptionFragment() {
         val dataCardFragmentInstance = DataCardFragment.newInstance()
@@ -380,7 +352,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.onMapReady(map)
     }
 
-    // TODO change to subscribe
+    // TODO change to subscribe/delete if using observeForever
     private fun initLocationObserver() {
         mapViewModel.locationAdapter!!.getCurrentLocation().observe(this, Observer<Location?> { newLocation ->
             if (mapViewModel.isLocationAdapterInitialized.value == true && newLocation != null) {
