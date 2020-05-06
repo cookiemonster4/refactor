@@ -106,7 +106,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         map = mapboxMap
         topographyService = TopographyService(map) // TODO remove from here?
         threatAnalyzer = ThreatAnalyzer(map, topographyService)
-        setMapStyle(Maps.MAPBOX_STYLE_URL) {locationSetUp()}
+        setMapStyle(Maps.MAPBOX_STYLE_URL) {
+            locationSetUp()
+        }
+
         setCameraMoveListener()
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
@@ -150,6 +153,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         locationAdapter!!.startLocationService()
+        locationAdapter!!.getCurrentLocation().observeForever {
+            if (it != null) {
+                changeLocation(it)
+            }
+        }
         isLocationAdapterInitialized.value = true
     }
 

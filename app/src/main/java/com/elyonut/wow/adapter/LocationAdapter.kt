@@ -66,11 +66,12 @@ class LocationAdapter(
             val location: Location = result?.lastLocation ?: return
             val lastUpdatedLocation = locationAdapterWeakReference.get()?.lastUpdatedLocation
 
-            // dont recalculate if staying in the same location
+            // don't recalculate if staying in the same location
             if (lastUpdatedLocation != null) {
-                if(lastUpdatedLocation.value != null){
+                if (lastUpdatedLocation.value != null) {
                     if (lastUpdatedLocation.value!!.longitude == location.longitude &&
-                        lastUpdatedLocation.value!!.latitude == location.latitude){
+                        lastUpdatedLocation.value!!.latitude == location.latitude
+                    ) {
                         return
                     }
                 }
