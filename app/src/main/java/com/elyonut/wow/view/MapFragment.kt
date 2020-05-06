@@ -382,12 +382,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     // TODO change to subscribe
     private fun initLocationObserver() {
-        val locationObserver = Observer<Location?> { newLocation ->
+        mapViewModel.locationAdapter!!.getCurrentLocation().observe(this, Observer<Location?> { newLocation ->
             if (mapViewModel.isLocationAdapterInitialized.value == true && newLocation != null) {
                 mapViewModel.changeLocation(newLocation)
             }
-        }
-        mapViewModel.locationAdapter!!.getCurrentLocation().observe(this, locationObserver)
+        })
     }
 
     private fun initFocusOnMyLocationButton(view: View) {
