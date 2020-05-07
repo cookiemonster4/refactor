@@ -17,11 +17,6 @@ import com.elyonut.wow.model.Threat
 
 import kotlinx.android.synthetic.main.fragment_threat.view.*
 
-/**
- * [RecyclerView.Adapter] that can display a [Threat] and makes a call to the
- * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
- */
 class ThreatRecyclerViewAdapter(
     private val mValues: ArrayList<Threat>,
     private val mListener: OnListFragmentInteractionListener?,

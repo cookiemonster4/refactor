@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.utilities.NumericFilterTypes
-//import com.elyonut.wow.utilities.NumericFilterTypes
 import com.elyonut.wow.utilities.TempDB
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf

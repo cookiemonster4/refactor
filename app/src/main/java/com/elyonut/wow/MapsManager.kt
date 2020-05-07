@@ -1,14 +1,15 @@
 package com.elyonut.wow
 
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.model.MapLayer
 import com.elyonut.wow.utilities.Maps
 
 class MapsManager(context: Context) {
-    var maps: ArrayList<MapLayer>? = null
+    var maps = MutableLiveData<ArrayList<MapLayer>>()
 
     init {
-        maps = arrayListOf(
+        maps.value = arrayListOf(
             MapLayer(
                 Maps.MAPBOX_STYLE_URL,
                 "Basic",
