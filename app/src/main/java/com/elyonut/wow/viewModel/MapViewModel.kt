@@ -128,26 +128,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     // TODO move to locationAdapter
     @SuppressLint("MissingPermission")
     fun startLocationService() {
-        val myLocationComponentOptions = LocationComponentOptions.builder(getApplication())
-            .trackingGesturesManagement(true)
-            .accuracyColor(ContextCompat.getColor(getApplication(), R.color.myLocationColor))
-            .build()
-
-        val locationComponentActivationOptions =
-            LocationComponentActivationOptions.builder(getApplication(), map.style!!)
-                .locationComponentOptions(myLocationComponentOptions).build()
-
-        map.locationComponent.apply {
-            activateLocationComponent(locationComponentActivationOptions)
-            isLocationComponentEnabled = true
-            cameraMode = CameraMode.TRACKING
-            renderMode = RenderMode.COMPASS
-        }
-
         locationAdapter =
             LocationAdapter(
                 getApplication(),
-                map.locationComponent
+                map
             )
 
         if (!locationAdapter!!.isGpsEnabled()) {
@@ -176,7 +160,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun setMapStyle(URL: String, callback: (() -> Unit)? = null){
+    fun setMapStyle(URL: String, callback: (() -> Unit)? = null) {
         map.setStyle(URL) { style ->
             addLayersToMapStyle(style)
             addThreatCoverageLayer(style)
@@ -282,7 +266,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             GeoJsonSource(
                 Constants.THREAT_COVERAGE_SOURCE_ID
                 // TODO check if needed
-               // getCoveragePointsJson()
+                // getCoveragePointsJson()
             )
         )
 
@@ -328,8 +312,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
-        val types = layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
-        val filters = types?.map { type-> Pair(type, shouldFilter) }
+        val types =
+            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
+        val filters = types?.map { type -> Pair(type, shouldFilter) }
         val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
 
         filters?.forEach {
