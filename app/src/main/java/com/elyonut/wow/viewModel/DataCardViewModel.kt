@@ -2,11 +2,9 @@ package com.elyonut.wow.viewModel
 
 import android.app.Application
 import android.content.res.Resources
-import android.view.View
 import android.widget.FrameLayout
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.utilities.BuildingTypeMapping
 
 class DataCardViewModel(application: Application) : AndroidViewModel(application) {
@@ -18,8 +16,7 @@ class DataCardViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun readMoreButtonClicked() {
-        isReadMoreButtonClicked.value =
-            !(isReadMoreButtonClicked.value != null && isReadMoreButtonClicked.value!!)
+        isReadMoreButtonClicked.value = !isReadMoreButtonClicked.value!!
     }
 
     fun close() {
@@ -37,7 +34,7 @@ class DataCardViewModel(application: Application) : AndroidViewModel(application
         return Resources.getSystem().displayMetrics.heightPixels
     }
 
-    fun getImageUrl(featureType: String): Int? {
-        return BuildingTypeMapping.mapping[featureType]
+    fun getImageUrl(buildingType: String): Int? {
+        return BuildingTypeMapping.mapping[buildingType]
     }
 }

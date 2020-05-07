@@ -9,10 +9,6 @@
             type="com.elyonut.wow.model.Threat" />
 
         <variable
-            name="threatFeaturesAdapter"
-            type="com.elyonut.wow.model.ThreatFeaturesAdapter" />
-
-        <variable
             name="dataCardViewModel"
             type="com.elyonut.wow.viewModel.DataCardViewModel" />
     </data>
@@ -58,17 +54,19 @@
                     android:id="@+id/dataTypeImage"
                     android:layout_width="66dp"
                     android:layout_height="70dp"
-                    android:imageUrl="@{dataCardViewModel.getImageUrl(threatFeaturesAdapter.type)}"
-                    android:layout_marginTop="72dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="8dp"
                     android:contentDescription="@string/type_image"
+                    android:imageUrl="@{dataCardViewModel.getImageUrl(threat.type)}"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintStart_toEndOf="@+id/linearLayout"
+                    app:layout_constraintTop_toTopOf="@+id/linearLayout" />
 
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/closeButton"
                     android:layout_width="15dp"
                     android:layout_height="15dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/cancel"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -76,67 +74,70 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/readMore"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="75dp"
-                    android:layout_height="37dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:onClick="@{() -> dataCardViewModel.readMoreButtonClicked()}"
                     android:text="@string/read_more_hebrew"
                     android:textColor="@android:color/secondary_text_light"
                     android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:onClick="@{() -> dataCardViewModel.readMoreButtonClicked()}"/>
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:id="@+id/linearLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
                     android:layout_marginBottom="16dp"
                     android:orientation="vertical"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/readMore"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    app:layout_constraintTop_toBottomOf="@+id/closeButton">
 
                     <TextView
                         android:id="@+id/dataType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:text="@{threatFeaturesAdapter.name}"
+                        android:text="@{threat.name}"
                         android:textSize="22sp" />
 
                     <TextView
                         android:id="@+id/knowledgeType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/knowledgeType_title(threatFeaturesAdapter.knowledgeType)}" />
-                    <!--                        android:text="סוג ידיעה" />-->
+                        android:text="@{@string/knowledgeType_title(threat.knowledgeType)}" />
 
                     <TextView
                         android:id="@+id/eAmount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/eAmount_title(threatFeaturesAdapter.eAmount)}" />
+                        android:text="@{@string/eAmount_title(threat.eAmount)}" />
 
                     <TextView
                         android:id="@+id/type"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/type_title(threatFeaturesAdapter.type)}" />
+                        android:text="@{@string/type_title(threat.type)}" />
 
                     <TextView
                         android:id="@+id/range"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/range_title(threatFeaturesAdapter.range)}"
+                        android:text="@{@string/range_title(threat.range)}"
                         android:textColor="@android:color/secondary_text_light" />
 
                     <TextView
                         android:id="@+id/moreContent"
-                        android:layout_width="145dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="177dp"
                         android:visibility="gone"
                         app:moreContentFormatted="@{threat}"
-                        tools:text="עוד טקסטטט \n ועוד \n ועוד \n\n\n\n\n\n\n\n\n ועוד מלא"
+                        tools:text="לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית נולום ארווס סאפיאן - פוסיליס קוויס, אקווזמן קוואזי במר מודוף. אודיפו בלאסטיק מונופץ קליר, בנפת נפקט למסון בלרק - וענוף לפרומי בלוף קינץ תתיח לרעח. לת צשחמי הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק."
                         tools:visibility="visible" />
 
                 </LinearLayout>

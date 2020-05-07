@@ -15,7 +15,6 @@ import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
 import com.elyonut.wow.model.Threat
-import com.elyonut.wow.model.ThreatFeaturesAdapter
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
@@ -46,7 +45,6 @@ class DataCardFragment : Fragment() {
         val threat: Threat = arguments!!.getParcelable("threat")!!
 
         binding.threat = threat
-        binding.threatFeaturesAdapter = ThreatFeaturesAdapter(threat)
         binding.dataCardViewModel = dataCardViewModel
         binding.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
@@ -94,15 +92,8 @@ class DataCardFragment : Fragment() {
     }
 
     private fun initClosingCard() {
-        initCloseCardByClickOnMap()
         initCloseCardButton()
         initFlingCloseListener()
-    }
-
-    private fun initCloseCardByClickOnMap() {
-        binding.root.setOnClickListener {
-            dataCardViewModel.close()
-        }
     }
 
     private fun initCloseCardButton() {
