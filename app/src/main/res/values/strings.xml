@@ -39,16 +39,13 @@
     <string name="knowledgeType">knowledgeType</string>
     <string name="type">type</string>
     <string name="range">range</string>
-    <string name="eAmount_title">גודל קבוצה</string>
-    <string name="knowledgeType_title">סוג ידיעה</string>
-    <string name="type_title">סוג קבוצה</string>
-    <string name="range_title">טווח</string>
+    <string name="eAmount_title">גודל קבוצה: %s</string>
+    <string name="knowledgeType_title">סוג ידיעה: %s</string>
+    <string name="type_title">סוג קבוצה: %s</string>
+    <string name="range_title">טווח: %s</string>
     <string name="map_types">סוג מפה</string>
     <string name="visible">גלוי</string>
     <string name="invisible">נסתר</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="area_of_interest">תחום עניין</string>
     <string name="alerts">התראות</string>
     <string name="empty_alerts_message">אין התראות</string>

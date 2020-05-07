@@ -238,10 +238,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
                 val message =
                     getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.feature.id()!!)
-
-
                 val featureType =
-                    threat.feature.properties()?.get(getString(R.string.type))?.asString
+                    threat.type
                 addAlertToContainer(
                     threat.feature.id()!!,
                     message,
