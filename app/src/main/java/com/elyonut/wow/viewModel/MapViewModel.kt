@@ -94,6 +94,7 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
+    var shouldDisableAreaSelection = MutableLiveData<Boolean>()
 
     init {
         logger.initLogger()
@@ -415,7 +416,12 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         fillSource.setGeoJson(makePolygonFeatureCollection(currentLineLayerPointList))
     }
 
-    fun removeAreaFromMap() {
+    fun enableAreaSelection() {
+        shouldDisableAreaSelection.value = false
+        removeAreaFromMap()
+    }
+
+    private fun removeAreaFromMap() {
         currentCircleLayerFeatureList = ArrayList()
         currentLineLayerPointList = ArrayList()
         circleSource.setGeoJson(FeatureCollection.fromFeatures(currentCircleLayerFeatureList))
@@ -445,7 +451,7 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         }
     }
 
-    fun saveAreaOfInterest() {
+    fun applyAreaClicked() {
         circleSource.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         lineLayerPointList = currentLineLayerPointList
 
@@ -454,13 +460,16 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         } else {
             areaOfInterest.value = Polygon.fromLngLats(listOf(lineLayerPointList))
         }
+
+        shouldDisableAreaSelection.value = true
     }
 
-    fun cancelAreaSelection() {
+    fun cancelAreaClicked() {
         currentCircleLayerFeatureList = ArrayList()
         currentLineLayerPointList = ArrayList()
         circleSource.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         fillSource.setGeoJson(makePolygonFeatureCollection(lineLayerPointList))
+        shouldDisableAreaSelection.value = true
     }
 
     private fun makeLineFeatureCollection(pointArrayList: ArrayList<Point>): FeatureCollection {
@@ -697,6 +706,16 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         changeLocation(newLocation)
     }
 
+    fun filterLayerByAllTypes(shouldFilter: Boolean) {
+        val types =
+            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
+        val filters = types?.map { type -> Pair(type, shouldFilter) }
+        val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
+
+        filters?.forEach {
+            addFilterToLayer(it, layer!!)
+        }
+        
     fun clean() {
         locationAdapter?.cleanLocationService()
     }

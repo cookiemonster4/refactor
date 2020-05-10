@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:layoutDirection="rtl"
-    android:padding="10dp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TextView
+    <data>
+        <variable
+            name="mapLayersViewModel"
+            type="com.elyonut.wow.viewModel.MapLayersViewModel" />
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/map_types">
-    </TextView>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/map_layers_list"
         android:layout_height="match_parent"
-        android:scrollbars="horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_width="match_parent">
-    </androidx.recyclerview.widget.RecyclerView>
-</LinearLayout>
+        android:layoutDirection="rtl"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/map_types" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/map_layers_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:scrollbars="horizontal" />
+    </LinearLayout>
+</layout>

@@ -9,12 +9,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.viewModel.AlertViewModelFactory
 import com.elyonut.wow.AlertsManager
 import com.elyonut.wow.R
+import com.elyonut.wow.adapter.AlertsAdapter
+import com.elyonut.wow.databinding.FragmentAlertBinding
 import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.viewModel.AlertViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
@@ -28,11 +31,18 @@ class AlertFragment(private var alert: AlertModel) : Fragment() {
     private lateinit var alertViewModel: AlertViewModel
     private lateinit var alertsManager: AlertsManager
 
+    private lateinit var binding: FragmentAlertBinding
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_alert, container, false)
+        binding = DataBindingUtil.inflate(
+            inflater,
+            R.layout.fragment_alert,
+            container,
+            false
+        )
 
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
@@ -44,27 +54,17 @@ class AlertFragment(private var alert: AlertModel) : Fragment() {
             AlertViewModelFactory(activity!!.application, alertsManager)
         ).get(AlertViewModel::class.java)
 
+        binding.lifecycleOwner = viewLifecycleOwner
+
+        binding.alert = alert
+        binding.alertView.deleteAlert.visibility = View.GONE
+
+        binding.clickListener =
+            AlertsAdapter.AlertClickListener({}, { onZoomClick(it) }, { onAcceptClick(it) })
+
         setObservers()
-        initView(view)
 
-        return view
-    }
-
-    private fun initView(view: View) {
-        Picasso.with(context).load(alert.image).into(view.alert_image)
-        view.alert_message.text = alert.message
-        view.current_time.text = alert.time
-        view.deleteAlert.visibility =  View.GONE
-
-        if (!alert.isRead) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                view.card_view?.setCardBackgroundColor(context!!.getColor(R.color.unreadMessage))
-            }
-        } else {
-            view.card_view?.setCardBackgroundColor(Color.WHITE)
-        }
-
-        initViewButtons(view)
+        return binding.root
     }
 
     private fun setObservers() {
@@ -75,19 +75,19 @@ class AlertFragment(private var alert: AlertModel) : Fragment() {
         })
     }
 
-    private fun initViewButtons(view: View) {
-        view.zoomToLocation.setOnClickListener {
-            alertViewModel.zoomToLocationClicked(alert)
-        }
+    private fun onZoomClick(alert: AlertModel) {
+        alertViewModel.zoomToLocationClicked(alert)
+    }
 
-        view.alertAccepted.setOnClickListener {
-            alertViewModel.acceptAlertClicked(alert)
-        }
+    private fun onAcceptClick(alert: AlertModel) {
+        alertViewModel.acceptAlertClicked(alert)
     }
 
     private fun removeAlert() {
-        activity?.supportFragmentManager?.beginTransaction()?.remove(this@AlertFragment)?.setTransition(
-            FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)?.commit()
+        activity?.supportFragmentManager?.beginTransaction()?.remove(this@AlertFragment)
+            ?.setTransition(
+                FragmentTransaction.TRANSIT_FRAGMENT_CLOSE
+            )?.commit()
 
         alertsManager.shouldRemoveAlert.value = false
     }

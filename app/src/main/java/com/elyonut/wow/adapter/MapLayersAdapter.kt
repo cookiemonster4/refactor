@@ -2,68 +2,75 @@ package com.elyonut.wow.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.R
-import com.elyonut.wow.interfaces.OnClickInterface
+import com.elyonut.wow.databinding.MapLayerItemBinding
 import com.elyonut.wow.model.MapLayer
 
 class MapLayersAdapter(
     var context: Context,
-    var mapLayers: ArrayList<MapLayer>,
-    onClickHandler: OnClickInterface
-) : RecyclerView.Adapter<MapLayersAdapter.MapLayersViewHolder>() {
+    private val clickListener: MapLayerClickListener
+) : ListAdapter<MapLayer, MapLayersAdapter.MapLayersViewHolder>(MapLayerDiffCallback()) {
 
-    var onClickInterface: OnClickInterface = onClickHandler
     var selectedItemIndex: Int = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MapLayersViewHolder {
-        return MapLayersViewHolder(
-            LayoutInflater.from(context).inflate(
-                R.layout.map_layer_item,
-                parent,
-                false
-            )
-        )
-    }
-
-    override fun getItemCount(): Int {
-        return mapLayers.count()
+        return MapLayersViewHolder.from(parent)
     }
 
     override fun onBindViewHolder(holder: MapLayersViewHolder, position: Int) {
-        holder.mapName.text = mapLayers[position].name
-        holder.mapTypeImage.setImageResource(mapLayers[position].image)
+        val item = getItem(position)
+        holder.bind(item, clickListener, position, selectedItemIndex, context)
+    }
 
-        if(selectedItemIndex == position){
-            holder.frame.background = context.getDrawable(R.drawable.card_selected_edge)
+    class MapLayersViewHolder private constructor(private val binding: MapLayerItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(
+            item: MapLayer,
+            clickListener: MapLayerClickListener,
+            position: Int,
+            selectedItemIndex: Int,
+            context: Context
+        ) {
+            binding.mapLayer = item
+            binding.clickListener = clickListener
+
+            if (selectedItemIndex == position) {
+                binding.mapItemFrame.background = context.getDrawable(R.drawable.card_selected_edge)
+            } else {
+                binding.mapItemFrame.background = context.getDrawable(R.drawable.card_edge)
+            }
         }
-        else
-        {
-            holder.frame.background = context.getDrawable(R.drawable.card_edge)
+
+        companion object {
+            fun from(parent: ViewGroup): MapLayersViewHolder {
+                val inflater = LayoutInflater.from(parent.context)
+                val binding = MapLayerItemBinding.inflate(inflater, parent, false)
+                return MapLayersViewHolder(binding)
+            }
         }
     }
 
-    inner class MapLayersViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
-        val mapTypeImage: ImageView = view.findViewById(R.id.map_type_image)
-        val mapName: TextView = view.findViewById(R.id.map_type_name)
-        val frame: FrameLayout = view.findViewById(R.id.map_item_frame)
-
-        init{
-            mapTypeImage.setOnClickListener(this)
-            mapName.setOnClickListener(this)
-            frame.setOnClickListener(this)
-        }
-
-        override fun onClick(p0: View?) {
-            selectedItemIndex = this.adapterPosition
-            onClickInterface.setClick(p0!!, this.adapterPosition)
-            notifyDataSetChanged()
-        }
+    fun setClickedPosition(position: Int) {
+        selectedItemIndex = position
+        notifyDataSetChanged()
     }
 
+    class MapLayerClickListener(val clickListener: (mapLayer: MapLayer) -> Unit) {
+        fun onClick(mapLayer: MapLayer) = clickListener(mapLayer)
+    }
+}
+
+class MapLayerDiffCallback : DiffUtil.ItemCallback<MapLayer>() {
+    override fun areItemsTheSame(oldItem: MapLayer, newItem: MapLayer): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: MapLayer, newItem: MapLayer): Boolean {
+        return oldItem == newItem
+    }
 }
