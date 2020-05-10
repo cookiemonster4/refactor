@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -99,6 +98,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         return binding.root
     }
 
+    // TODO maybe move to alert fragment?
     private fun initBroadcastReceiver() {
         broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -119,6 +119,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
+    // TODO maybe change to init drawings + should the map be responsibe? or other class
     private fun initArea() {
         if (sharedViewModel.areaOfInterest != null) {
             mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest
@@ -153,9 +154,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             this,
             Observer {
                 observeRiskStatus(it)
-                if (it) {
-                    initLocationObserver()
-                }
             })
 
         mapViewModel.threatAlerts.observe(this, Observer {
@@ -232,6 +230,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
     }
 
+    // TODO SelfCentered instead current location
     private fun setCurrentLocationButtonIcon(isInCurrentLocation: Boolean) {
         val currentLocationButton: FloatingActionButton = binding.currentLocation
 
@@ -242,6 +241,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
+    // TODO move to alertsManager
+    // Beggining of alert handling
     private fun sendNotification(threatAlerts: ArrayList<Threat>) {
         threatAlerts.forEach { threat ->
             if (shouldSendAlert(threat.feature.id()!!)) {
@@ -299,6 +300,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             alertFragmentInstance
         ).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit()
     }
+    // End of alert handling
 
     private fun observeRiskStatus(isLocationAdapterInitialized: Boolean) {
         if (isLocationAdapterInitialized) {
@@ -313,6 +315,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     }
 
+    // TODO Remove filter
     private fun filter(shouldApplyFilter: Boolean) {
         if (!shouldApplyFilter) {
             mapViewModel.removeFilter(map.style!!, sharedViewModel.layerToFilterId)
@@ -331,6 +334,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
+    // TODO Maybe navigation
     private fun showDescriptionFragment() {
         val dataCardFragmentInstance = DataCardFragment.newInstance()
 
@@ -380,15 +384,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.onMapReady(map)
     }
 
-    private fun initLocationObserver() {
-        val locationObserver = Observer<Location?> { newLocation ->
-            if (mapViewModel.isLocationAdapterInitialized.value == true && newLocation != null) {
-                mapViewModel.changeLocation(newLocation)
-            }
-        }
-        mapViewModel.locationAdapter!!.getCurrentLocation().observe(this, locationObserver)
-    }
-
     private fun initMapLayersButton() { // Data binding? is there a way use?
         binding.mapLayers.setOnClickListener {
             openDialogFragment(MapLayersFragment())
@@ -407,7 +402,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         newDialogFragment.show(fragmentTransaction!!, "dialog")
     }
 
-    override fun onMapClick(latLng: LatLng): Boolean { // TODO UniqAi need to fix
+    // TODO reformat, move to viewModel, CR
+    override fun onMapClick(latLng: LatLng): Boolean {
 
         // return mapViewModel.onMapClick(map, latLng)
 
@@ -532,6 +528,24 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         return true
     }
 
+    // From onMapClick
+    private fun visualizeThreats(features: List<Feature>) {
+
+        val loadedMapStyle = map.style
+
+        if (loadedMapStyle == null || !loadedMapStyle.isFullyLoaded) {
+            return
+        }
+
+        loadedMapStyle.removeLayer("threat-source-layer")
+        loadedMapStyle.removeSource("threat-source")
+
+        val selectedBuildingSource =
+            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
+        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
+    }
+
+    // TODO rename
     private fun applyExperimentalOption(id: Int) {
         when (id) {
             R.id.threat_list_menu_item -> {
@@ -552,6 +566,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
+    // TODO Maybe navigation
     private fun openThreatListFragment() {
         mapViewModel.threats.value?.let {
             val bundle = Bundle()
@@ -592,6 +607,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.isAreaSelectionMode = shouldEnable
     }
 
+    // TODO update layers. handle according to datacard
     private fun onListFragmentInteraction(item: Threat?) {
         if (item != null) {
             val feature = item.feature
@@ -635,21 +651,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    private fun visualizeThreats(features: List<Feature>) {
-        val loadedMapStyle = map.style
-
-        if (loadedMapStyle == null || !loadedMapStyle.isFullyLoaded) {
-            return
-        }
-
-        loadedMapStyle.removeLayer("threat-source-layer")
-        loadedMapStyle.removeSource("threat-source")
-
-        val selectedBuildingSource =
-            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
-        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnMapFragmentInteractionListener) {
@@ -664,6 +665,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         listenerMap = null
     }
 
+    // TODO Figure out what is it for?
     interface OnMapFragmentInteractionListener {
         fun onMapFragmentInteraction()
     }
