@@ -6,7 +6,7 @@ import android.location.Location
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import com.elyonut.wow.R
-import com.elyonut.wow.interfaces.ILocationManager
+import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.LocationChangedReceiver
 import com.mapbox.android.core.location.*
@@ -16,16 +16,15 @@ import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import java.lang.ref.WeakReference
-import kotlin.math.log
 
 // Const values
 private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
 private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 
-class LocationAdapter(
+class LocationService(
     private var context: Context,
     var map: MapboxMap
-) : ILocationManager {
+) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
     private var lastUpdatedLocation: Location? = null
     private var locationComponent = map.locationComponent
@@ -79,29 +78,29 @@ class LocationAdapter(
         locationEngine.getLastLocation(callback)
     }
 
-    override fun subscribe(locationChangedSubscriber: LocationChangedReceiver) {
+    override fun subscribeToLocationChanges(locationChangedSubscriber: LocationChangedReceiver) {
         locationChangedSubscribers.add(locationChangedSubscriber)
     }
 
-    override fun unsubscribe(locationChangedSubscriber: LocationChangedReceiver) {
+    override fun unsubscribeFromLocationChanges(locationChangedSubscriber: LocationChangedReceiver) {
         locationChangedSubscribers.remove(locationChangedSubscriber)
     }
 
-    override fun cleanLocation() {
+    override fun cleanLocationService() {
         locationEngine.removeLocationUpdates(callback)
         locationChangedSubscribers.clear()
     }
 
-    private class LocationUpdatesCallback(locationAdapter: LocationAdapter) :
+    private class LocationUpdatesCallback(locationService: LocationService) :
         LocationEngineCallback<LocationEngineResult> {
-        private var locationAdapterWeakReference: WeakReference<LocationAdapter> =
-            WeakReference(locationAdapter)
-        val logger = locationAdapterWeakReference.get()?.logger
+        private var locationServiceWeakReference: WeakReference<LocationService> =
+            WeakReference(locationService)
+        val logger = locationServiceWeakReference.get()?.logger
 
         override fun onSuccess(result: LocationEngineResult?) {
 
             val location: Location = result?.lastLocation ?: return
-            val lastUpdatedLocation = locationAdapterWeakReference.get()?.lastUpdatedLocation
+            val lastUpdatedLocation = locationServiceWeakReference.get()?.lastUpdatedLocation
 
             // don't recalculate if staying in the same location
             if (lastUpdatedLocation != null) {
@@ -113,15 +112,15 @@ class LocationAdapter(
             }
 
             logger?.info("Location changed!")
-            locationAdapterWeakReference.get()?.lastUpdatedLocation = location
-            locationAdapterWeakReference.get()?.locationChangedSubscribers?.forEach {
+            locationServiceWeakReference.get()?.lastUpdatedLocation = location
+            locationServiceWeakReference.get()?.locationChangedSubscribers?.forEach {
                 it.onLocationChanged(location)
             }
-            locationAdapterWeakReference.get()?.locationComponent?.forceLocationUpdate(location)
+            locationServiceWeakReference.get()?.locationComponent?.forceLocationUpdate(location)
         }
 
         override fun onFailure(exception: java.lang.Exception) {
-            val locationComponent = locationAdapterWeakReference.get()?.locationComponent
+            val locationComponent = locationServiceWeakReference.get()?.locationComponent
             if (locationComponent != null) {
                 logger?.error(exception.message + exception.stackTrace)
             }

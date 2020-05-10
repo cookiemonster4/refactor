@@ -11,17 +11,15 @@ import android.util.ArrayMap
 import android.view.Gravity
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.R
-import com.elyonut.wow.adapter.LocationAdapter
+import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsAdapter
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.analysis.*
-import com.elyonut.wow.interfaces.ILocationManager
+import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.interfaces.LocationChangedReceiver
@@ -38,8 +36,6 @@ import com.mapbox.geojson.*
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
@@ -72,7 +68,7 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
     private val tempDB = TempDB(application)
     private val permissions: IPermissions =
         PermissionsAdapter(getApplication())
-    internal var locationAdapter: ILocationManager? = null
+    private var locationAdapter: ILocationService? = null
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
     var isPermissionRequestNeeded = MutableLiveData<Boolean>()
@@ -129,7 +125,7 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
     @SuppressLint("MissingPermission")
     fun startLocationService() {
         locationAdapter =
-            LocationAdapter(
+            LocationService(
                 getApplication(),
                 map
             )
@@ -139,13 +135,7 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         }
 
         locationAdapter!!.startLocationService()
-        locationAdapter!!.subscribe(this)
-//        locationObserver = Observer<Location?> {
-//            if (it != null) {
-//                changeLocation(it)
-//            }
-//        }
-//        locationAdapter!!.getCurrentLocation().observeForever(locationObserver!!)
+        locationAdapter!!.subscribeToLocationChanges(this)
         isLocationAdapterInitialized.value = true
     }
 
@@ -708,7 +698,7 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
     }
 
     fun clean() {
-        locationAdapter?.cleanLocation()
+        locationAdapter?.cleanLocationService()
     }
 }
 
