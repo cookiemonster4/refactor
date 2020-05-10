@@ -27,6 +27,7 @@
             android:layout_gravity="center"
             android:layout_margin="5dp"
             card_view:cardCornerRadius="2dp"
+            android:background="@{alert.isRead ? android.graphics.Color.WHITE : @color/unreadMessage}"
             card_view:contentPadding="10dp">
 
             <RelativeLayout
