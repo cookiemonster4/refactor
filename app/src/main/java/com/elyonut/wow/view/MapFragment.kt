@@ -109,7 +109,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     }
                 }
 
-                alertsManager.shouldPopAlert.value = true
+                alertsManager.shouldPopAlert.postValue(true)
             }
         }
     }
@@ -202,7 +202,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
             if (shouldPop && alertsManager.alerts.value!!.count { !it.isRead } > 0) {
-                alertsManager.shouldPopAlert.value = false
+                alertsManager.shouldPopAlert.postValue(false)
                 setAlertPopUp(alertsManager.alerts.value?.findLast { !it.isRead }!!)
             }
         })
