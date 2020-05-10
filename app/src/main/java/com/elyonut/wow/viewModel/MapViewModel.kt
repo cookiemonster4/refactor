@@ -98,6 +98,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
+    var shouldDisableAreaSelection = MutableLiveData<Boolean>()
 
     init {
         logger.initLogger()
@@ -108,7 +109,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         map = mapboxMap
         topographyService = TopographyService(map)
         threatAnalyzer = ThreatAnalyzer(map, topographyService)
-        setMapStyle(Maps.MAPBOX_STYLE_URL) {locationSetUp()}
+        setMapStyle(Maps.MAPBOX_STYLE_URL) { locationSetUp() }
         setCameraMoveListener()
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
@@ -164,7 +165,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun setMapStyle(URL: String, callback: (() -> Unit)? = null){
+    fun setMapStyle(URL: String, callback: (() -> Unit)? = null) {
         map.setStyle(URL) { style ->
             addLayersToMapStyle(style)
             addThreatCoverageLayer(style)
@@ -398,7 +399,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         fillSource.setGeoJson(makePolygonFeatureCollection(currentLineLayerPointList))
     }
 
-    fun removeAreaFromMap() {
+    fun enableAreaSelection() {
+        shouldDisableAreaSelection.value = false
+        removeAreaFromMap()
+    }
+
+    private fun removeAreaFromMap() {
         currentCircleLayerFeatureList = ArrayList()
         currentLineLayerPointList = ArrayList()
         circleSource.setGeoJson(FeatureCollection.fromFeatures(currentCircleLayerFeatureList))
@@ -428,7 +434,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun saveAreaOfInterest() {
+    fun applyAreaClicked() {
         circleSource.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         lineLayerPointList = currentLineLayerPointList
 
@@ -437,13 +443,16 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             areaOfInterest.value = Polygon.fromLngLats(listOf(lineLayerPointList))
         }
+
+        shouldDisableAreaSelection.value = true
     }
 
-    fun cancelAreaSelection() {
+    fun cancelAreaClicked() {
         currentCircleLayerFeatureList = ArrayList()
         currentLineLayerPointList = ArrayList()
         circleSource.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         fillSource.setGeoJson(makePolygonFeatureCollection(lineLayerPointList))
+        shouldDisableAreaSelection.value = true
     }
 
     private fun makeLineFeatureCollection(pointArrayList: ArrayList<Point>): FeatureCollection {
@@ -677,8 +686,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
-        val types = layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
-        val filters = types?.map { type-> Pair(type, shouldFilter) }
+        val types =
+            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
+        val filters = types?.map { type -> Pair(type, shouldFilter) }
         val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
 
         filters?.forEach {

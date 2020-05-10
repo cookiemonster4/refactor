@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".view.AlertFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <include
-        android:id="@+id/alert_view"
+    <data>
+        <variable
+            name="alert"
+            type="com.elyonut.wow.model.AlertModel" />
+
+        <variable
+            name="clickListener"
+            type="com.elyonut.wow.adapter.AlertsAdapter.AlertClickListener" />
+    </data>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        layout="@layout/alert_item" />
+        tools:context=".view.AlertFragment">
 
-</FrameLayout>
+        <include
+            android:id="@+id/alert_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/alert_item"
+            app:alert="@{alert}"
+            app:clickListener="@{clickListener}"/>
+
+    </FrameLayout>
+</layout>
