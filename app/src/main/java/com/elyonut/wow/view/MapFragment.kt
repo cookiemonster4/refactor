@@ -116,7 +116,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private fun initArea() {
         if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest
+            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // Should be encapsulated
 
             val polygonPoints = ArrayList<Point>()
             sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
@@ -583,7 +583,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 //        radiusLayerButton.isEnabled = !shouldEnable
         navigationButton.isEnabled = !shouldEnable
         currentLocationButton.isEnabled = !shouldEnable
-        mapViewModel.isAreaSelectionMode = shouldEnable
+        mapViewModel.isAreaSelectionMode = shouldEnable // Should be encapsulated
     }
 
     private fun initUndoButton(view: View) {

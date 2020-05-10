@@ -108,7 +108,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         map = mapboxMap
         topographyService = TopographyService(map)
         threatAnalyzer = ThreatAnalyzer(map, topographyService)
-        setMapStyle(Maps.MAPBOX_STYLE_URL) {locationSetUp()}
+        setMapStyle(Maps.MAPBOX_STYLE_URL) { locationSetUp() }
         setCameraMoveListener()
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
@@ -117,7 +117,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         if (permissions.isLocationPermitted()) {
             startLocationService()
         } else {
-            isPermissionRequestNeeded.value = true
+            isPermissionRequestNeeded.postValue(true)
         }
     }
 
@@ -146,11 +146,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
 
         if (!locationAdapter!!.isGpsEnabled()) {
-            isAlertVisible.value = true
+            isAlertVisible.postValue(true)
         }
 
         locationAdapter!!.startLocationService()
-        isLocationAdapterInitialized.value = true
+        isLocationAdapterInitialized.postValue(true)
     }
 
     fun changeLocation(location: Location) {
@@ -164,7 +164,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun setMapStyle(URL: String, callback: (() -> Unit)? = null){
+    fun setMapStyle(URL: String, callback: (() -> Unit)? = null) {
         map.setStyle(URL) { style ->
             addLayersToMapStyle(style)
             addThreatCoverageLayer(style)
@@ -209,12 +209,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             RECORD_REQUEST_CODE -> {
 
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    noPermissionsToast.value =
+                    noPermissionsToast.postValue(
                         Toast.makeText(
                             getApplication(),
                             R.string.permission_not_granted,
                             Toast.LENGTH_LONG
                         )
+                    )
                 } else {
                     startLocationService()
                 }
@@ -433,9 +434,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         lineLayerPointList = currentLineLayerPointList
 
         if (lineLayerPointList.isEmpty()) {
-            areaOfInterest.value = null
+            areaOfInterest.postValue(null)
         } else {
-            areaOfInterest.value = Polygon.fromLngLats(listOf(lineLayerPointList))
+            areaOfInterest.postValue(Polygon.fromLngLats(listOf(lineLayerPointList)))
         }
     }
 
@@ -636,8 +637,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 locationAdapter?.getCurrentLocation()!!.value!!.longitude
             )
 
-            isFocusedOnLocation.value =
-                cameraLocation.distanceTo(currentLocation) <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION
+            isFocusedOnLocation.postValue(
+                cameraLocation.distanceTo(currentLocation)
+                        <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION
+            )
         }
     }
 
@@ -677,8 +680,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
-        val types = layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
-        val filters = types?.map { type-> Pair(type, shouldFilter) }
+        val types =
+            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
+        val filters = types?.map { type -> Pair(type, shouldFilter) }
         val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
 
         filters?.forEach {

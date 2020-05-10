@@ -29,9 +29,8 @@ class AlertsManager(var context: Context) {
         )
 
         updateAlertsList()
-        isAlertAdded.value = true
+        isAlertAdded.postValue(true)
         shouldPopAlert.postValue(true)
-
         idCounter++
     }
 
@@ -40,7 +39,7 @@ class AlertsManager(var context: Context) {
         updateAlertsList()
         shouldRemoveAlert.postValue(true)
         shouldPopAlert.postValue(true)
-        deletedAlertPosition.value = position
+        deletedAlertPosition.postValue(position)
     }
 
     fun zoomToLocation(alert: AlertModel) {
@@ -74,7 +73,6 @@ class AlertsManager(var context: Context) {
         }
 
         updateAlertsList()
-        isAlertAccepted.value = true
-
+        isAlertAccepted.postValue(true)
     }
 }
