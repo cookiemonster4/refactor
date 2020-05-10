@@ -1,10 +1,7 @@
 package com.elyonut.wow.database
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import com.elyonut.wow.model.AlertModel
 
 @Dao
@@ -15,6 +12,9 @@ interface AlertDatabaseDao {
     @Update
     fun update(alert: AlertModel)
 
+    @Delete
+    fun delete(alert: AlertModel)
+
     @Query("SELECT * from alerts_table WHERE alertID = :key")
     fun get(key: Long): AlertModel?
 
@@ -22,5 +22,5 @@ interface AlertDatabaseDao {
     fun clear()
 
     @Query("SELECT * FROM alerts_table ORDER BY alertID DESC")
-    fun getAllNights(): LiveData<List<AlertModel>>
+    fun getAllAlerts(): LiveData<List<AlertModel>>
 }
