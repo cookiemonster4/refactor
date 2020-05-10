@@ -22,7 +22,6 @@ import com.elyonut.wow.analysis.*
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
-import com.elyonut.wow.interfaces.LocationChangedReceiver
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.RiskStatus
 import com.elyonut.wow.model.Threat
@@ -59,8 +58,7 @@ import kotlin.collections.toTypedArray
 
 private const val RECORD_REQUEST_CODE = 101
 
-class MapViewModel(application: Application) : LocationChangedReceiver,
-    AndroidViewModel(application) {
+class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManual: Boolean = false
     var selectLocationManualConstruction: Boolean = false
     var selectLocationManualCoverage: Boolean = false
@@ -135,7 +133,9 @@ class MapViewModel(application: Application) : LocationChangedReceiver,
         }
 
         locationAdapter!!.startLocationService()
-        locationAdapter!!.subscribeToLocationChanges(this)
+        locationAdapter!!.subscribeToLocationChanges {
+            changeLocation(it)
+        }
         isLocationAdapterInitialized.value = true
     }
 
@@ -698,11 +698,6 @@ class MapViewModel(application: Application) : LocationChangedReceiver,
 
             style.addLayerAt(layer, style.layers.size - 1)
         }
-    }
-
-    // TODO Probably move to threat...
-    override fun onLocationChanged(newLocation: Location) {
-        changeLocation(newLocation)
     }
 
     fun clean() {

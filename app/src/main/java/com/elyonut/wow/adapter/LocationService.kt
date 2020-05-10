@@ -8,7 +8,6 @@ import androidx.core.content.ContextCompat
 import com.elyonut.wow.R
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
-import com.elyonut.wow.interfaces.LocationChangedReceiver
 import com.mapbox.android.core.location.*
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
@@ -32,7 +31,8 @@ class LocationService(
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var locationEngine: LocationEngine =
         LocationEngineProvider.getBestLocationEngine(context)
-    val locationChangedSubscribers = mutableListOf<LocationChangedReceiver>()
+//    val locationChangedSubscribers = mutableListOf<LocationChangedReceiver>()
+    val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
     private var callback = LocationUpdatesCallback(this)
 
     init {//???
@@ -78,11 +78,11 @@ class LocationService(
         locationEngine.getLastLocation(callback)
     }
 
-    override fun subscribeToLocationChanges(locationChangedSubscriber: LocationChangedReceiver) {
+    override fun subscribeToLocationChanges(locationChangedSubscriber: (Location) -> Unit) {
         locationChangedSubscribers.add(locationChangedSubscriber)
     }
 
-    override fun unsubscribeFromLocationChanges(locationChangedSubscriber: LocationChangedReceiver) {
+    override fun unsubscribeFromLocationChanges(locationChangedSubscriber: (Location) -> Unit) {
         locationChangedSubscribers.remove(locationChangedSubscriber)
     }
 
@@ -114,7 +114,7 @@ class LocationService(
             logger?.info("Location changed!")
             locationServiceWeakReference.get()?.lastUpdatedLocation = location
             locationServiceWeakReference.get()?.locationChangedSubscribers?.forEach {
-                it.onLocationChanged(location)
+                it(location)
             }
             locationServiceWeakReference.get()?.locationComponent?.forceLocationUpdate(location)
         }

@@ -6,7 +6,7 @@ interface ILocationService {
     fun startLocationService()
     fun isGpsEnabled(): Boolean
     fun cleanLocationService()
-    fun getCurrentLocation() : Location?
-    fun subscribeToLocationChanges(locationChangedSubscriber: LocationChangedReceiver)
-    fun unsubscribeFromLocationChanges(locationChangedSubscriber: LocationChangedReceiver)
+    fun getCurrentLocation(): Location?
+    fun subscribeToLocationChanges(locationChangedSubscriber: (Location) -> Unit)
+    fun unsubscribeFromLocationChanges(locationChangedSubscriber: (Location) -> Unit)
 }
