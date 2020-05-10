@@ -59,7 +59,8 @@ import kotlin.collections.toTypedArray
 
 private const val RECORD_REQUEST_CODE = 101
 
-class MapViewModel(application: Application) : LocationChangedReceiver, AndroidViewModel(application) {
+class MapViewModel(application: Application) : LocationChangedReceiver,
+    AndroidViewModel(application) {
     var selectLocationManual: Boolean = false
     var selectLocationManualConstruction: Boolean = false
     var selectLocationManualCoverage: Boolean = false
@@ -113,7 +114,6 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
 
-    // TODO move to locationAdapter
     private fun locationSetUp() {
         if (permissions.isLocationPermitted()) {
             startLocationService()
@@ -122,7 +122,6 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         }
     }
 
-    // TODO move to locationAdapter
     @SuppressLint("MissingPermission")
     fun startLocationService() {
         locationAdapter =
@@ -706,16 +705,6 @@ class MapViewModel(application: Application) : LocationChangedReceiver, AndroidV
         changeLocation(newLocation)
     }
 
-    fun filterLayerByAllTypes(shouldFilter: Boolean) {
-        val types =
-            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
-        val filters = types?.map { type -> Pair(type, shouldFilter) }
-        val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
-
-        filters?.forEach {
-            addFilterToLayer(it, layer!!)
-        }
-        
     fun clean() {
         locationAdapter?.cleanLocationService()
     }

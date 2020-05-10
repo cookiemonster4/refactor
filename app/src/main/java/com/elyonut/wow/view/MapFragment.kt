@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -653,21 +652,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             activity!!.supportFragmentManager.beginTransaction()
                 .remove(fragment).commit()
         }
-    }
-
-    private fun visualizeThreats(features: List<Feature>) {
-        val loadedMapStyle = map.style
-
-        if (loadedMapStyle == null || !loadedMapStyle.isFullyLoaded) {
-            return
-        }
-
-        loadedMapStyle.removeLayer("threat-source-layer")
-        loadedMapStyle.removeSource("threat-source")
-
-        val selectedBuildingSource =
-            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
-        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
     }
 
     override fun onAttach(context: Context) {
