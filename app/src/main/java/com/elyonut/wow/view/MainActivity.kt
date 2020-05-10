@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity(),
     private fun setObservers() {
         mainViewModel.chosenLayerId.observe(this, Observer<String> {
             mainViewModel.chosenLayerId.value?.let {
-                sharedViewModel.selectedLayerId.value = it
+                sharedViewModel.selectedLayerId.postValue(it)
             }
         })
 
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity(),
             AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle(getString(R.string.area_not_defined))
                 .setPositiveButton(getString(R.string.yes_hebrew)) { _, _ ->
-                    mainViewModel.shouldDefineArea.value = true
+                    mainViewModel.shouldDefineArea.value = true // Should be encapsulated
                 }.setNegativeButton(getString(R.string.no_thanks_hebrew)) { dialog, _ ->
                     dialog.cancel()
                 }.show()
