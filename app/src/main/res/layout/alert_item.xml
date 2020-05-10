@@ -26,8 +26,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="5dp"
-            card_view:cardCornerRadius="2dp"
             android:background="@{alert.isRead ? android.graphics.Color.WHITE : @color/unreadMessage}"
+            card_view:cardCornerRadius="2dp"
             card_view:contentPadding="10dp">
 
             <RelativeLayout
@@ -110,9 +110,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:onClick="@{() -> clickListener.onAcceptClick(alert)}"
                                 android:text="סמן כנקרא"
                                 android:textAlignment="center"
-                                android:onClick="@{() -> clickListener.onAcceptClick(alert)}"
                                 android:textColor="@color/color_gray" />
                         </LinearLayout>
 
