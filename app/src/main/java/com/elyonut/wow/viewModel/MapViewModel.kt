@@ -24,6 +24,7 @@ import com.elyonut.wow.analysis.*
 import com.elyonut.wow.interfaces.ILocationManager
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
+import com.elyonut.wow.interfaces.LocationChangedReceiver
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.RiskStatus
 import com.elyonut.wow.model.Threat
@@ -62,7 +63,7 @@ import kotlin.collections.toTypedArray
 
 private const val RECORD_REQUEST_CODE = 101
 
-class MapViewModel(application: Application) : AndroidViewModel(application) {
+class MapViewModel(application: Application) : LocationChangedReceiver, AndroidViewModel(application) {
     var selectLocationManual: Boolean = false
     var selectLocationManualConstruction: Boolean = false
     var selectLocationManualCoverage: Boolean = false
@@ -97,7 +98,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
-    var locationObserver: Observer<Location?>? = null
 
     init {
         logger.initLogger()
@@ -139,12 +139,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         locationAdapter!!.startLocationService()
-        locationObserver = Observer<Location?> {
-            if (it != null) {
-                changeLocation(it)
-            }
-        }
-        locationAdapter!!.getCurrentLocation().observeForever(locationObserver!!)
+        locationAdapter!!.subscribe(this)
+//        locationObserver = Observer<Location?> {
+//            if (it != null) {
+//                changeLocation(it)
+//            }
+//        }
+//        locationAdapter!!.getCurrentLocation().observeForever(locationObserver!!)
         isLocationAdapterInitialized.value = true
     }
 
@@ -304,6 +305,54 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun setLayerVisibility(layerId: String, visibility: PropertyValue<String>) {
         val layer = map.style?.getLayer(layerId)
         layer?.setProperties(visibility)
+    }
+
+    // TODO remove filter
+    fun applyFilter(
+        loadedStyle: Style,
+        layerId: String,
+        propertyId: String,
+        isStringType: Boolean,
+        numericType: NumericFilterTypes,
+        stringValue: String,
+        specificValue: Number,
+        minValue: Number,
+        maxValue: Number
+    ) {
+        if (isStringType) {
+            FilterHandler.filterLayerByStringProperty(loadedStyle, layerId, propertyId, stringValue)
+        } else {
+            when (numericType) {
+                NumericFilterTypes.RANGE -> {
+                    FilterHandler.filterLayerByNumericRange(
+                        loadedStyle,
+                        layerId,
+                        propertyId,
+                        minValue,
+                        maxValue
+                    )
+                }
+                NumericFilterTypes.LOWER -> {
+                    FilterHandler.filterLayerByMaxValue(loadedStyle, layerId, propertyId, maxValue)
+                }
+                NumericFilterTypes.GREATER -> {
+                    FilterHandler.filterLayerByMinValue(loadedStyle, layerId, propertyId, minValue)
+                }
+                NumericFilterTypes.SPECIFIC -> {
+                    FilterHandler.filterLayerBySpecificNumericProperty(
+                        loadedStyle,
+                        layerId,
+                        propertyId,
+                        specificValue
+                    )
+                }
+            }
+        }
+    }
+
+    // TODO remove filter
+    fun removeFilter(style: Style, layerId: String) {
+        FilterHandler.removeFilter(style, layerId)
     }
 
     fun filterLayerByType(newFilter: Pair<String, Boolean>) {
@@ -568,10 +617,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
     }
+    // End of beloved uniqAI onMapClick
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
-        val location = locationAdapter?.getCurrentLocation()!!.value
+        val location = locationAdapter?.getCurrentLocation()
         val currentLocation = LatLng(location!!.latitude, location.longitude)
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
@@ -613,8 +663,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             val cameraLocation =
                 LatLng(map.cameraPosition.target.latitude, map.cameraPosition.target.longitude)
             val currentLocation = LatLng(
-                locationAdapter?.getCurrentLocation()!!.value!!.latitude,
-                locationAdapter?.getCurrentLocation()!!.value!!.longitude
+                locationAdapter?.getCurrentLocation()!!.latitude,
+                locationAdapter?.getCurrentLocation()!!.longitude
             )
 
             isFocusedOnLocation.value =
@@ -652,12 +702,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // TODO Probably move to threat...
+    override fun onLocationChanged(newLocation: Location) {
+        changeLocation(newLocation)
+    }
+
     fun clean() {
         locationAdapter?.cleanLocation()
-
-        if (locationObserver != null) {
-            locationAdapter!!.getCurrentLocation().removeObserver(locationObserver!!)
-        }
     }
 }
 

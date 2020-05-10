@@ -9,6 +9,16 @@
         </menu>
     </item>
     <item
+        android:id="@+id/filterButton"
+        android:title="filter" />
+    <item android:title="סינון חדש">
+        <menu>
+            <group
+                android:id="@+id/filter_options"
+                android:checkableBehavior="all" />
+        </menu>
+    </item>
+    <item
         android:id="@+id/settings"
         android:title="הגדרות">
         <menu>

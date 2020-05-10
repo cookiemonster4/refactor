@@ -5,18 +5,18 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.R
 import com.elyonut.wow.interfaces.ILocationManager
+import com.elyonut.wow.interfaces.ILogger
+import com.elyonut.wow.interfaces.LocationChangedReceiver
 import com.mapbox.android.core.location.*
-import com.mapbox.mapboxsdk.location.LocationComponent
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import java.lang.ref.WeakReference
+import kotlin.math.log
 
 // Const values
 private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
@@ -25,15 +25,22 @@ private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 class LocationAdapter(
     private var context: Context,
     var map: MapboxMap
-) :
-    ILocationManager {
-    private var lastUpdatedLocation: MutableLiveData<Location> = MutableLiveData()
-    var locationComponent = map.locationComponent
+) : ILocationManager {
+    private val logger: ILogger = TimberLogAdapter()
+    private var lastUpdatedLocation: Location? = null
+    private var locationComponent = map.locationComponent
     private var locationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var locationEngine: LocationEngine =
         LocationEngineProvider.getBestLocationEngine(context)
+    val locationChangedSubscribers = mutableListOf<LocationChangedReceiver>()
     private var callback = LocationUpdatesCallback(this)
+
+    init {//???
+        logger.initLogger()
+    }
+
+    override fun getCurrentLocation() = lastUpdatedLocation
 
     override fun isGpsEnabled(): Boolean {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -57,10 +64,7 @@ class LocationAdapter(
         }
 
         initLocationEngine(context)
-    }
-
-    override fun getCurrentLocation(): LiveData<Location?> {
-        return lastUpdatedLocation
+        logger.info("location engine initialized")
     }
 
     @SuppressLint("MissingPermission")
@@ -71,19 +75,28 @@ class LocationAdapter(
             .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
             .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME).build()
 
-
         locationEngine.requestLocationUpdates(request, callback, context.mainLooper)
         locationEngine.getLastLocation(callback)
     }
 
+    override fun subscribe(locationChangedSubscriber: LocationChangedReceiver) {
+        locationChangedSubscribers.add(locationChangedSubscriber)
+    }
+
+    override fun unsubscribe(locationChangedSubscriber: LocationChangedReceiver) {
+        locationChangedSubscribers.remove(locationChangedSubscriber)
+    }
+
     override fun cleanLocation() {
         locationEngine.removeLocationUpdates(callback)
+        locationChangedSubscribers.clear()
     }
 
     private class LocationUpdatesCallback(locationAdapter: LocationAdapter) :
         LocationEngineCallback<LocationEngineResult> {
         private var locationAdapterWeakReference: WeakReference<LocationAdapter> =
             WeakReference(locationAdapter)
+        val logger = locationAdapterWeakReference.get()?.logger
 
         override fun onSuccess(result: LocationEngineResult?) {
 
@@ -92,25 +105,26 @@ class LocationAdapter(
 
             // don't recalculate if staying in the same location
             if (lastUpdatedLocation != null) {
-                if (lastUpdatedLocation.value != null) {
-                    if (lastUpdatedLocation.value!!.longitude == location.longitude &&
-                        lastUpdatedLocation.value!!.latitude == location.latitude
-                    ) {
-                        return
-                    }
+                if (lastUpdatedLocation.longitude == location.longitude &&
+                    lastUpdatedLocation.latitude == location.latitude
+                ) {
+                    return
                 }
             }
 
-            lastUpdatedLocation?.value = location
+            logger?.info("Location changed!")
+            locationAdapterWeakReference.get()?.lastUpdatedLocation = location
+            locationAdapterWeakReference.get()?.locationChangedSubscribers?.forEach {
+                it.onLocationChanged(location)
+            }
             locationAdapterWeakReference.get()?.locationComponent?.forceLocationUpdate(location)
         }
 
         override fun onFailure(exception: java.lang.Exception) {
             val locationComponent = locationAdapterWeakReference.get()?.locationComponent
             if (locationComponent != null) {
-                //log
+                logger?.error(exception.message + exception.stackTrace)
             }
         }
     }
-
 }
