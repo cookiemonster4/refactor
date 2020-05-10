@@ -154,9 +154,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             this,
             Observer {
                 observeRiskStatus(it)
-//                if (it) {
-//                    initLocationObserver()
-//                }
             })
 
         mapViewModel.threatAlerts.observe(this, Observer {
