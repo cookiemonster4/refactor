@@ -256,8 +256,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         loadedMapStyle.addSource(
             GeoJsonSource(
                 Constants.THREAT_COVERAGE_SOURCE_ID
-                // TODO check if needed
-                // getCoveragePointsJson()
             )
         )
 

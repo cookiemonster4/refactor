@@ -31,12 +31,10 @@ class LocationService(
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var locationEngine: LocationEngine =
         LocationEngineProvider.getBestLocationEngine(context)
-
-    //    val locationChangedSubscribers = mutableListOf<LocationChangedReceiver>()
     val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
     private var callback = LocationUpdatesCallback(this)
 
-    init {//???
+    init { // Temp until we make it a singleton ot use Dagger
         logger.initLogger()
     }
 
