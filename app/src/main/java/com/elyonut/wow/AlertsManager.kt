@@ -7,7 +7,6 @@ import com.elyonut.wow.database.AlertDatabaseDao
 import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.utilities.Constants
 import kotlinx.coroutines.*
-import java.util.*
 
 class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 //    var alerts = MutableLiveData<LinkedList<AlertModel>>()
@@ -74,6 +73,8 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 
         uiScope.launch {
             delete(alert)
+            shouldRemoveAlert.value = true
+            shouldPopAlert.value = true
         }
     }
 
@@ -88,7 +89,7 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     }
 
     private fun updateAlertsList() {
-        alerts.value = alerts.value
+//        alerts.value = alerts.value
     }
 
     private fun sendBroadcastIntent(actionName: String, threatId: String, alertID: Int) {
@@ -100,14 +101,26 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         this.context.sendBroadcast(actionIntent)
     }
 
-    fun updateMessageAccepted(messageID: String) {
-        val alert = alerts.value?.find { it.threatId == messageID }
+    fun updateMessageAccepted(threatID: String) {
+        val alert = alerts.value?.find { it.threatId == threatID }
 
-        if (alert != null) {
-            alert.isRead = true
+        alert?.let {
+            uiScope.launch {
+                alert.isRead = true
+                update(alert)
+                isAlertAccepted.value = true
+            }
         }
 
-        updateAlertsList()
-        isAlertAccepted.value = true
+//        if (alert != null) {
+//            alert.isRead = true
+//        }
+//
+//        updateAlertsList()
+//        isAlertAccepted.value = true
+    }
+
+    fun clearJob() { // TODO cancel job
+        job.cancel()
     }
 }
