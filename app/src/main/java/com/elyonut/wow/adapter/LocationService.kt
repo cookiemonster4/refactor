@@ -31,7 +31,8 @@ class LocationService(
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var locationEngine: LocationEngine =
         LocationEngineProvider.getBestLocationEngine(context)
-//    val locationChangedSubscribers = mutableListOf<LocationChangedReceiver>()
+
+    //    val locationChangedSubscribers = mutableListOf<LocationChangedReceiver>()
     val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
     private var callback = LocationUpdatesCallback(this)
 
@@ -98,17 +99,14 @@ class LocationService(
         val logger = locationServiceWeakReference.get()?.logger
 
         override fun onSuccess(result: LocationEngineResult?) {
-
             val location: Location = result?.lastLocation ?: return
             val lastUpdatedLocation = locationServiceWeakReference.get()?.lastUpdatedLocation
 
             // don't recalculate if staying in the same location
-            if (lastUpdatedLocation != null) {
-                if (lastUpdatedLocation.longitude == location.longitude &&
-                    lastUpdatedLocation.latitude == location.latitude
-                ) {
-                    return
-                }
+            if (lastUpdatedLocation?.longitude == location.longitude &&
+                lastUpdatedLocation.latitude == location.latitude
+            ) {
+                return
             }
 
             logger?.info("Location changed!")
