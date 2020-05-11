@@ -92,7 +92,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var calcThreatCoverageTask: CalcThreatCoverageAsync? = null
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
-    var isFocusedOnLocation = MutableLiveData<Boolean>()
+    var isFocusedOnMyLocation = MutableLiveData<Boolean>()
     var shouldDisableAreaSelection = MutableLiveData<Boolean>()
 
     init {
@@ -663,7 +663,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 locationAdapter?.getCurrentLocation()!!.longitude
             )
 
-            isFocusedOnLocation.value =
+            isFocusedOnMyLocation.value =
                 cameraLocation.distanceTo(currentLocation) <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION
         }
     }
