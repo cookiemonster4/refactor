@@ -1,49 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_margin="5dp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
-        android:id="@+id/map_item_frame"
+    <data>
+
+        <variable
+            name="mapLayer"
+            type="com.elyonut.wow.model.MapLayer" />
+        
+      <variable
+          name="clickListener"
+          type="com.elyonut.wow.adapter.MapLayersAdapter.MapLayerClickListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_margin="5dp"
+        android:orientation="vertical">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/map_item_card"
+        <FrameLayout
+            android:id="@+id/map_item_frame"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="1dp"
-            app:cardCornerRadius="5dp"
-            app:cardElevation="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:onClick="@{() -> clickListener.onClick(mapLayer)}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/map_type_image"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:cropToPadding="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/map"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/map_item_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="2dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"></ImageView>
-        </androidx.cardview.widget.CardView>
-    </FrameLayout>
+                app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/map_type_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/map_item_frame"
-        android:text="map"></TextView>
+                <ImageView
+                    android:id="@+id/map_type_image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:cropToPadding="true"
+                    android:scaleType="centerCrop"
+                    android:imageUrl="@{mapLayer.image}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.cardview.widget.CardView>
+        </FrameLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/map_type_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{mapLayer.name}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/map_item_frame" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -4,80 +4,76 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.appcompat.widget.AppCompatImageButton
-import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.R
+import com.elyonut.wow.databinding.AlertItemBinding
 import com.elyonut.wow.interfaces.OnClickInterface
 import com.elyonut.wow.model.AlertModel
-import com.elyonut.wow.view.AlertsFragment
-import com.squareup.picasso.Picasso
 import java.util.*
 
 class AlertsAdapter(
     var context: Context,
-    alerts: LinkedList<AlertModel>,
-    onClickHandler: OnClickInterface
+    private val clickListener: AlertClickListener
 ) : RecyclerView.Adapter<AlertsAdapter.AlertsViewHolder>() {
 
-    var alerts = LinkedList<AlertModel>()
-    var onClickInterface: OnClickInterface
-
-    init {
-        this.alerts = alerts
-        this.onClickInterface = onClickHandler
-    }
-
-    inner class AlertsViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
-        init {
-            val deleteAlert: AppCompatImageButton = view.findViewById(R.id.deleteAlert)
-            val zoomLocationButton: TextView = view.findViewById(R.id.zoomToLocation)
-            val alertAcceptedButton: TextView = view.findViewById(R.id.alertAccepted)
-
-            deleteAlert.setOnClickListener(this)
-            zoomLocationButton.setOnClickListener(this)
-            alertAcceptedButton.setOnClickListener(this)
+    var data = listOf<AlertModel>()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
         }
 
-        override fun onClick(p0: View?) {
-            onClickInterface.setClick(p0!!, this.adapterPosition)
+    override fun getItemCount() = data.size
+
+    class AlertsViewHolder private constructor(private val binding: AlertItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(
+            item: AlertModel,
+            context: Context,
+            clickListener: AlertClickListener
+        ) {
+            binding.alert = item
+            binding.clickListener = clickListener
+
+            if (!item.isRead) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    binding.cardView.setCardBackgroundColor(context.getColor(R.color.unreadMessage))
+                }
+            } else {
+                binding.cardView.setCardBackgroundColor(Color.WHITE)
+            }
         }
 
-        val alertMessage: TextView? = view.findViewById(R.id.alert_message)
-        val alertImage: ImageView? = view.findViewById(R.id.alert_image)
-        val currentTime: TextView? = view.findViewById(R.id.current_time)
-        val cardView: CardView? = view.findViewById(R.id.card_view)
+        companion object {
+            fun from(parent: ViewGroup): AlertsViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding =
+                    AlertItemBinding.inflate(layoutInflater, parent, false)
+                return AlertsViewHolder(binding)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlertsViewHolder {
-        return AlertsViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.alert_item,
-                parent,
-                false
-            )
-        )
-    }
-
-    override fun getItemCount(): Int {
-        return alerts.count()
+        return AlertsViewHolder.from(parent)
     }
 
     override fun onBindViewHolder(holder: AlertsViewHolder, position: Int) {
-        holder.alertMessage?.text = alerts[position].message
-        Picasso.with(context).load(alerts[position].image).into(holder.alertImage)
-        holder.currentTime?.text = alerts[position].time
+        val item = data[position]
+        holder.bind(item, context, clickListener)
+    }
 
-        if (!alerts[position].isRead) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                holder.cardView?.setCardBackgroundColor(context.getColor(R.color.unreadMessage))
-            }
-        } else {
-            holder.cardView?.setCardBackgroundColor(Color.WHITE)
-        }
+    class AlertClickListener(
+        val deleteClickListener: (alert: AlertModel) -> Unit,
+        val zoomClickListener: (alert: AlertModel) -> Unit,
+        val acceptClickListener: (alert: AlertModel) -> Unit
+    ) {
+        fun onDeleteClick(alert: AlertModel) = deleteClickListener(alert)
+        fun onZoomClick(alert: AlertModel) = zoomClickListener(alert)
+        fun onAcceptClick(alert: AlertModel) = acceptClickListener(alert)
     }
 }
+

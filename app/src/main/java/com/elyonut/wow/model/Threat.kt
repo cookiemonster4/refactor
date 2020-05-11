@@ -6,6 +6,7 @@ import android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE
 import com.mapbox.geojson.Feature
 
 class Threat() : Parcelable {
+    var id: String = ""
     var name: String = ""
     var description: String = ""
     var level: ThreatLevel = ThreatLevel.None
@@ -18,8 +19,14 @@ class Threat() : Parcelable {
     var azimuth: Double = 0.0
     var type: String = ""
     var height: Double = 0.0
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
+    var eAmount: String = ""
+    var knowledgeType: String = ""
+    var range: Double = 0.0
 
     constructor(parcel: Parcel) : this() {
+        id = parcel.readString()
         name = parcel.readString()
         description = parcel.readString()
         creator = parcel.readString()
@@ -32,9 +39,15 @@ class Threat() : Parcelable {
         azimuth = parcel.readDouble()
         type = parcel.readString()
         height = parcel.readDouble()
+        latitude = parcel.readDouble()
+        longitude = parcel.readDouble()
+        eAmount = parcel.readString()
+        knowledgeType = parcel.readString()
+        range = parcel.readDouble()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(id)
         parcel.writeString(name)
         parcel.writeString(description)
         parcel.writeString(creator)
@@ -47,6 +60,11 @@ class Threat() : Parcelable {
         parcel.writeDouble(azimuth)
         parcel.writeString(type)
         parcel.writeDouble(height)
+        parcel.writeDouble(latitude)
+        parcel.writeDouble(longitude)
+        parcel.writeString(eAmount)
+        parcel.writeString(knowledgeType)
+        parcel.writeDouble(range)
     }
 
     override fun describeContents(): Int {

@@ -7,8 +7,8 @@ import com.elyonut.wow.AlertsManager
 import com.elyonut.wow.interfaces.OnClickInterface
 import com.elyonut.wow.view.AlertsFragment
 
-class AlertsViewModelFactory(val application: Application, var alertsManager: AlertsManager, var onClickHandler: OnClickInterface): ViewModelProvider.Factory {
+class AlertsViewModelFactory(val application: Application, var alertsManager: AlertsManager): ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return  AlertsViewModel(application, alertsManager, onClickHandler) as T
+        return  AlertsViewModel(application, alertsManager) as T
     }
 }
