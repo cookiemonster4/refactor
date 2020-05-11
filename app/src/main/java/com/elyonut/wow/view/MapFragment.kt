@@ -25,6 +25,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import com.elyonut.wow.*
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
@@ -71,7 +72,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     private lateinit var alertsManager: AlertsManager
     private lateinit var binding: FragmentMapBinding
     private lateinit var areaSelectionBinding: AreaSelectionBinding
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -122,7 +122,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO maybe change to init drawings + should the map be responsibe? or other class
     private fun initArea() {
         if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // TODO Should be encapsulated
+            mapViewModel.areaOfInterest.value =
+                sharedViewModel.areaOfInterest // TODO Should be encapsulated
 
             val polygonPoints = ArrayList<Point>()
             sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
@@ -146,10 +147,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 requestPermissions()
             }
         })
-        mapViewModel.selectedBuildingId.observe(
-            this,
-            Observer { showDescriptionFragment() }
-        )
+        mapViewModel.navigateToMapFragment.observe(
+            viewLifecycleOwner,
+            Observer { navigateToDataCardFragment(it) })
+//        mapViewModel.selectedBuildingId.observe(
+//            this,
+//            Observer { showDescriptionFragment() }
+//        )
         mapViewModel.isLocationAdapterInitialized.observe(
             this,
             Observer {
@@ -215,7 +219,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             }
         })
 
-        sharedViewModel.shoulRemoveSelectedBuildingLayer.observe(
+        sharedViewModel.shouldRemoveSelectedBuildingLayer.observe(
             this,
             Observer { shouldRemoveLayer ->
                 if (shouldRemoveLayer) {
@@ -248,7 +252,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             if (shouldSendAlert(threat.feature.id()!!)) {
 
                 val message =
-                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.feature.id()!!)
+                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(
+                        threat.feature.id()!!
+                    )
                 val featureType =
                     threat.type
                 addAlertToContainer(
@@ -512,15 +518,17 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     val bundle = Bundle()
                     bundle.putParcelable("threat", threat)
 
+                    mapViewModel.buildingClicked(threat)
+
                     // take to function!
-                    val dataCardFragmentInstance = DataCardFragment.newInstance()
-                    dataCardFragmentInstance.arguments = bundle
-                    activity!!.supportFragmentManager.beginTransaction().replace(
-                        R.id.fragmentParent,
-                        dataCardFragmentInstance
-                    ).commit()
-                    activity!!.supportFragmentManager.fragments
-                    activity!!.supportFragmentManager.fragments
+//                    val dataCardFragmentInstance = DataCardFragment.newInstance()
+//                    dataCardFragmentInstance.arguments = bundle
+//                    activity!!.supportFragmentManager.beginTransaction().replace(
+//                        R.id.fragmentParent,
+//                        dataCardFragmentInstance
+//                    ).commit()
+//                    activity!!.supportFragmentManager.fragments
+//                    activity!!.supportFragmentManager.fragments
                 }
             }
         }
@@ -543,6 +551,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         val selectedBuildingSource =
             loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
         selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
+    }
+
+    fun navigateToDataCardFragment(threat: Threat) {
+        val bundle = Bundle()
+        bundle.putParcelable("threat", threat)
+        this.findNavController().navigate(R.id.dataCardFragment, bundle)
+//            .navigate(MapFragmentDirections.actionMapFragmentToDataCardFragment(threat))
+        mapViewModel.doneNavigating()
     }
 
     // TODO rename

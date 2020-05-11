@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
@@ -42,7 +43,8 @@ class DataCardFragment : Fragment() {
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
-        val threat: Threat = arguments!!.getParcelable("threat")!!
+//        val threat: Threat = arguments!!.getParcelable("threat")!!
+        val threat: Threat = DataCardFragmentArgs.fromBundle(arguments!!).building
 
         binding.threat = threat
         binding.dataCardViewModel = dataCardViewModel
@@ -57,7 +59,7 @@ class DataCardFragment : Fragment() {
     }
 
     private fun initBuildingStateColor(threat: Threat) {
-            binding.buildingStateColor.background.setColorFilter(
+        binding.buildingStateColor.background.setColorFilter(
             Threat.color(threat),
             PorterDuff.Mode.MULTIPLY
         )
@@ -69,6 +71,11 @@ class DataCardFragment : Fragment() {
             Observer { extendDataCard() })
         dataCardViewModel.shouldCloseCard.observe(viewLifecycleOwner, Observer {
             closeCard()
+        })
+        dataCardViewModel.navigateToMapFragment.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                navigateToMapFragment()
+            }
         })
     }
 
@@ -91,6 +98,13 @@ class DataCardFragment : Fragment() {
             ?.commit()
     }
 
+    private fun navigateToMapFragment() {
+        sharedViewModel.shouldRemoveSelectedBuildingLayer(true)
+        this.findNavController()
+            .navigate(DataCardFragmentDirections.actionDataCardFragmentToMapFragment())
+        dataCardViewModel.doneNavigating()
+    }
+
     private fun initClosingCard() {
         initCloseCardButton()
         initFlingCloseListener()
@@ -98,7 +112,8 @@ class DataCardFragment : Fragment() {
 
     private fun initCloseCardButton() {
         binding.closeButton.setOnClickListener {
-            onCloseCard()
+            dataCardViewModel.onCloseClicked()
+//            onCloseCard()
         }
     }
 
@@ -107,12 +122,14 @@ class DataCardFragment : Fragment() {
             OnSwipeTouchListener(this@DataCardFragment.context!!) {
             override fun onSwipeRight() {
                 super.onSwipeRight()
-                onCloseCard()
+                dataCardViewModel.onSwiftLeftOrRight()
+//                onCloseCard()
             }
 
             override fun onSwipeLeft() {
                 super.onSwipeLeft()
-                onCloseCard()
+                dataCardViewModel.onSwiftLeftOrRight()
+//                onCloseCard()
             }
         })
 
@@ -120,7 +137,7 @@ class DataCardFragment : Fragment() {
 
     private fun onCloseCard() {
         dataCardViewModel.close()
-        sharedViewModel.shoulRemoveSelectedBuildingLayer.value = true
+        sharedViewModel.shouldRemoveSelectedBuildingLayer(true)
     }
 
     override fun onAttach(context: Context) {

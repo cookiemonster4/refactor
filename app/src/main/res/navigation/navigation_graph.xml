@@ -8,5 +8,23 @@
         android:id="@+id/map_fragment"
         android:name="com.elyonut.wow.view.MapFragment"
         tools:layout="@layout/fragment_map">
+        <action
+            android:id="@+id/action_map_fragment_to_dataCardFragment"
+            app:destination="@id/dataCardFragment" >
+            <argument
+                android:name="building"
+                app:argType="com.elyonut.wow.model.Threat"/>
+        </action>
+    </fragment>
+    <fragment
+        android:id="@+id/dataCardFragment"
+        android:name="com.elyonut.wow.view.DataCardFragment"
+        android:label="DataCardFragment" >
+        <action
+            android:id="@+id/action_dataCardFragment_to_map_fragment"
+            app:destination="@id/map_fragment" />
+        <argument
+            android:name="building"
+            app:argType="com.elyonut.wow.model.Threat" />
     </fragment>
 </navigation>

@@ -2,6 +2,7 @@ package com.elyonut.wow.viewModel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.AlertsManager
 import com.elyonut.wow.utilities.Constants
@@ -34,16 +35,27 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     val chosenTypeToFilter = MutableLiveData<Pair<String, Boolean>>()
     val isSelectAllChecked = MutableLiveData<Boolean>()
     val mapStyleURL = MutableLiveData<String>()
-    val shoulRemoveSelectedBuildingLayer = MutableLiveData<Boolean>()
+    private val _shouldRemoveSelectedBuildingLayer = MutableLiveData<Boolean>()
+    val shouldRemoveSelectedBuildingLayer: LiveData<Boolean>
+        get() = _shouldRemoveSelectedBuildingLayer
 
-    fun applySaveCoverageSettingsButtonClicked(coverageRange: Double, resolution: Double, height: Double?, heightChecked: Boolean) {
+    fun applySaveCoverageSettingsButtonClicked(
+        coverageRange: Double,
+        resolution: Double,
+        height: Double?,
+        heightChecked: Boolean
+    ) {
         this.coverageRangeMeters = coverageRange
         this.coverageResolutionMeters = resolution
 
-        if(height!= null){
+        if (height != null) {
             this.coverageSearchHeightMeters = height
         }
 
         this.coverageSearchHeightMetersChecked = heightChecked
+    }
+
+    fun shouldRemoveSelectedBuildingLayer(shouldRemove: Boolean) {
+        _shouldRemoveSelectedBuildingLayer.postValue(shouldRemove)
     }
 }

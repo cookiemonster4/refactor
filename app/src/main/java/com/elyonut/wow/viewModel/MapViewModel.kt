@@ -94,6 +94,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
     var shouldDisableAreaSelection = MutableLiveData<Boolean>()
+    private val _navigateToDataCardFragment = MutableLiveData<Threat>()
+    val navigateToMapFragment
+        get() = _navigateToDataCardFragment
 
     init {
         logger.initLogger()
@@ -579,6 +582,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
     // End of beloved uniqAI onMapClick
+
+    fun buildingClicked(threat: Threat) {
+        _navigateToDataCardFragment.postValue(threat)
+    }
+
+    fun doneNavigating() {
+        _navigateToDataCardFragment.postValue(null)
+    }
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {

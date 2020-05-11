@@ -10,13 +10,28 @@ import com.elyonut.wow.utilities.BuildingTypeMapping
 class DataCardViewModel(application: Application) : AndroidViewModel(application) {
     var isReadMoreButtonClicked = MutableLiveData<Boolean>()
     var shouldCloseCard = MutableLiveData<Boolean>()
+    private val _navigateToMapFragment = MutableLiveData<Boolean>()
+    val navigateToMapFragment
+        get() = _navigateToMapFragment
 
     init {
-        isReadMoreButtonClicked.value = false
+        isReadMoreButtonClicked.postValue(false)
     }
 
     fun readMoreButtonClicked() {
-        isReadMoreButtonClicked.value = !isReadMoreButtonClicked.value!!
+        isReadMoreButtonClicked.postValue(!isReadMoreButtonClicked.value!!)
+    }
+
+    fun onSwiftLeftOrRight() {
+        _navigateToMapFragment.postValue(true)
+    }
+
+    fun onCloseClicked() {
+        _navigateToMapFragment.postValue(true)
+    }
+
+    fun doneNavigating() {
+        _navigateToMapFragment.postValue(null)
     }
 
     fun close() {
