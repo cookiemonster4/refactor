@@ -122,7 +122,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO maybe change to init drawings + should the map be responsibe? or other class
     private fun initArea() {
         if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // Should be encapsulated
+            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // TODO Should be encapsulated
 
             val polygonPoints = ArrayList<Point>()
             sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
