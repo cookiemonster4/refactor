@@ -20,7 +20,7 @@ class DataCardViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun close() {
-        shouldCloseCard.value = true
+        shouldCloseCard.postValue(true)
     }
 
     fun getRelativeLayoutParams(sizeRelativelyToScreen: Double): FrameLayout.LayoutParams { // TODO Should this be here ???

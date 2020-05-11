@@ -30,36 +30,41 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         when {
             item.groupId == R.id.nav_layers -> {
                 val layerModel = item.actionView.tag as LayerModel
-                chosenLayerId.value = layerModel.id
+                chosenLayerId.postValue(layerModel.id)
                 shouldCloseDrawer = false
             }
             item.itemId == R.id.filterButton -> {
-                filterSelected.value = true
+                filterSelected.postValue(true)
                 shouldCloseDrawer = false
             }
             item.itemId == R.id.select_all -> {
-                isSelectAllChecked.value = (item.actionView as MaterialCheckBox).isChecked
+                isSelectAllChecked.postValue((item.actionView as MaterialCheckBox).isChecked)
             }
             item.groupId == R.id.filter_options -> {
-                chosenTypeToFilter.value = Pair(item.actionView.tag as String, (item.actionView as MaterialCheckBox).isChecked)
+                chosenTypeToFilter.postValue(
+                    Pair(
+                        item.actionView.tag as String,
+                        (item.actionView as MaterialCheckBox).isChecked
+                    )
+                )
                 shouldCloseDrawer = false
             }
             item.groupId == R.id.nav_experiments ->
-                this.selectedExperimentalOption.value = item.itemId
+                this.selectedExperimentalOption.postValue(item.itemId)
             item.itemId == R.id.define_area -> {
                 if (shouldDefineArea.value == null || !shouldDefineArea.value!!) {
-                    shouldDefineArea.value = true
+                    shouldDefineArea.postValue(true)
                 }
             }
             item.itemId == R.id.alerts -> {
-                shouldOpenAlertsFragment.value = true
+                shouldOpenAlertsFragment.postValue(true)
             }
             item.itemId == R.id.coverage_settings -> {
-                coverageSettingsSelected.value = true
+                coverageSettingsSelected.postValue(true)
                 shouldCloseDrawer = false
             }
             item.itemId == R.id.visibility_status -> {
-                shouldOpenThreatsFragment.value = true
+                shouldOpenThreatsFragment.postValue(true)
             }
         }
 

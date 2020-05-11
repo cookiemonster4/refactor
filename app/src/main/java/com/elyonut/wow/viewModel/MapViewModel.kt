@@ -116,7 +116,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         if (permissions.isLocationPermitted()) {
             startLocationService()
         } else {
-            isPermissionRequestNeeded.value = true
+            isPermissionRequestNeeded.postValue(true)
         }
     }
 
@@ -129,7 +129,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
 
         if (!locationAdapter!!.isGpsEnabled()) {
-            isAlertVisible.value = true
+            isAlertVisible.postValue(true)
         }
 
         locationAdapter!!.startLocationService()
@@ -199,12 +199,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             RECORD_REQUEST_CODE -> {
 
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    noPermissionsToast.value =
+                    noPermissionsToast.postValue(
                         Toast.makeText(
                             getApplication(),
                             R.string.permission_not_granted,
                             Toast.LENGTH_LONG
                         )
+                    )
                 } else {
                     startLocationService()
                 }
@@ -348,42 +349,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         addFilterToLayer(newFilter, layer!!)
     }
 
-    fun filterLayerByAllTypes(shouldFilter: Boolean) {
-        val types =
-            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
-        val filters = types?.map { type -> Pair(type, shouldFilter) }
-        val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
-
-        filters?.forEach {
-            addFilterToLayer(it, layer!!)
-        }
-    }
-
-    private fun addFilterToLayer(filter: Pair<String, Boolean>, layer: Layer) {
-        val typeToFilter = filter.first
-        val isChecked = filter.second
-
-        (layer as FillExtrusionLayer).setFilter(
-            if (isChecked) {
-                any(
-                    layer.filter,
-                    all(eq(get("type"), typeToFilter))
-                )
-            } else {
-                if (layer.filter != null) {
-                    all(
-                        layer.filter,
-                        all(neq(get("type"), typeToFilter))
-                    )
-                } else {
-                    all(
-                        all(neq(get("type"), typeToFilter))
-                    )
-                }
-            }
-        )
-    }
-
     // Beginning area of interest
     // TODO maybe rename things (including function)
     // TODO rewrite generic drawing
@@ -453,9 +418,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         lineLayerPointList = currentLineLayerPointList
 
         if (lineLayerPointList.isEmpty()) {
-            areaOfInterest.value = null
+            areaOfInterest.postValue(null)
         } else {
-            areaOfInterest.value = Polygon.fromLngLats(listOf(lineLayerPointList))
+            areaOfInterest.postValue(Polygon.fromLngLats(listOf(lineLayerPointList)))
         }
 
         shouldDisableAreaSelection.value = true
@@ -493,14 +458,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    private fun initCircleSource(loadedMapStyle: Style): GeoJsonSource {
-        val circleFeatureCollection = FeatureCollection.fromFeatures(ArrayList())
-        val circleGeoJsonSource = GeoJsonSource(Constants.CIRCLE_SOURCE_ID, circleFeatureCollection)
-        loadedMapStyle.addSource(circleGeoJsonSource)
-
-        return circleGeoJsonSource
-    }
-
     private fun initCircleLayer(loadedMapStyle: Style) {
         val circleLayer = CircleLayer(
             Constants.CIRCLE_LAYER_ID,
@@ -512,6 +469,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         loadedMapStyle.addLayer(circleLayer)
+    }
+
+    private fun initCircleSource(loadedMapStyle: Style): GeoJsonSource {
+        val circleFeatureCollection = FeatureCollection.fromFeatures(ArrayList())
+        val circleGeoJsonSource = GeoJsonSource(Constants.CIRCLE_SOURCE_ID, circleFeatureCollection)
+        loadedMapStyle.addSource(circleGeoJsonSource)
+
+        return circleGeoJsonSource
     }
 
     private fun initLineSource(loadedMapStyle: Style): GeoJsonSource {
@@ -663,8 +628,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 locationAdapter?.getCurrentLocation()!!.longitude
             )
 
-            isFocusedOnLocation.value =
-                cameraLocation.distanceTo(currentLocation) <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION
+            isFocusedOnLocation.postValue(
+                cameraLocation.distanceTo(currentLocation)
+                        <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION
+            )
         }
     }
 
@@ -700,6 +667,42 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clean() {
         locationAdapter?.cleanLocationService()
+    }
+
+    fun filterLayerByAllTypes(shouldFilter: Boolean) {
+        val types =
+            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
+        val filters = types?.map { type -> Pair(type, shouldFilter) }
+        val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
+
+        filters?.forEach {
+            addFilterToLayer(it, layer!!)
+        }
+    }
+
+    private fun addFilterToLayer(filter: Pair<String, Boolean>, layer: Layer) {
+        val typeToFilter = filter.first
+        val isChecked = filter.second
+
+        (layer as FillExtrusionLayer).setFilter(
+            if (isChecked) {
+                any(
+                    layer.filter,
+                    all(eq(get("type"), typeToFilter))
+                )
+            } else {
+                if (layer.filter != null) {
+                    all(
+                        layer.filter,
+                        all(neq(get("type"), typeToFilter))
+                    )
+                } else {
+                    all(
+                        all(neq(get("type"), typeToFilter))
+                    )
+                }
+            }
+        )
     }
 }
 

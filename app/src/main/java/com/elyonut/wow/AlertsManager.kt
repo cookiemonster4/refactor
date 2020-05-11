@@ -18,8 +18,8 @@ class AlertsManager(var context: Context) {
 
     init {
         alerts.value = LinkedList()
-        shouldPopAlert.value = false
-        shouldRemoveAlert.value = false
+        shouldPopAlert.postValue(false)
+        shouldRemoveAlert.postValue(false)
     }
 
     fun addAlert(alert: AlertModel) {
@@ -29,28 +29,27 @@ class AlertsManager(var context: Context) {
         )
 
         updateAlertsList()
-        isAlertAdded.value = true
-        shouldPopAlert.value = true
-
+        isAlertAdded.postValue(true)
+        shouldPopAlert.postValue(true)
         idCounter++
     }
 
     fun deleteAlert(position: Int) {
         alerts.value?.removeAt(position)
         updateAlertsList()
-        shouldRemoveAlert.value = true
-        shouldPopAlert.value = true
-        deletedAlertPosition.value = position
+        shouldRemoveAlert.postValue(true)
+        shouldPopAlert.postValue(true)
+        deletedAlertPosition.postValue(position)
     }
 
     fun zoomToLocation(alert: AlertModel) {
         sendBroadcastIntent(Constants.ZOOM_LOCATION_ACTION, alert.threatId, alert.alertID)
-        shouldRemoveAlert.value = true
+        shouldRemoveAlert.postValue(true)
     }
 
     fun acceptAlert(alert: AlertModel) {
         sendBroadcastIntent(Constants.ALERT_ACCEPTED_ACTION, alert.threatId, alert.alertID)
-        shouldRemoveAlert.value = true
+        shouldRemoveAlert.postValue(true)
     }
 
     private fun updateAlertsList() {
@@ -74,7 +73,6 @@ class AlertsManager(var context: Context) {
         }
 
         updateAlertsList()
-        isAlertAccepted.value = true
-
+        isAlertAccepted.postValue(true)
     }
 }

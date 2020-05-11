@@ -114,7 +114,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     }
                 }
 
-                alertsManager.shouldPopAlert.value = true
+                alertsManager.shouldPopAlert.postValue(true)
             }
         }
     }
@@ -122,7 +122,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO maybe change to init drawings + should the map be responsibe? or other class
     private fun initArea() {
         if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest
+            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // TODO Should be encapsulated
 
             val polygonPoints = ArrayList<Point>()
             sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
@@ -210,7 +210,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
             if (shouldPop && alertsManager.alerts.value!!.count { !it.isRead } > 0) {
-                alertsManager.shouldPopAlert.value = false
+                alertsManager.shouldPopAlert.postValue(false)
                 setAlertPopUp(alertsManager.alerts.value?.findLast { !it.isRead }!!)
             }
         })
