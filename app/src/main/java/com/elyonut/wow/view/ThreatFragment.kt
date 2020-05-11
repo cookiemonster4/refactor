@@ -6,31 +6,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.R
+import com.elyonut.wow.databinding.FragmentThreatListBinding
 import com.elyonut.wow.model.Threat
 
-/**
- * A fragment representing a list of Items.
- * Activities containing this fragment MUST implement the
- * [ThreatFragment.OnListFragmentInteractionListener] interface.
- */
 class ThreatFragment : Fragment() {
 
-    // TODO: Customize parameters
     private var columnCount = 1
-
     private var listener: OnListFragmentInteractionListener? = null
-
     private lateinit var threatDataset: ArrayList<Threat>
-
     private lateinit var threatsRecyclerView: RecyclerView
     private lateinit var noBuildingsMessage: TextView
     private var layoutManager: RecyclerView.LayoutManager? = null
+    private lateinit var binding: FragmentThreatListBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +39,11 @@ class ThreatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         threatDataset = arguments!!.getParcelableArrayList("threats")
-        val view = inflater.inflate(R.layout.fragment_threat_list, container, false)
+//        val view = inflater.inflate(R.layout.fragment_threat_list, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_threat_list, container, false)
 
-        threatsRecyclerView = view.findViewById(R.id.threat_list)
-        noBuildingsMessage = view.findViewById(R.id.no_buildings_message)
+        threatsRecyclerView = binding.threatList
+        noBuildingsMessage = binding.noBuildingsMessage
 
         threatsRecyclerView.setHasFixedSize(true)
         layoutManager = LinearLayoutManager(context)
@@ -63,15 +58,14 @@ class ThreatFragment : Fragment() {
         threatsRecyclerView.adapter = ThreatRecyclerViewAdapter(threatDataset, listener, context!!)
         setFragmentContent()
 
-        return view
+        return binding.root
     }
 
     private fun setFragmentContent() {
         if (threatDataset.isEmpty()) {
             threatsRecyclerView.visibility = View.GONE
             noBuildingsMessage.visibility = View.VISIBLE
-        }
-        else {
+        } else {
             threatsRecyclerView.visibility = View.VISIBLE
             noBuildingsMessage.visibility = View.GONE
         }
