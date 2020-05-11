@@ -27,6 +27,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.*
+import com.elyonut.wow.database.DB
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
@@ -105,12 +106,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 when (intent.action) {
                     Constants.ZOOM_LOCATION_ACTION -> {
                         mapViewModel.setZoomLocation(intent.getStringExtra("threatID"))
-                        alertsManager.updateMessageAccepted(intent.getStringExtra("threatID"))
+                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                         (context as FragmentActivity).supportFragmentManager.popBackStack()
 
                     }
                     Constants.ALERT_ACCEPTED_ACTION -> {
-                        alertsManager.updateMessageAccepted(intent.getStringExtra("threatID"))
+                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                     }
                 }
 

@@ -141,14 +141,14 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        sharedViewModel.alertsManager.alerts.observe(this, Observer<LinkedList<AlertModel>> {
+        sharedViewModel.alertsManager.alerts.observe(this, Observer<List<AlertModel>> {
             editAlertsBadge(it)
         })
 
         sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
     }
 
-    private fun editAlertsBadge(alerts: LinkedList<AlertModel>) {
+    private fun editAlertsBadge(alerts: List<AlertModel>) {
         val unreadMessages = alerts.count { !it.isRead }
         if (unreadMessages == 0) {
             bottom_navigation.removeBadge(R.id.alerts)

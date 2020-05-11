@@ -86,7 +86,7 @@ class AlertsFragment : Fragment() {
     }
 
     private fun onDeleteClick(alert: AlertModel) {
-        alertsViewModel.deleteAlertClicked(alertsViewModel.getAlerts().value!!.indexOf(alert))
+        alertsViewModel.deleteAlertClicked(alert)
     }
 
     private fun onZoomClick(alert: AlertModel) {

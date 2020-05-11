@@ -7,23 +7,24 @@ import androidx.room.RoomDatabase
 import com.elyonut.wow.model.AlertModel
 
 @Database(entities = [AlertModel::class], version = 1, exportSchema = false)
-abstract class AlertDatabase: RoomDatabase() {
+abstract class DB : RoomDatabase() {
     abstract val alertDatabaseDao: AlertDatabaseDao
 
     companion object {
 
         @Volatile
-        private var INSTANCE: AlertDatabase? = null
+        private var INSTANCE: DB? = null
 
-        fun getInstance(context: Context): AlertDatabase {
+        fun getInstance(context: Context): DB {
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
-                        AlertDatabase::class.java,
-                        "alerts_database").fallbackToDestructiveMigration().build()
+                        DB::class.java,
+                        "app_database"
+                    ).fallbackToDestructiveMigration().build()
 
                     INSTANCE = instance
                 }

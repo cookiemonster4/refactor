@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.AlertsManager
+import com.elyonut.wow.database.DB
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.NumericFilterTypes
 import com.elyonut.wow.model.Threat
@@ -28,7 +29,7 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     var coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
     var coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
     var coverageSearchHeightMetersChecked: Boolean = false
-    var alertsManager = AlertsManager(application)
+    var alertsManager = AlertsManager(application, DB.getInstance(application).alertDatabaseDao)
     var isVisible = MutableLiveData<Boolean>()
     var shouldOpenThreatsFragment = MutableLiveData<Boolean>()
     val chosenTypeToFilter = MutableLiveData<Pair<String, Boolean>>()

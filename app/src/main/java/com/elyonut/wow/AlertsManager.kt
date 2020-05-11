@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.database.AlertDatabaseDao
+import com.elyonut.wow.database.DB
 import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.utilities.Constants
 import kotlinx.coroutines.*
@@ -15,12 +16,13 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     var deletedAlertPosition = MutableLiveData<Int>()
     var shouldPopAlert = MutableLiveData<Boolean>()
     var shouldRemoveAlert = MutableLiveData<Boolean>()
+    var alertToPop = MutableLiveData<AlertModel>()
 //    private var idCounter = 0
 
     //
-    private var job = Job()
-    private val uiScope = CoroutineScope(Dispatchers.Main + job)
-    private val alerts = database.getAllAlerts()
+//    private var job = Job()
+//    private val uiScope = CoroutineScope(Dispatchers.Main + job)
+    val alerts = database.getAllAlerts()
 
     init {
 //        alerts.value = LinkedList()
@@ -30,7 +32,7 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 
     private suspend fun insert(alert: AlertModel) {
         withContext(Dispatchers.IO) {
-            database.insert(alert)
+            DB.getInstance(context.applicationContext).alertDatabaseDao.insert(alert)
         }
     }
 
@@ -47,20 +49,24 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     }
 
     fun addAlert(alert: AlertModel) {
-//        alerts.value?.add(
-//            0,
-//            AlertModel(idCounter, alert.threatId, alert.message, alert.image, alert.time)
-//        )
-//
-//        updateAlertsList()
-//        isAlertAdded.value = true
-//        shouldPopAlert.value = true
-//
-//        idCounter++
-        uiScope.launch {
+//        uiScope.launch {
+//            insert(alert)
+//        }.invokeOnCompletion {
+//            shouldPopAlert.postValue(true)
+//        }
+
+        CoroutineScope(Dispatchers.Main).launch {
             insert(alert)
-            isAlertAdded.value = true
-            shouldPopAlert.value = true
+//            shouldPopAlert.postValue(true)
+            getAlertToPop()
+        }
+    }
+
+    suspend fun getAlertToPop() {
+        withContext(Dispatchers.IO) {
+            if (shouldPopAlert.value!! && alerts.value!!.count { !it.isRead } > 0) {
+                alertToPop.postValue(alerts.value?.findLast { !it.isRead }!!)
+            }
         }
     }
 
@@ -71,11 +77,12 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 //        shouldPopAlert.value = true
 //        deletedAlertPosition.value = position
 
-        uiScope.launch {
-            delete(alert)
-            shouldRemoveAlert.value = true
-            shouldPopAlert.value = true
-        }
+//        uiScope.launch {
+//            delete(alert)
+//        }.invokeOnCompletion {
+//            shouldRemoveAlert.value = true
+//            shouldPopAlert.value = true
+//        }
     }
 
     fun zoomToLocation(alert: AlertModel) {
@@ -101,16 +108,17 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         this.context.sendBroadcast(actionIntent)
     }
 
-    fun updateMessageAccepted(threatID: String) {
-        val alert = alerts.value?.find { it.threatId == threatID }
+    fun updateMessageAccepted(alertId: Int) {
+        val alert = alerts.value?.find { it.alertID == alertId }
 
-        alert?.let {
-            uiScope.launch {
-                alert.isRead = true
-                update(alert)
-                isAlertAccepted.value = true
-            }
-        }
+//        alert?.let {
+//            uiScope.launch {
+//                alert.isRead = true
+//                update(alert)
+//            }.invokeOnCompletion {
+//                isAlertAccepted.value = true
+//            }
+//        }
 
 //        if (alert != null) {
 //            alert.isRead = true
@@ -118,9 +126,5 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 //
 //        updateAlertsList()
 //        isAlertAccepted.value = true
-    }
-
-    fun clearJob() { // TODO cancel job
-        job.cancel()
     }
 }
