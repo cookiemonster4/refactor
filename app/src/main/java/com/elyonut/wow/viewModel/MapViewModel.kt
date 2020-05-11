@@ -349,42 +349,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         addFilterToLayer(newFilter, layer!!)
     }
 
-    fun filterLayerByAllTypes(shouldFilter: Boolean) {
-        val types =
-            layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
-        val filters = types?.map { type -> Pair(type, shouldFilter) }
-        val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
-
-        filters?.forEach {
-            addFilterToLayer(it, layer!!)
-        }
-    }
-
-    private fun addFilterToLayer(filter: Pair<String, Boolean>, layer: Layer) {
-        val typeToFilter = filter.first
-        val isChecked = filter.second
-
-        (layer as FillExtrusionLayer).setFilter(
-            if (isChecked) {
-                any(
-                    layer.filter,
-                    all(eq(get("type"), typeToFilter))
-                )
-            } else {
-                if (layer.filter != null) {
-                    all(
-                        layer.filter,
-                        all(neq(get("type"), typeToFilter))
-                    )
-                } else {
-                    all(
-                        all(neq(get("type"), typeToFilter))
-                    )
-                }
-            }
-        )
-    }
-
     // Beginning area of interest
     // TODO maybe rename things (including function)
     // TODO rewrite generic drawing
