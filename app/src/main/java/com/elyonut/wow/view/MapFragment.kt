@@ -205,7 +205,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
 
         mapViewModel.isFocusedOnMyLocation.observe(this, Observer {
-//            setFocusOnMyLocationButtonIcon(it)
+            setFocusOnMyLocationButtonIcon(it)
         })
 
         alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
