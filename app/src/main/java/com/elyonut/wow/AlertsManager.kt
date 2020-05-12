@@ -62,11 +62,15 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         }
     }
 
-    suspend fun getAlertToPop() {
+    private suspend fun getAlertToPop() {
         withContext(Dispatchers.IO) {
-            if (shouldPopAlert.value!! && alerts.value!!.count { !it.isRead } > 0) {
-                alertToPop.postValue(alerts.value?.findLast { !it.isRead }!!)
-            }
+            alertToPop.postValue(database.getLastUnreadAlert())
+        }
+    }
+
+    fun popAlert() {
+        CoroutineScope(Dispatchers.Main).launch {
+            getAlertToPop()
         }
     }
 
@@ -83,6 +87,11 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 //            shouldRemoveAlert.value = true
 //            shouldPopAlert.value = true
 //        }
+
+        CoroutineScope(Dispatchers.Main).launch {
+            delete(alert)
+            shouldRemoveAlert.postValue(true)
+        }
     }
 
     fun zoomToLocation(alert: AlertModel) {
@@ -119,6 +128,14 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 //                isAlertAccepted.value = true
 //            }
 //        }
+
+        alert?.let {
+            CoroutineScope(Dispatchers.Main).launch {
+                alert.isRead = true
+                update(alert)
+                getAlertToPop()
+            }
+        }
 
 //        if (alert != null) {
 //            alert.isRead = true

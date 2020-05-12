@@ -115,7 +115,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     }
                 }
 
-                alertsManager.shouldPopAlert.value = true
+//                alertsManager.shouldPopAlert.value = true
+//                alertsManager.popAlert()
             }
         }
     }
@@ -211,11 +212,15 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             setCurrentLocationButtonIcon(it)
         })
 
-        alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
-            if (shouldPop && alertsManager.alerts.value!!.count { !it.isRead } > 0) {
-                alertsManager.shouldPopAlert.value = false
-                setAlertPopUp(alertsManager.alerts.value?.findLast { !it.isRead }!!)
-            }
+//        alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
+//            if (shouldPop && alertsManager.alerts.value!!.count { !it.isRead } > 0) {
+//                alertsManager.shouldPopAlert.value = false
+//                setAlertPopUp(alertsManager.alerts.value?.findLast { !it.isRead }!!)
+//            }
+//        })
+
+        alertsManager.alertToPop.observe(this, Observer { alert ->
+            setAlertPopUp(alert)
         })
 
         sharedViewModel.shoulRemoveSelectedBuildingLayer.observe(
