@@ -16,10 +16,10 @@ import com.mapbox.turf.TurfMeasurement
 import java.io.InputStream
 import java.util.stream.Collectors
 
-
 class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: TopographyService) {
 
     private val logger: ILogger = TimberLogAdapter()
+    val threatsInLOS = arrayListOf<Threat>() // Or of FeatureModel, dependes on what we decide
 
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
