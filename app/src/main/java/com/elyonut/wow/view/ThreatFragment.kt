@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,7 +25,6 @@ class ThreatFragment : Fragment() {
     private lateinit var noBuildingsMessage: TextView
     private var layoutManager: RecyclerView.LayoutManager? = null
     private lateinit var binding: FragmentThreatListBinding
-    val safeArgs: ThreatFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,8 +38,6 @@ class ThreatFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-//        threatDataset = safeArgs.buildings
         threatDataset = arguments!!.getParcelableArrayList("threats")
 //        val view = inflater.inflate(R.layout.fragment_threat_list, container, false)
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_threat_list, container, false)
