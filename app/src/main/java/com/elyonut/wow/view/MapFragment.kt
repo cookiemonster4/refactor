@@ -177,6 +177,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         sharedViewModel.shouldOpenThreatsFragment.observe(this, Observer {
             if (it) {
                 openThreatListFragment()
+                val bundle = Bundle()
+                bundle.putParcelableArrayList("threats", mapViewModel.threats.value)
+//                MapFragmentDirections.actionMapFragmentToThreatFragment()
             }
         })
 
