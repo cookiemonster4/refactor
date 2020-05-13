@@ -114,9 +114,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                         alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                     }
                 }
-
-//                alertsManager.shouldPopAlert.value = true
-//                alertsManager.popAlert()
             }
         }
     }

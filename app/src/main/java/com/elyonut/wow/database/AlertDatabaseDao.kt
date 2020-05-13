@@ -19,7 +19,7 @@ interface AlertDatabaseDao {
     @Query("SELECT * from alerts_table WHERE alertID = :key")
     fun get(key: Long): AlertModel?
 
-    @Query("SELECT * from alerts_table WHERE is_read = 0 ORDER BY time DESC LIMIT 1")
+    @Query("SELECT * from alerts_table WHERE is_read = 0 ORDER BY time ASC LIMIT 1")
     fun getLastUnreadAlert(): AlertModel?
 
     @Query("SELECT * FROM alerts_table ORDER BY alertID DESC")

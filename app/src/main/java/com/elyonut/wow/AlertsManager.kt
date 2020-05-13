@@ -10,29 +10,17 @@ import com.elyonut.wow.utilities.Constants
 import kotlinx.coroutines.*
 
 class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
-//    var alerts = MutableLiveData<LinkedList<AlertModel>>()
-    var isAlertAccepted = MutableLiveData<Boolean>()
-    var isAlertAdded = MutableLiveData<Boolean>()
-    var deletedAlertPosition = MutableLiveData<Int>()
-    var shouldPopAlert = MutableLiveData<Boolean>()
     var shouldRemoveAlert = MutableLiveData<Boolean>()
     var alertToPop = MutableLiveData<AlertModel>()
-//    private var idCounter = 0
-
-    //
-//    private var job = Job()
-//    private val uiScope = CoroutineScope(Dispatchers.Main + job)
     val alerts = database.getAllAlerts()
 
     init {
-//        alerts.value = LinkedList()
-        shouldPopAlert.value = false
         shouldRemoveAlert.value = false
     }
 
     private suspend fun insert(alert: AlertModel) {
         withContext(Dispatchers.IO) {
-            DB.getInstance(context.applicationContext).alertDatabaseDao.insert(alert)
+            database.insert(alert)
         }
     }
 
@@ -49,45 +37,23 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     }
 
     fun addAlert(alert: AlertModel) {
-//        uiScope.launch {
-//            insert(alert)
-//        }.invokeOnCompletion {
-//            shouldPopAlert.postValue(true)
-//        }
-
         CoroutineScope(Dispatchers.Main).launch {
             insert(alert)
-//            shouldPopAlert.postValue(true)
             getAlertToPop()
         }
     }
 
     private suspend fun getAlertToPop() {
         withContext(Dispatchers.IO) {
-            alertToPop.postValue(database.getLastUnreadAlert())
-        }
-    }
-
-    fun popAlert() {
-        CoroutineScope(Dispatchers.Main).launch {
-            getAlertToPop()
+            database.getLastUnreadAlert()?.let {
+                if (it != alertToPop.value) {
+                    alertToPop.postValue(it)
+                }
+            }
         }
     }
 
     fun deleteAlert(alert: AlertModel) {
-//        alerts.value?.removeAt(position)
-//        updateAlertsList()
-//        shouldRemoveAlert.value = true
-//        shouldPopAlert.value = true
-//        deletedAlertPosition.value = position
-
-//        uiScope.launch {
-//            delete(alert)
-//        }.invokeOnCompletion {
-//            shouldRemoveAlert.value = true
-//            shouldPopAlert.value = true
-//        }
-
         CoroutineScope(Dispatchers.Main).launch {
             delete(alert)
             shouldRemoveAlert.postValue(true)
@@ -104,10 +70,6 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         shouldRemoveAlert.value = true
     }
 
-    private fun updateAlertsList() {
-//        alerts.value = alerts.value
-    }
-
     private fun sendBroadcastIntent(actionName: String, threatId: String, alertID: Int) {
         val actionIntent = Intent(actionName).apply {
             putExtra("threatID", threatId)
@@ -120,15 +82,6 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     fun updateMessageAccepted(alertId: Int) {
         val alert = alerts.value?.find { it.alertID == alertId }
 
-//        alert?.let {
-//            uiScope.launch {
-//                alert.isRead = true
-//                update(alert)
-//            }.invokeOnCompletion {
-//                isAlertAccepted.value = true
-//            }
-//        }
-
         alert?.let {
             CoroutineScope(Dispatchers.Main).launch {
                 alert.isRead = true
@@ -136,12 +89,5 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
                 getAlertToPop()
             }
         }
-
-//        if (alert != null) {
-//            alert.isRead = true
-//        }
-//
-//        updateAlertsList()
-//        isAlertAccepted.value = true
     }
 }
