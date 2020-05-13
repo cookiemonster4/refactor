@@ -11,7 +11,6 @@ class Threat() : Parcelable {
     var description: String = ""
     var level: ThreatLevel = ThreatLevel.None
     var creator: String = ""
-    var radius: Double = 0.0
     var distanceMeters: Double = 0.0
     lateinit var location: GeoLocation
     lateinit var feature: Feature
@@ -30,7 +29,6 @@ class Threat() : Parcelable {
         name = parcel.readString()
         description = parcel.readString()
         creator = parcel.readString()
-        radius = parcel.readDouble()
         distanceMeters = parcel.readDouble()
         level = ThreatLevel.valueOf(parcel.readString())
         location = parcel.readParcelable(GeoLocation::class.java.classLoader)
@@ -51,7 +49,6 @@ class Threat() : Parcelable {
         parcel.writeString(name)
         parcel.writeString(description)
         parcel.writeString(creator)
-        parcel.writeDouble(radius)
         parcel.writeDouble(distanceMeters)
         parcel.writeString(level.name)
         parcel.writeParcelable(location, PARCELABLE_WRITE_RETURN_VALUE)

@@ -21,11 +21,14 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
 
     private val logger: ILogger = TimberLogAdapter()
 
+    // when in Los it means the building is a threat?
+    // can we take it somewhere else so we won't need the map here?
     fun getThreatFeaturesBuildings(currentLocation: LatLng, boundingBox: RectF): List<Feature> {
         val features = getFeaturesFromMapbox(mapboxMap, Constants.BUILDINGS_LAYER_ID, boundingBox)
         return filterWithLOS(features, currentLocation)
     }
 
+    // returns a threatList?
     fun getThreatFeaturesConstruction(
         currentLocation: LatLng,
         featureModels: List<FeatureModel>
@@ -294,7 +297,7 @@ class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: To
             GeoLocation(LocationType.Polygon, geometryCoordinates as ArrayList<Coordinate>)
         threat.distanceMeters = currentLocation.distanceTo(featureLocation)
         threat.azimuth = bearingToAzimuth(
-            TurfMeasurement.bearing(
+            TurfMeasurement.bearing( // bearing - a person's way of standing or moving. בעברית- כוון או יחס
                 Point.fromLngLat(currentLocation.longitude, currentLocation.latitude),
                 Point.fromLngLat(featureLongitude, featureLatitude)
             )
