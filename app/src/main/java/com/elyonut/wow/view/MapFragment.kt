@@ -615,7 +615,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         if (item != null) {
             val feature = item.feature
             val featureCollection = FeatureCollection.fromFeatures(arrayOf(feature))
-            GeoJsonSource()
             val geoJsonSource = GeoJsonSource("threat-source", featureCollection)
             val loadedMapStyle = map.style
 
