@@ -62,6 +62,7 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
 
     fun zoomToLocation(alert: AlertModel) {
         sendBroadcastIntent(Constants.ZOOM_LOCATION_ACTION, alert.threatId, alert.alertID)
+        updateMessageAccepted(alert)
         shouldRemoveAlert.value = true
     }
 
@@ -79,10 +80,24 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         this.context.sendBroadcast(actionIntent)
     }
 
-    fun updateMessageAccepted(alertId: Int) {
-        val alert = alerts.value?.find { it.alertID == alertId }
+    fun updateMessageAccepted(alert: AlertModel) {
+//        shouldRemoveAlert.value = true
+//
+//        val alert = alerts.value?.find { it.alertID == alertId }
+//
+//        alert?.let {
+//            CoroutineScope(Dispatchers.Main).launch {
+//                alert.isRead = true
+//                update(alert)
+//                getAlertToPop()
+//            }
+//        }
 
-        alert?.let {
+        shouldRemoveAlert.value = true
+
+//        val alert = alerts.value?.find { it.alertID == alertId }
+
+        alert.let {
             CoroutineScope(Dispatchers.Main).launch {
                 alert.isRead = true
                 update(alert)

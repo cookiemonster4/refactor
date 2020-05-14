@@ -106,12 +106,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 when (intent.action) {
                     Constants.ZOOM_LOCATION_ACTION -> {
                         mapViewModel.setZoomLocation(intent.getStringExtra("threatID"))
-                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
+//                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                         (context as FragmentActivity).supportFragmentManager.popBackStack()
 
                     }
                     Constants.ALERT_ACCEPTED_ACTION -> {
-                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
+//                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                     }
                 }
             }

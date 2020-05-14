@@ -18,7 +18,8 @@ class AlertsViewModel(application: Application, var alertsManager: AlertsManager
     }
 
     fun acceptAlertClicked(alert: AlertModel) {
-        alertsManager.acceptAlert(alert)
+//        alertsManager.acceptAlert(alert)
+        alertsManager.updateMessageAccepted(alert)
     }
 
     fun deleteAlertClicked(alert: AlertModel) {
