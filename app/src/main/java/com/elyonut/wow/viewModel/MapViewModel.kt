@@ -109,7 +109,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         setCameraMoveListener()
-        map.uiSettings.compassGravity = Gravity.RIGHT // What does this line do ?
+        map.uiSettings.compassGravity = Gravity.RIGHT
     }
 
     private fun locationSetUp() {
