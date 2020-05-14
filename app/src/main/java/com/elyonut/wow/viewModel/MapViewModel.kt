@@ -109,7 +109,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         setCameraMoveListener()
-        map.uiSettings.compassGravity = Gravity.RIGHT
+        map.uiSettings.compassGravity = Gravity.RIGHT // What does this line do ?
     }
 
     private fun locationSetUp() {
@@ -122,6 +122,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     @SuppressLint("MissingPermission")
     fun startLocationService() {
+        // gets map, how to make singleton
         locationAdapter =
             LocationService(
                 getApplication(),
@@ -587,14 +588,32 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
+        val feature = getBuildingAtLocation(LatLng(location.latitude, location.longitude))
         val isLOS = topographyService.isLOS(
+            feature,
             Coordinate(
                 currentLocation.latitude,
                 currentLocation.longitude
             ), threatCoordinates, threatHeight
         )
 
+
         return threatAnalyzer.featureToThreat(building, currentLocation, isLOS)
+    }
+
+    private fun getBuildingAtLocation(
+        location: LatLng
+    ): Feature? {
+
+        val point = map.projection.toScreenLocation(location)
+        val features = map.queryRenderedFeatures(point, Constants.BUILDINGS_LAYER_ID) //????
+
+        if (features.isNullOrEmpty())
+            return null
+
+        val sortedByName =
+            features.sortedBy { myObject -> myObject.getNumberProperty("height").toDouble() }
+        return sortedByName.last()
     }
     // End of beloved uniqAI onMapClick
 

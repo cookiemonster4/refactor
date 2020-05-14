@@ -55,7 +55,7 @@ class TopographyService {
 
         if (inRange) {
             val threatHeight = feature.getNumberProperty("height").toDouble()
-            return isLOS(currentLocation, threatCoordinates, threatHeight)
+            return isLOS(null, currentLocation, threatCoordinates, threatHeight)
         }
 
 
@@ -63,6 +63,7 @@ class TopographyService {
     }
 
     fun isLOS(
+        buildingAtLocation: Feature? = null,
         currentLocation: Coordinate,
         threatCoordinates: List<Coordinate>,
         threatHeight: Double
@@ -70,8 +71,8 @@ class TopographyService {
 
         var locationCoordinates = listOf(currentLocation)
 
-        val buildingAtLocation =
-            getBuildingAtLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
+//        val buildingAtLocation =
+//            getBuildingAtLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
         if (buildingAtLocation != null) {
             locationCoordinates = getCoordinatesForAnalysis(buildingAtLocation.geometry()!!)
             val locationHeight = buildingAtLocation.getNumberProperty("height").toDouble()
@@ -131,12 +132,12 @@ class TopographyService {
         return locationCoordinates
     }
 
-    fun explodeFeatureCoordinate(featureModel: FeatureModel): List<Coordinate> {
-
-        val featureCoords = getCoordinates(featureModel.geometry)
-        val threatHeight = featureModel.properties?.get("height")!!.asDouble
-        return getExplodedFromCache(featureModel.id!!, featureCoords, threatHeight)
-    }
+//    fun explodeFeatureCoordinate(featureModel: FeatureModel): List<Coordinate> {
+//
+//        val featureCoords = getCoordinates(featureModel.geometry)
+//        val threatHeight = featureModel.properties?.get("height")!!.asDouble
+//        return getExplodedFromCache(featureModel.id!!, featureCoords, threatHeight)
+//    }
 
     fun getBuildingsAtZone(featureModel: FeatureModel): List<VectorEnvelope>{
         val featureCoords = getCoordinates(featureModel.geometry)
@@ -390,13 +391,13 @@ class TopographyService {
         return c1.heightMeters
     }
 
-    private fun getHeightMapBox(c1: Coordinate): Double {
-        if (c1.heightMeters == -10000.0) {
-            val buildingAtLocation = getBuildingAtLocation(LatLng(c1.latitude, c1.longitude))
-            return buildingAtLocation?.getNumberProperty("height")?.toDouble() ?: LOS_HEIGHT_METERS
-        }
-        return c1.heightMeters
-    }
+//    private fun getHeightMapBox(c1: Coordinate): Double {
+//        if (c1.heightMeters == -10000.0) {
+//            val buildingAtLocation = getBuildingAtLocation(LatLng(c1.latitude, c1.longitude))
+//            return buildingAtLocation?.getNumberProperty("height")?.toDouble() ?: LOS_HEIGHT_METERS
+//        }
+//        return c1.heightMeters
+//    }
 
     private fun getBuildingAtLocation(
         location: LatLng
