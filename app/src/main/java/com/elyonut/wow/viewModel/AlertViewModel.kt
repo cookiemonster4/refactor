@@ -10,12 +10,9 @@ class AlertViewModel(application: Application, var alertsManager: AlertsManager)
 
     fun zoomToLocationClicked(alert: AlertModel) {
         alertsManager.zoomToLocation(alert)
-//        alertsManager.shouldRemoveAlert.value = true
     }
 
     fun acceptAlertClicked(alert: AlertModel) {
-//        alertsManager.acceptAlert(alert)
-//        alertsManager.shouldRemoveAlert.value = true
         alertsManager.updateMessageAccepted(alert)
     }
 }

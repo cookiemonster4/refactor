@@ -69,7 +69,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private lateinit var broadcastReceiver: BroadcastReceiver
     private var zoomFilter = IntentFilter(Constants.ZOOM_LOCATION_ACTION)
-    private var alertAcceptedFilter = IntentFilter(Constants.ALERT_ACCEPTED_ACTION)
     private lateinit var alertsManager: AlertsManager
     private lateinit var binding: FragmentMapBinding
     private lateinit var areaSelectionBinding: AreaSelectionBinding
@@ -106,12 +105,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 when (intent.action) {
                     Constants.ZOOM_LOCATION_ACTION -> {
                         mapViewModel.setZoomLocation(intent.getStringExtra("threatID"))
-//                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                         (context as FragmentActivity).supportFragmentManager.popBackStack()
-
-                    }
-                    Constants.ALERT_ACCEPTED_ACTION -> {
-//                        alertsManager.updateMessageAccepted(intent.getIntExtra("alertID", -1))
                     }
                 }
             }
@@ -208,13 +202,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.isFocusedOnLocation.observe(this, Observer {
             setCurrentLocationButtonIcon(it)
         })
-
-//        alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
-//            if (shouldPop && alertsManager.alerts.value!!.count { !it.isRead } > 0) {
-//                alertsManager.shouldPopAlert.value = false
-//                setAlertPopUp(alertsManager.alerts.value?.findLast { !it.isRead }!!)
-//            }
-//        })
 
         alertsManager.alertToPop.observe(this, Observer { alert ->
             setAlertPopUp(alert)
@@ -679,7 +666,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     override fun onResume() {
         super.onResume()
         activity?.registerReceiver(broadcastReceiver, zoomFilter)
-        activity?.registerReceiver(broadcastReceiver, alertAcceptedFilter)
         mapView.onResume()
     }
 

@@ -19,7 +19,6 @@ class Constants {
         const val LINE_LAYER_ID = "line-layer-id"
         const val AREA_OF_INTEREST_KEY = "areaOfInterest"
         const val ZOOM_LOCATION_ACTION = "ZOOM_LOCATION"
-        const val ALERT_ACCEPTED_ACTION = "ALERT_ACCEPTED"
         const val DEFAULT_COVERAGE_RANGE_METERS = 300.0
         const val DEFAULT_COVERAGE_RESOLUTION_METERS = 10.0
         const val DEFAULT_COVERAGE_HEIGHT_METERS = -10000.0

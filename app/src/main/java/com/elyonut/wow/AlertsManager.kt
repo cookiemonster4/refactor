@@ -46,9 +46,7 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     private suspend fun getAlertToPop() {
         withContext(Dispatchers.IO) {
             database.getLastUnreadAlert()?.let {
-                if (it != alertToPop.value) {
-                    alertToPop.postValue(it)
-                }
+                alertToPop.postValue(it)
             }
         }
     }
@@ -57,45 +55,26 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         CoroutineScope(Dispatchers.Main).launch {
             delete(alert)
             shouldRemoveAlert.postValue(true)
+            getAlertToPop()
         }
     }
 
     fun zoomToLocation(alert: AlertModel) {
-        sendBroadcastIntent(Constants.ZOOM_LOCATION_ACTION, alert.threatId, alert.alertID)
+        sendBroadcastIntent(Constants.ZOOM_LOCATION_ACTION, alert.threatId)
         updateMessageAccepted(alert)
-        shouldRemoveAlert.value = true
+        shouldRemoveAlert.postValue(true)
     }
 
-    fun acceptAlert(alert: AlertModel) {
-        sendBroadcastIntent(Constants.ALERT_ACCEPTED_ACTION, alert.threatId, alert.alertID)
-        shouldRemoveAlert.value = true
-    }
-
-    private fun sendBroadcastIntent(actionName: String, threatId: String, alertID: Int) {
+    private fun sendBroadcastIntent(actionName: String, threatId: String) {
         val actionIntent = Intent(actionName).apply {
             putExtra("threatID", threatId)
-            putExtra("alertID", alertID)
         }
 
         this.context.sendBroadcast(actionIntent)
     }
 
     fun updateMessageAccepted(alert: AlertModel) {
-//        shouldRemoveAlert.value = true
-//
-//        val alert = alerts.value?.find { it.alertID == alertId }
-//
-//        alert?.let {
-//            CoroutineScope(Dispatchers.Main).launch {
-//                alert.isRead = true
-//                update(alert)
-//                getAlertToPop()
-//            }
-//        }
-
-        shouldRemoveAlert.value = true
-
-//        val alert = alerts.value?.find { it.alertID == alertId }
+        shouldRemoveAlert.postValue(true)
 
         alert.let {
             CoroutineScope(Dispatchers.Main).launch {
