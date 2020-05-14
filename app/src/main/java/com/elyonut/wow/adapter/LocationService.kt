@@ -25,7 +25,7 @@ class LocationService(
     var map: MapboxMap
 ) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
-    private var lastUpdatedLocation: Location? = null
+    private var lastUpdatedLocation = Location("")
     private var locationComponent = map.locationComponent
     private var locationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager

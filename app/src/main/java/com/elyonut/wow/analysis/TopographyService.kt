@@ -58,7 +58,6 @@ class TopographyService {
             return isLOS(null, currentLocation, threatCoordinates, threatHeight)
         }
 
-
         return false
     }
 
