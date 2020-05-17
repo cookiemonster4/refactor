@@ -134,7 +134,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             isAlertVisible.postValue(true)
         }
 
-        startMapLocationComponent()
+        initMapLocationComponent()
         locationAdapter.startLocationService()
         locationAdapter.subscribeToLocationChanges {
             changeLocation(it)
@@ -143,7 +143,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         isLocationAdapterInitialized.value = true
     }
 
-    private fun startMapLocationComponent() {
+    private fun initMapLocationComponent() {
         val myLocationComponentOptions = LocationComponentOptions.builder(getApplication())
             .trackingGesturesManagement(true)
             .accuracyColor(ContextCompat.getColor(getApplication(), R.color.myLocationColor))
