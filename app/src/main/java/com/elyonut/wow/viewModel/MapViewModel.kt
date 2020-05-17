@@ -11,6 +11,7 @@ import android.util.ArrayMap
 import android.view.Gravity
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.LayerManager
@@ -35,6 +36,8 @@ import com.mapbox.geojson.*
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
@@ -124,23 +127,46 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun startLocationService() {
         locationAdapter =
             LocationService(
-                getApplication(),
-                map
+                getApplication()
             )
 
         if (!locationAdapter!!.isGpsEnabled()) {
             isAlertVisible.postValue(true)
         }
 
+        startMapLocationComponent()
         locationAdapter!!.startLocationService()
         locationAdapter!!.subscribeToLocationChanges {
             changeLocation(it)
+            locationChanged(it)
         }
         isLocationAdapterInitialized.value = true
     }
 
+    fun startMapLocationComponent() {
+        val myLocationComponentOptions = LocationComponentOptions.builder(getApplication())
+            .trackingGesturesManagement(true)
+            .accuracyColor(ContextCompat.getColor(getApplication(), R.color.myLocationColor))
+            .build()
+
+        val locationComponentActivationOptions =
+            LocationComponentActivationOptions.builder(getApplication(), map.style!!)
+                .locationComponentOptions(myLocationComponentOptions).build()
+
+        map.locationComponent.apply {
+            activateLocationComponent(locationComponentActivationOptions)
+            isLocationComponentEnabled = true
+            cameraMode = CameraMode.TRACKING
+            renderMode = RenderMode.COMPASS
+        }
+    }
+
+    private fun locationChanged(location: Location) {
+        map.locationComponent.forceLocationUpdate(location)
+    }
+
     // TODO move to threatAnalyzer
-    fun changeLocation(location: Location) {
+    private fun changeLocation(location: Location) {
         if (calcThreatsTask != null && calcThreatsTask!!.status != AsyncTask.Status.FINISHED) {
             return //Returning as the current task execution is not finished yet.
         }
