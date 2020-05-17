@@ -130,13 +130,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 getApplication()
             )
 
-        if (!locationAdapter!!.isGpsEnabled()) {
+        if (!locationAdapter.isGpsEnabled()) {
             isAlertVisible.postValue(true)
         }
 
         startMapLocationComponent()
-        locationAdapter!!.startLocationService()
-        locationAdapter!!.subscribeToLocationChanges {
+        locationAdapter.startLocationService()
+        locationAdapter.subscribeToLocationChanges {
             changeLocation(it)
             locationChanged(it)
         }
@@ -692,7 +692,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clean() {
-        locationAdapter?.cleanLocationService()
+        locationAdapter.cleanLocationService()
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
