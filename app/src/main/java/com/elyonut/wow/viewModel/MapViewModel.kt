@@ -70,7 +70,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val tempDB = TempDB(application)
     private val permissions: IPermissions =
         PermissionsAdapter(getApplication())
-    private var locationAdapter: ILocationService? = null
+    private var locationAdapter: ILocationService = LocationService(getApplication())
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
     var isPermissionRequestNeeded = MutableLiveData<Boolean>()
@@ -143,7 +143,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         isLocationAdapterInitialized.value = true
     }
 
-    fun startMapLocationComponent() {
+    private fun startMapLocationComponent() {
         val myLocationComponentOptions = LocationComponentOptions.builder(getApplication())
             .trackingGesturesManagement(true)
             .accuracyColor(ContextCompat.getColor(getApplication(), R.color.myLocationColor))
@@ -608,8 +608,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
-        val location = locationAdapter?.getCurrentLocation()
-        val currentLocation = LatLng(location!!.latitude, location.longitude)
+        val location = locationAdapter.getCurrentLocation()
+        val currentLocation = LatLng(location.latitude, location.longitude)
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
@@ -650,8 +650,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             val cameraLocation =
                 LatLng(map.cameraPosition.target.latitude, map.cameraPosition.target.longitude)
             val currentLocation = LatLng(
-                locationAdapter?.getCurrentLocation()!!.latitude,
-                locationAdapter?.getCurrentLocation()!!.longitude
+                locationAdapter.getCurrentLocation().latitude,
+                locationAdapter.getCurrentLocation().longitude
             )
 
             isFocusedOnLocation.postValue(
