@@ -21,14 +21,16 @@ class LocationService private constructor(
     private var lastUpdatedLocation = Location("")
     val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
     private var callback = LocationUpdatesCallback(this)
-    private var locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    private var locationEngine: LocationEngine = LocationEngineProvider.getBestLocationEngine(context)
+    private var locationManager: LocationManager =
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private var locationEngine: LocationEngine =
+        LocationEngineProvider.getBestLocationEngine(context)
 
     init {
         logger.initLogger() // Temp until we make it a singleton ot use Dagger
     }
 
-    companion object: SingletonHolder<LocationService, Context>(::LocationService)
+    companion object : SingletonHolder<LocationService, Context>(::LocationService)
 
     override fun getCurrentLocation() = lastUpdatedLocation
 
@@ -83,7 +85,10 @@ class LocationService private constructor(
                 return
             }
 
-            logger?.info("Location changed!")
+            logger?.info(
+                "Location changed! New location is: latitude- " +
+                        location.latitude + " longitude- " + location.longitude
+            )
             locationServiceWeakReference.get()?.lastUpdatedLocation = location
             locationServiceWeakReference.get()?.locationChangedSubscribers?.forEach {
                 it(location)
