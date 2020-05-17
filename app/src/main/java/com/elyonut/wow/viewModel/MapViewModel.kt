@@ -70,7 +70,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val tempDB = TempDB(application)
     private val permissions: IPermissions =
         PermissionsAdapter(getApplication())
-    private var locationAdapter: ILocationService = LocationService(getApplication())
+    private var locationService: ILocationService = LocationService.getInstance(getApplication())
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
     var isPermissionRequestNeeded = MutableLiveData<Boolean>()
@@ -125,18 +125,18 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     @SuppressLint("MissingPermission")
     fun startLocationService() {
-        locationAdapter =
-            LocationService(
-                getApplication()
-            )
+//        locationService =
+//            LocationService.getInstance(
+//                getApplication()
+//            )
 
-        if (!locationAdapter.isGpsEnabled()) {
+        if (!locationService.isGpsEnabled()) {
             isAlertVisible.postValue(true)
         }
 
         initMapLocationComponent()
-        locationAdapter.startLocationService()
-        locationAdapter.subscribeToLocationChanges {
+        locationService.startLocationService()
+        locationService.subscribeToLocationChanges {
             changeLocation(it)
             locationChanged(it)
         }
@@ -608,7 +608,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
-        val location = locationAdapter.getCurrentLocation()
+        val location = locationService.getCurrentLocation()
         val currentLocation = LatLng(location.latitude, location.longitude)
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
@@ -650,8 +650,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             val cameraLocation =
                 LatLng(map.cameraPosition.target.latitude, map.cameraPosition.target.longitude)
             val currentLocation = LatLng(
-                locationAdapter.getCurrentLocation().latitude,
-                locationAdapter.getCurrentLocation().longitude
+                locationService.getCurrentLocation().latitude,
+                locationService.getCurrentLocation().longitude
             )
 
             isFocusedOnLocation.postValue(
@@ -692,7 +692,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clean() {
-        locationAdapter.cleanLocationService()
+        locationService.cleanLocationService()
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {

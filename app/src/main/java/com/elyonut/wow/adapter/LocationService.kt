@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
+import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.mapbox.android.core.location.*
@@ -13,21 +14,25 @@ import java.lang.ref.WeakReference
 private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
 private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 
-class LocationService(
+class LocationService private constructor(
     private var context: Context
 ) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
     private var lastUpdatedLocation = Location("")
-    private var locationManager =
-        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    private var locationEngine: LocationEngine =
-        LocationEngineProvider.getBestLocationEngine(context)
     val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
     private var callback = LocationUpdatesCallback(this)
+    private var locationManager: LocationManager
+    private var locationEngine: LocationEngine
 
-    init { // Temp until we make it a singleton ot use Dagger
-        logger.initLogger()
+    init {
+        locationManager =
+            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationEngine =
+        LocationEngineProvider.getBestLocationEngine(context)
+        logger.initLogger() // Temp until we make it a singleton ot use Dagger
     }
+
+    companion object: SingletonHolder<LocationService, Context>(::LocationService)
 
     override fun getCurrentLocation() = lastUpdatedLocation
 
