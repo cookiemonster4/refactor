@@ -4,16 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
-import androidx.core.content.ContextCompat
-import com.elyonut.wow.R
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.mapbox.android.core.location.*
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.location.LocationComponentOptions
-import com.mapbox.mapboxsdk.location.modes.CameraMode
-import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapboxMap
 import java.lang.ref.WeakReference
 
 // Const values
@@ -21,12 +14,10 @@ private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
 private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 
 class LocationService(
-    private var context: Context,
-    var map: MapboxMap
+    private var context: Context
 ) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
-    private var lastUpdatedLocation: Location? = null
-    private var locationComponent = map.locationComponent
+    private var lastUpdatedLocation = Location("")
     private var locationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var locationEngine: LocationEngine =
@@ -45,22 +36,6 @@ class LocationService(
     }
 
     override fun startLocationService() {
-        val myLocationComponentOptions = LocationComponentOptions.builder(context)
-            .trackingGesturesManagement(true)
-            .accuracyColor(ContextCompat.getColor(context, R.color.myLocationColor))
-            .build()
-
-        val locationComponentActivationOptions =
-            LocationComponentActivationOptions.builder(context, map.style!!)
-                .locationComponentOptions(myLocationComponentOptions).build()
-
-        locationComponent.apply {
-            activateLocationComponent(locationComponentActivationOptions)
-            isLocationComponentEnabled = true
-            cameraMode = CameraMode.TRACKING
-            renderMode = RenderMode.COMPASS
-        }
-
         initLocationEngine(context)
         logger.info("location engine initialized")
     }
@@ -112,14 +87,10 @@ class LocationService(
             locationServiceWeakReference.get()?.locationChangedSubscribers?.forEach {
                 it(location)
             }
-            locationServiceWeakReference.get()?.locationComponent?.forceLocationUpdate(location)
         }
 
         override fun onFailure(exception: java.lang.Exception) {
-            val locationComponent = locationServiceWeakReference.get()?.locationComponent
-            if (locationComponent != null) {
-                logger?.error(exception.message + exception.stackTrace)
-            }
+            logger?.error(exception.message + exception.stackTrace)
         }
     }
 }

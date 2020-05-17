@@ -11,6 +11,7 @@ import android.util.ArrayMap
 import android.view.Gravity
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.LayerManager
@@ -35,6 +36,8 @@ import com.mapbox.geojson.*
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
@@ -67,7 +70,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val tempDB = TempDB(application)
     private val permissions: IPermissions =
         PermissionsAdapter(getApplication())
-    private var locationAdapter: ILocationService? = null
+    private var locationAdapter: ILocationService = LocationService(getApplication())
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
     var isPermissionRequestNeeded = MutableLiveData<Boolean>()
@@ -124,23 +127,46 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun startLocationService() {
         locationAdapter =
             LocationService(
-                getApplication(),
-                map
+                getApplication()
             )
 
-        if (!locationAdapter!!.isGpsEnabled()) {
+        if (!locationAdapter.isGpsEnabled()) {
             isAlertVisible.postValue(true)
         }
 
-        locationAdapter!!.startLocationService()
-        locationAdapter!!.subscribeToLocationChanges {
+        initMapLocationComponent()
+        locationAdapter.startLocationService()
+        locationAdapter.subscribeToLocationChanges {
             changeLocation(it)
+            locationChanged(it)
         }
         isLocationAdapterInitialized.value = true
     }
 
+    private fun initMapLocationComponent() {
+        val myLocationComponentOptions = LocationComponentOptions.builder(getApplication())
+            .trackingGesturesManagement(true)
+            .accuracyColor(ContextCompat.getColor(getApplication(), R.color.myLocationColor))
+            .build()
+
+        val locationComponentActivationOptions =
+            LocationComponentActivationOptions.builder(getApplication(), map.style!!)
+                .locationComponentOptions(myLocationComponentOptions).build()
+
+        map.locationComponent.apply {
+            activateLocationComponent(locationComponentActivationOptions)
+            isLocationComponentEnabled = true
+            cameraMode = CameraMode.TRACKING
+            renderMode = RenderMode.COMPASS
+        }
+    }
+
+    private fun locationChanged(location: Location) {
+        map.locationComponent.forceLocationUpdate(location)
+    }
+
     // TODO move to threatAnalyzer
-    fun changeLocation(location: Location) {
+    private fun changeLocation(location: Location) {
         if (calcThreatsTask != null && calcThreatsTask!!.status != AsyncTask.Status.FINISHED) {
             return //Returning as the current task execution is not finished yet.
         }
@@ -582,8 +608,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
-        val location = locationAdapter?.getCurrentLocation()
-        val currentLocation = LatLng(location!!.latitude, location.longitude)
+        val location = locationAdapter.getCurrentLocation()
+        val currentLocation = LatLng(location.latitude, location.longitude)
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
@@ -624,8 +650,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             val cameraLocation =
                 LatLng(map.cameraPosition.target.latitude, map.cameraPosition.target.longitude)
             val currentLocation = LatLng(
-                locationAdapter?.getCurrentLocation()!!.latitude,
-                locationAdapter?.getCurrentLocation()!!.longitude
+                locationAdapter.getCurrentLocation().latitude,
+                locationAdapter.getCurrentLocation().longitude
             )
 
             isFocusedOnLocation.postValue(
@@ -666,7 +692,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clean() {
-        locationAdapter?.cleanLocationService()
+        locationAdapter.cleanLocationService()
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
