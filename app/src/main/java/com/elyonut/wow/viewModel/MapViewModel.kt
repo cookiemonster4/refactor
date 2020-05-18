@@ -17,7 +17,7 @@ import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
-import com.elyonut.wow.adapter.PermissionsAdapter
+import com.elyonut.wow.adapter.PermissionsService
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.analysis.*
 import com.elyonut.wow.interfaces.ILocationService
@@ -69,6 +69,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var map: MapboxMap
     private val tempDB = TempDB(application)
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
+    private val permissions: IPermissions = PermissionsService.getInstance(application)
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
     var noPermissionsToast = MutableLiveData<Toast>()
@@ -112,12 +113,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun startLocationService() {
-        initMapLocationComponent()
-        locationService.subscribeToLocationChanges {
-            changeLocation(it)
-            locationChanged(it)
+        if (permissions.isLocationPermitted()) {
+            initMapLocationComponent()
+            locationService.subscribeToLocationChanges {
+                changeLocation(it)
+                locationChanged(it)
+            }
+            isLocationAdapterInitialized.value = true
         }
-        isLocationAdapterInitialized.value = true
     }
 
     private fun initMapLocationComponent() {
@@ -190,30 +193,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         return threats
-    }
-
-    // TODO Move to location/Permissions
-    @SuppressLint("ShowToast")
-    fun onRequestPermissionsResult(
-        requestCode: Int,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            RECORD_REQUEST_CODE -> {
-
-                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    noPermissionsToast.postValue(
-                        Toast.makeText(
-                            getApplication(),
-                            R.string.permission_not_granted,
-                            Toast.LENGTH_LONG
-                        )
-                    )
-                } else {
-                    startLocationService()
-                }
-            }
-        }
     }
 
     // TODO make generic
@@ -353,8 +332,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Beginning area of interest
-    // TODO maybe rename things (including function)
-    // TODO rewrite generic drawing
+// TODO maybe rename things (including function)
+// TODO rewrite generic drawing
     fun drawPolygonMode(latLng: LatLng) {
         val mapTargetPoint = Point.fromLngLat(latLng.longitude, latLng.latitude)
 
@@ -503,7 +482,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         loadedMapStyle.addLayerBelow(lineLayer, Constants.CIRCLE_LAYER_ID)
     }
-    // End of area of interest
+// End of area of interest
 
     // TODO check if it follows me and if not maybe make generic
     fun focusOnMyLocationClicked() {
@@ -581,7 +560,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
     }
-    // End of beloved uniqAI onMapClick
+// End of beloved uniqAI onMapClick
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
@@ -599,7 +578,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         return threatAnalyzer.featureToThreat(building, currentLocation, isLOS)
     }
-    // End of beloved uniqAI onMapClick
+// End of beloved uniqAI onMapClick
 
     // TODO restructure, part to alertManager. create function zoomOnGivenLocation
     fun setZoomLocation(threatID: String) {

@@ -14,9 +14,7 @@ import java.lang.ref.WeakReference
 private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
 private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 
-class LocationService private constructor(
-    private var context: Context
-) : ILocationService {
+class LocationService private constructor(private var context: Context) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
     private var lastUpdatedLocation = Location("")
     val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()

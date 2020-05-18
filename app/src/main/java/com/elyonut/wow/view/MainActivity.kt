@@ -3,6 +3,7 @@ package com.elyonut.wow.view
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -11,9 +12,11 @@ import android.view.MenuItem
 import android.view.SubMenu
 import android.view.WindowManager
 import android.widget.CheckBox
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.forEach
 import androidx.core.view.get
@@ -47,6 +50,7 @@ import java.util.*
 private const val RECORD_REQUEST_CODE = 101
 
 class MainActivity : AppCompatActivity(),
+    ActivityCompat.OnRequestPermissionsResultCallback,
     DataCardFragment.OnFragmentInteractionListener,
     NavigationView.OnNavigationItemSelectedListener,
     ThreatFragment.OnListFragmentInteractionListener,
@@ -157,13 +161,31 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun requestPermissions() {
-        requestPermissions(
+        ActivityCompat.requestPermissions(
+            this,
             arrayOf(
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ),
             RECORD_REQUEST_CODE
         )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == RECORD_REQUEST_CODE &&
+            (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED)
+        ) {
+            Toast.makeText(
+                application,
+                R.string.permission_not_granted,
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     private fun showAlertDialog() {

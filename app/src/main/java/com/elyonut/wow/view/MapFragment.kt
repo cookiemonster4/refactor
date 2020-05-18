@@ -130,7 +130,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun setObservers() {
-        mapViewModel.noPermissionsToast.observe(this, Observer { showToast() })
         mapViewModel.areaOfInterest.observe(this, Observer {
             sharedViewModel.areaOfInterest = it
         })
@@ -326,18 +325,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             R.id.fragmentParent,
             dataCardFragmentInstance
         ).commit()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        mapViewModel.onRequestPermissionsResult(requestCode, grantResults)
-    }
-
-    private fun showToast() {
-        mapViewModel.noPermissionsToast.value?.show()
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {

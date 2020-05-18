@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
-import com.elyonut.wow.adapter.PermissionsAdapter
+import com.elyonut.wow.adapter.PermissionsService
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.utilities.TempDB
@@ -36,7 +36,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         get() = _isAlertVisible
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions =
-        PermissionsAdapter(getApplication())
+        PermissionsService.getInstance(application)
 
     fun locationSetUp() {
         if (permissions.isLocationPermitted()) {
