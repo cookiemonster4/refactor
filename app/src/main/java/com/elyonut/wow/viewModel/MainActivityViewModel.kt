@@ -38,7 +38,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val permissions: IPermissions =
         PermissionsAdapter(getApplication())
 
-
     fun locationSetUp() {
         if (permissions.isLocationPermitted()) {
             startLocationService()
