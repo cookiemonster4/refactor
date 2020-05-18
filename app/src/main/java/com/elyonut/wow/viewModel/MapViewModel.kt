@@ -48,8 +48,6 @@ import com.mapbox.mapboxsdk.style.layers.Property.NONE
 import com.mapbox.mapboxsdk.style.layers.Property.VISIBLE
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
@@ -491,9 +489,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO check if it follows me and if not maybe make generic
     fun focusOnMyLocationClicked() {
-        map.locationComponent.apply {
-            cameraMode = CameraMode.TRACKING
-            renderMode = RenderMode.COMPASS
+        if (map.locationComponent.isLocationComponentActivated) {
+            map.locationComponent.apply {
+                cameraMode = CameraMode.TRACKING
+                renderMode = RenderMode.COMPASS
+            }
         }
     }
 
