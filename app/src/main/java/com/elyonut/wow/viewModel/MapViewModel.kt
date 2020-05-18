@@ -2,7 +2,6 @@ package com.elyonut.wow.viewModel
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.RectF
 import android.location.Location
@@ -10,7 +9,6 @@ import android.os.AsyncTask
 import android.util.ArrayMap
 import android.view.Gravity
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -52,14 +50,11 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.forEach
-import kotlin.collections.isEmpty
 import kotlin.collections.isNotEmpty
 import kotlin.collections.listOf
 import kotlin.collections.map
 import kotlin.collections.set
 import kotlin.collections.toTypedArray
-
-private const val RECORD_REQUEST_CODE = 101
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManual: Boolean = false
@@ -72,7 +67,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val permissions: IPermissions = PermissionsService.getInstance(application)
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
-    var noPermissionsToast = MutableLiveData<Toast>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()
     var threatFeatures = MutableLiveData<List<Feature>>()

@@ -50,7 +50,6 @@ import java.util.*
 private const val RECORD_REQUEST_CODE = 101
 
 class MainActivity : AppCompatActivity(),
-    ActivityCompat.OnRequestPermissionsResultCallback,
     DataCardFragment.OnFragmentInteractionListener,
     NavigationView.OnNavigationItemSelectedListener,
     ThreatFragment.OnListFragmentInteractionListener,
@@ -97,13 +96,13 @@ class MainActivity : AppCompatActivity(),
         mainViewModel.isPermissionRequestNeeded.observe(this, Observer { requestPermissions() })
         mainViewModel.isAlertVisible.observe(this, Observer { showAlertDialog() })
 
-        mainViewModel.chosenLayerId.observe(this, Observer<String> {
+        mainViewModel.chosenLayerId.observe(this, Observer {
             mainViewModel.chosenLayerId.value?.let {
                 sharedViewModel.selectedLayerId.postValue(it)
             }
         })
 
-        mainViewModel.chosenTypeToFilter.observe(this, Observer<Pair<String, Boolean>> {
+        mainViewModel.chosenTypeToFilter.observe(this, Observer {
             mainViewModel.chosenTypeToFilter.value?.let {
                 sharedViewModel.chosenTypeToFilter.value = it
             }
@@ -131,7 +130,7 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        mainViewModel.shouldOpenAlertsFragment.observe(this, Observer<Boolean> {
+        mainViewModel.shouldOpenAlertsFragment.observe(this, Observer {
             if (it) {
                 openAlertsFragment()
             }
@@ -153,7 +152,7 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        sharedViewModel.alertsManager.alerts.observe(this, Observer<LinkedList<AlertModel>> {
+        sharedViewModel.alertsManager.alerts.observe(this, Observer {
             editAlertsBadge(it)
         })
 
