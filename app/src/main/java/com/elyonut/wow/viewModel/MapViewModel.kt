@@ -28,6 +28,7 @@ import com.elyonut.wow.model.Threat
 import com.elyonut.wow.model.ThreatLevel
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
+import com.elyonut.wow.utilities.Constants.Companion.LOCATION_CHECK_INTERVAL
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.NumericFilterTypes
 import com.elyonut.wow.utilities.TempDB
@@ -102,20 +103,16 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         topographyService = TopographyService(map) // TODO remove from here?
         threatAnalyzer = ThreatAnalyzer(map, topographyService)
         setMapStyle(Maps.MAPBOX_STYLE_URL) {
-            startLocationService()
+            viewModelScope.launch { startLocationService() }
         }
 
         setCameraMoveListener()
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
 
-    private fun startLocationService() {
-        viewModelScope.launch { locationGpsCheck() }
-    }
-
-    private suspend fun locationGpsCheck() {
+    private suspend fun startLocationService() {
         while (!locationService.isGpsEnabled() || !permissions.isLocationPermitted()) {
-            delay(10000) // 10 seconds
+            delay(LOCATION_CHECK_INTERVAL)
         }
 
         initMapLocationComponent()
