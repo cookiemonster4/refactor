@@ -12,6 +12,7 @@ import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
@@ -47,6 +48,10 @@ import com.mapbox.mapboxsdk.style.layers.Property.NONE
 import com.mapbox.mapboxsdk.style.layers.Property.VISIBLE
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.forEach
@@ -107,14 +112,20 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun startLocationService() {
-        if (permissions.isLocationPermitted()) {
-            initMapLocationComponent()
-            locationService.subscribeToLocationChanges {
-                changeLocation(it)
-                locationChanged(it)
-            }
-            isLocationAdapterInitialized.value = true
+        viewModelScope.launch { locationGpsCheck() }
+    }
+
+    private suspend fun locationGpsCheck() {
+        while (!locationService.isGpsEnabled() || !permissions.isLocationPermitted()) {
+            delay(10000) // 10 seconds
         }
+
+        initMapLocationComponent()
+        locationService.subscribeToLocationChanges {
+            changeLocation(it)
+            locationChanged(it)
+        }
+        isLocationAdapterInitialized.value = true
     }
 
     private fun initMapLocationComponent() {
