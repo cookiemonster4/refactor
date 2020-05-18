@@ -4,6 +4,10 @@ open class SingletonHolder<out T: Any, in A>(creator: (A) -> T) {
     private var creator: ((A) -> T)? = creator
     @Volatile private var instance: T? = null
 
+    /***
+    To make it thread-safe, we need to implement a synchronized algorithm and a double-checked locking algorithm
+    It is the most efficient code for double-checked locking system and the code is somehow similar to the lazy() function
+    ***/
     fun getInstance(arg: A): T {
         val checkInstance = instance
         if (checkInstance != null) {
