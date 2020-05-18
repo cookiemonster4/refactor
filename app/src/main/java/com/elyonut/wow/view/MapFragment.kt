@@ -1,22 +1,18 @@
 package com.elyonut.wow.view
 
-
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -55,8 +51,6 @@ import java.text.SimpleDateFormat
 import java.time.Duration
 import java.util.*
 import kotlin.collections.ArrayList
-
-private const val RECORD_REQUEST_CODE = 101
 
 class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener {
     private lateinit var mapView: MapView
@@ -136,15 +130,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun setObservers() {
-        mapViewModel.isAlertVisible.observe(this, Observer { showAlertDialog() })
-        mapViewModel.noPermissionsToast.observe(this, Observer { showToast() })
         mapViewModel.areaOfInterest.observe(this, Observer {
             sharedViewModel.areaOfInterest = it
-        })
-        mapViewModel.isPermissionRequestNeeded.observe(this, Observer {
-            if (it != null && it) {
-                requestPermissions()
-            }
         })
         mapViewModel.selectedBuildingId.observe(
             this,
@@ -264,16 +251,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         val sameAlert = alertsManager.alerts.value!!.find { it.threatId == threatID }
 
         return if (sameAlert != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
-                val sameAlertDateTime = dateFormat.parse(sameAlert.time)
-                Duration.between(
-                    sameAlertDateTime.toInstant(),
-                    Date().toInstant()
-                ).seconds > Constants.ALERT_INTERVAL_IN_SECONDS
-            } else {
-                false
-            }
+            val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+            val sameAlertDateTime = dateFormat.parse(sameAlert.time)
+            Duration.between(
+                sameAlertDateTime.toInstant(),
+                Date().toInstant()
+            ).seconds > Constants.ALERT_INTERVAL_IN_SECONDS
         } else {
             true
         }
@@ -342,40 +325,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             R.id.fragmentParent,
             dataCardFragmentInstance
         ).commit()
-    }
-
-    private fun requestPermissions() {
-        requestPermissions(
-            arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ),
-            RECORD_REQUEST_CODE
-        )
-    }
-
-    private fun showAlertDialog() {
-        AlertDialog.Builder(listenerMap as Context, R.style.AlertDialogTheme)
-            .setTitle(getString(R.string.turn_on_location_title))
-            .setMessage(getString(R.string.turn_on_location))
-            .setPositiveButton(getString(R.string.yes_hebrew)) { _, _ ->
-                val settingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                startActivity(settingIntent)
-            }.setNegativeButton(getString(R.string.no_thanks_hebrew)) { dialog, _ ->
-                dialog.cancel()
-            }.show()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        mapViewModel.onRequestPermissionsResult(requestCode, grantResults)
-    }
-
-    private fun showToast() {
-        mapViewModel.noPermissionsToast.value?.show()
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {

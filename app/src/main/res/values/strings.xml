@@ -7,15 +7,15 @@
     <string name="region_name">Tel Aviv Yafo erea</string>
     <string name="charset">UTF-8</string>
     <string name="turn_on_location">שירותי המיקום כבויים, האם תרצה להפעיל אותם?</string>
-    <string name="yes_hebrew">כן</string>
-    <string name="no_thanks_hebrew">לא, תודה</string>
+    <string name="yes">כן</string>
+    <string name="no_thanks">לא, תודה</string>
     <string name="turn_on_location_title">הפעלת שירותי מיקום</string>
     <string name="data_card_title">כרטיסיית בניין</string>
     <string name="type_image">תמונת מהות</string>
     <string name="time_passed">זמן שעבר</string>
     <string name="status_color">status color</string>
-    <string name="read_more_hebrew">קרא עוד</string>
-    <string name="read_less_hebrew">קרא פחות</string>
+    <string name="read_more">קרא עוד</string>
+    <string name="read_less">קרא פחות</string>
     <string name="layers_item">שכבות</string>
     <string name="layer_name">שכבת מבנים</string>
     <string name="appbar_scrolling_view_behavior" translatable="false">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>

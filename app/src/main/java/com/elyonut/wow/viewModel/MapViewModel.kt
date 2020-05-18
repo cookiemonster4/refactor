@@ -2,7 +2,6 @@ package com.elyonut.wow.viewModel
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.RectF
 import android.location.Location
@@ -10,13 +9,14 @@ import android.os.AsyncTask
 import android.util.ArrayMap
 import android.view.Gravity
 import android.widget.ProgressBar
-import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.elyonut.wow.LayerManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
-import com.elyonut.wow.adapter.PermissionsAdapter
+import com.elyonut.wow.adapter.PermissionsService
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.analysis.*
 import com.elyonut.wow.interfaces.ILocationService
@@ -28,6 +28,7 @@ import com.elyonut.wow.model.Threat
 import com.elyonut.wow.model.ThreatLevel
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
+import com.elyonut.wow.utilities.Constants.Companion.LOCATION_CHECK_INTERVAL
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.NumericFilterTypes
 import com.elyonut.wow.utilities.TempDB
@@ -35,6 +36,8 @@ import com.mapbox.geojson.*
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
@@ -46,17 +49,16 @@ import com.mapbox.mapboxsdk.style.layers.Property.NONE
 import com.mapbox.mapboxsdk.style.layers.Property.VISIBLE
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.forEach
-import kotlin.collections.isEmpty
 import kotlin.collections.isNotEmpty
 import kotlin.collections.listOf
 import kotlin.collections.map
 import kotlin.collections.set
 import kotlin.collections.toTypedArray
-
-private const val RECORD_REQUEST_CODE = 101
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManual: Boolean = false
@@ -65,14 +67,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManualCoverageAll: Boolean = false
     private lateinit var map: MapboxMap
     private val tempDB = TempDB(application)
-    private val permissions: IPermissions =
-        PermissionsAdapter(getApplication())
-    private var locationAdapter: ILocationService? = null
+    private var locationService: ILocationService = LocationService.getInstance(getApplication())
+    private val permissions: IPermissions = PermissionsService.getInstance(application)
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
-    var isPermissionRequestNeeded = MutableLiveData<Boolean>()
-    var isAlertVisible = MutableLiveData<Boolean>()
-    var noPermissionsToast = MutableLiveData<Toast>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()
     var threatFeatures = MutableLiveData<List<Feature>>()
@@ -105,43 +103,50 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         topographyService = TopographyService(map) // TODO remove from here?
         threatAnalyzer = ThreatAnalyzer(map, topographyService)
         setMapStyle(Maps.MAPBOX_STYLE_URL) {
-            locationSetUp()
+            viewModelScope.launch { startLocationService() }
         }
 
         setCameraMoveListener()
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
 
-    private fun locationSetUp() {
-        if (permissions.isLocationPermitted()) {
-            startLocationService()
-        } else {
-            isPermissionRequestNeeded.postValue(true)
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    fun startLocationService() {
-        // gets map, how to make singleton
-        locationAdapter =
-            LocationService(
-                getApplication(),
-                map
-            )
-
-        if (!locationAdapter!!.isGpsEnabled()) {
-            isAlertVisible.postValue(true)
+    private suspend fun startLocationService() {
+        while (!locationService.isGpsEnabled() || !permissions.isLocationPermitted()) {
+            delay(LOCATION_CHECK_INTERVAL)
         }
 
-        locationAdapter!!.startLocationService()
-        locationAdapter!!.subscribeToLocationChanges {
+        initMapLocationComponent()
+        locationService.subscribeToLocationChanges {
             changeLocation(it)
+            locationChanged(it)
         }
         isLocationAdapterInitialized.value = true
     }
 
+    private fun initMapLocationComponent() {
+        val myLocationComponentOptions = LocationComponentOptions.builder(getApplication())
+            .trackingGesturesManagement(true)
+            .accuracyColor(ContextCompat.getColor(getApplication(), R.color.myLocationColor))
+            .build()
+
+        val locationComponentActivationOptions =
+            LocationComponentActivationOptions.builder(getApplication(), map.style!!)
+                .locationComponentOptions(myLocationComponentOptions).build()
+
+        map.locationComponent.apply {
+            activateLocationComponent(locationComponentActivationOptions)
+            isLocationComponentEnabled = true
+            cameraMode = CameraMode.TRACKING
+            renderMode = RenderMode.COMPASS
+        }
+    }
+
+    private fun locationChanged(location: Location) {
+        map.locationComponent.forceLocationUpdate(location)
+    }
+
     // TODO move to threatAnalyzer
-    fun changeLocation(location: Location) {
+    private fun changeLocation(location: Location) {
         if (calcThreatsTask != null && calcThreatsTask!!.status != AsyncTask.Status.FINISHED) {
             return //Returning as the current task execution is not finished yet.
         }
@@ -188,30 +193,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         return threats
-    }
-
-    // TODO Move to location/Permissions
-    @SuppressLint("ShowToast")
-    fun onRequestPermissionsResult(
-        requestCode: Int,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            RECORD_REQUEST_CODE -> {
-
-                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    noPermissionsToast.postValue(
-                        Toast.makeText(
-                            getApplication(),
-                            R.string.permission_not_granted,
-                            Toast.LENGTH_LONG
-                        )
-                    )
-                } else {
-                    startLocationService()
-                }
-            }
-        }
     }
 
     // TODO make generic
@@ -351,8 +332,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Beginning area of interest
-    // TODO maybe rename things (including function)
-    // TODO rewrite generic drawing
+// TODO maybe rename things (including function)
+// TODO rewrite generic drawing
     fun drawPolygonMode(latLng: LatLng) {
         val mapTargetPoint = Point.fromLngLat(latLng.longitude, latLng.latitude)
 
@@ -501,13 +482,15 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         loadedMapStyle.addLayerBelow(lineLayer, Constants.CIRCLE_LAYER_ID)
     }
-    // End of area of interest
+// End of area of interest
 
     // TODO check if it follows me and if not maybe make generic
     fun focusOnMyLocationClicked() {
-        map.locationComponent.apply {
-            cameraMode = CameraMode.TRACKING
-            renderMode = RenderMode.COMPASS
+        if (map.locationComponent.isLocationComponentActivated) {
+            map.locationComponent.apply {
+                cameraMode = CameraMode.TRACKING
+                renderMode = RenderMode.COMPASS
+            }
         }
     }
 
@@ -579,12 +562,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
     }
-    // End of beloved uniqAI onMapClick
+// End of beloved uniqAI onMapClick
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
-        val location = locationAdapter?.getCurrentLocation()
-        val currentLocation = LatLng(location!!.latitude, location.longitude)
+        val location = locationService.getCurrentLocation()
+        val currentLocation = LatLng(location.latitude, location.longitude)
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
@@ -643,8 +626,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             val cameraLocation =
                 LatLng(map.cameraPosition.target.latitude, map.cameraPosition.target.longitude)
             val currentLocation = LatLng(
-                locationAdapter?.getCurrentLocation()!!.latitude,
-                locationAdapter?.getCurrentLocation()!!.longitude
+                locationService.getCurrentLocation().latitude,
+                locationService.getCurrentLocation().longitude
             )
 
             isFocusedOnLocation.postValue(
@@ -685,7 +668,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clean() {
-        locationAdapter?.cleanLocationService()
+        locationService.cleanLocationService()
     }
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {

@@ -77,12 +77,12 @@ class DataCardFragment : Fragment() {
             binding.buildingDataCard.layoutParams =
                 dataCardViewModel.getRelativeLayoutParams(EXPENDED_CARD_SIZE_RELATION_TO_SCREEN)
             binding.moreContent.visibility = View.VISIBLE
-            binding.readMore.text = getString(R.string.read_less_hebrew)
+            binding.readMore.text = getString(R.string.read_less)
         } else {
             binding.buildingDataCard.layoutParams =
                 dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
             binding.moreContent.visibility = View.GONE
-            binding.readMore.text = getString(R.string.read_more_hebrew)
+            binding.readMore.text = getString(R.string.read_more)
         }
     }
 
