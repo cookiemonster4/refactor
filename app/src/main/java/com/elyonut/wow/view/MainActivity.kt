@@ -176,14 +176,16 @@ class MainActivity : AppCompatActivity(),
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == RECORD_REQUEST_CODE &&
-            (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED)
-        ) {
-            Toast.makeText(
-                application,
-                R.string.permission_not_granted,
-                Toast.LENGTH_LONG
-            ).show()
+        if (requestCode == RECORD_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mainViewModel.locationSetUp()
+            } else {
+                Toast.makeText(
+                    application,
+                    R.string.permission_not_granted,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
