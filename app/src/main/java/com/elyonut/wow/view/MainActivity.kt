@@ -47,7 +47,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import java.util.*
 
-private const val RECORD_REQUEST_CODE = 101
+private const val PERMISSION_REQUEST_ACCESS_LOCATION = 101
 
 class MainActivity : AppCompatActivity(),
     DataCardFragment.OnFragmentInteractionListener,
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun setObservers() {
         mainViewModel.isPermissionRequestNeeded.observe(this, Observer { requestPermissions() })
-        mainViewModel.isAlertVisible.observe(this, Observer { showAlertDialog() })
+        mainViewModel.isPermissionDialogShown.observe(this, Observer { showAlertDialog() })
 
         mainViewModel.chosenLayerId.observe(this, Observer {
             mainViewModel.chosenLayerId.value?.let {
@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity(),
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ),
-            RECORD_REQUEST_CODE
+            PERMISSION_REQUEST_ACCESS_LOCATION
         )
     }
 
@@ -176,7 +176,10 @@ class MainActivity : AppCompatActivity(),
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == RECORD_REQUEST_CODE) {
+        if (requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
+
+            // Checking that the results array is not empty and that it is granted,
+            // the array is according to the array sent in requestPermissions function
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 mainViewModel.locationSetUp()
             } else {

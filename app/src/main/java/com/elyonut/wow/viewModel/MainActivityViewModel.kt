@@ -31,9 +31,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private var _isPermissionRequestNeeded = MutableLiveData<Boolean>()
     val isPermissionRequestNeeded: LiveData<Boolean>
         get() = _isPermissionRequestNeeded
-    private var _isAlertVisible = MutableLiveData<Boolean>()
-    val isAlertVisible: LiveData<Boolean>
-        get() = _isAlertVisible
+    private var _isPermissionDialogShown = MutableLiveData<Boolean>()
+    val isPermissionDialogShown: LiveData<Boolean>
+        get() = _isPermissionDialogShown
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions =
         PermissionsService.getInstance(application)
@@ -48,7 +48,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     private fun startLocationService() {
         if (!locationService.isGpsEnabled()) {
-            _isAlertVisible.postValue(true)
+            _isPermissionDialogShown.postValue(true)
         }
 
         locationService.startLocationService()
