@@ -196,10 +196,10 @@ class MainActivity : AppCompatActivity(),
         AlertDialog.Builder(this, R.style.AlertDialogTheme)
             .setTitle(getString(R.string.turn_on_location_title))
             .setMessage(getString(R.string.turn_on_location))
-            .setPositiveButton(getString(R.string.yes_hebrew)) { _, _ ->
+            .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 val settingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(settingIntent)
-            }.setNegativeButton(getString(R.string.no_thanks_hebrew)) { dialog, _ ->
+            }.setNegativeButton(getString(R.string.no_thanks)) { dialog, _ ->
                 dialog.cancel()
             }.show()
     }
@@ -222,9 +222,9 @@ class MainActivity : AppCompatActivity(),
         } else {
             AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle(getString(R.string.area_not_defined))
-                .setPositiveButton(getString(R.string.yes_hebrew)) { _, _ ->
+                .setPositiveButton(getString(R.string.yes)) { _, _ ->
                     mainViewModel.shouldDefineArea.value = true // TODO Should be encapsulated
-                }.setNegativeButton(getString(R.string.no_thanks_hebrew)) { dialog, _ ->
+                }.setNegativeButton(getString(R.string.no_thanks)) { dialog, _ ->
                     dialog.cancel()
                 }.show()
         }
