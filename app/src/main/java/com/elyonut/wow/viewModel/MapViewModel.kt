@@ -68,13 +68,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManualCoverageAll: Boolean = false
     private lateinit var map: MapboxMap
     private val tempDB = TempDB(application)
-    private val permissions: IPermissions =
-        PermissionsAdapter(getApplication())
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     val layerManager = LayerManager(tempDB)
     var selectedBuildingId = MutableLiveData<String>()
-    var isPermissionRequestNeeded = MutableLiveData<Boolean>()
-    var isAlertVisible = MutableLiveData<Boolean>()
     var noPermissionsToast = MutableLiveData<Toast>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()
@@ -108,34 +104,15 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         topographyService = TopographyService(map) // TODO remove from here?
         threatAnalyzer = ThreatAnalyzer(map, topographyService)
         setMapStyle(Maps.MAPBOX_STYLE_URL) {
-            locationSetUp()
+            startLocationService()
         }
 
         setCameraMoveListener()
         map.uiSettings.compassGravity = Gravity.RIGHT
     }
 
-    private fun locationSetUp() {
-        if (permissions.isLocationPermitted()) {
-            startLocationService()
-        } else {
-            isPermissionRequestNeeded.postValue(true)
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    fun startLocationService() {
-//        locationService =
-//            LocationService.getInstance(
-//                getApplication()
-//            )
-
-        if (!locationService.isGpsEnabled()) {
-            isAlertVisible.postValue(true)
-        }
-
+    private fun startLocationService() {
         initMapLocationComponent()
-        locationService.startLocationService()
         locationService.subscribeToLocationChanges {
             changeLocation(it)
             locationChanged(it)

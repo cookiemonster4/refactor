@@ -1,9 +1,11 @@
 package com.elyonut.wow.view
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.SubMenu
@@ -42,6 +44,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import java.util.*
 
+private const val RECORD_REQUEST_CODE = 101
+
 class MainActivity : AppCompatActivity(),
     DataCardFragment.OnFragmentInteractionListener,
     NavigationView.OnNavigationItemSelectedListener,
@@ -75,6 +79,7 @@ class MainActivity : AppCompatActivity(),
         alertsFragmentInstance = AlertsFragment.newInstance()
 
         setObservers()
+        mainViewModel.locationSetUp()
         initAreaOfInterest()
         initToolbar()
         initNavigationMenu()
@@ -85,6 +90,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun setObservers() {
+        mainViewModel.isPermissionRequestNeeded.observe(this, Observer { requestPermissions() })
+        mainViewModel.isAlertVisible.observe(this, Observer { showAlertDialog() })
+
         mainViewModel.chosenLayerId.observe(this, Observer<String> {
             mainViewModel.chosenLayerId.value?.let {
                 sharedViewModel.selectedLayerId.postValue(it)
@@ -146,6 +154,28 @@ class MainActivity : AppCompatActivity(),
         })
 
         sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
+    }
+
+    private fun requestPermissions() {
+        requestPermissions(
+            arrayOf(
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            RECORD_REQUEST_CODE
+        )
+    }
+
+    private fun showAlertDialog() {
+        AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            .setTitle(getString(R.string.turn_on_location_title))
+            .setMessage(getString(R.string.turn_on_location))
+            .setPositiveButton(getString(R.string.yes_hebrew)) { _, _ ->
+                val settingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(settingIntent)
+            }.setNegativeButton(getString(R.string.no_thanks_hebrew)) { dialog, _ ->
+                dialog.cancel()
+            }.show()
     }
 
     private fun editAlertsBadge(alerts: LinkedList<AlertModel>) {
@@ -223,9 +253,17 @@ class MainActivity : AppCompatActivity(),
 
     private fun initFilterSection() {
         val layerTypeValues = mainViewModel.getLayerTypeValues()?.toTypedArray()
-        addSubMenuItem(navigationView.menu.getItem(Menus.FILTER_SUB_MENU).subMenu, R.id.select_all, getString(R.string.select_all) )
+        addSubMenuItem(
+            navigationView.menu.getItem(Menus.FILTER_SUB_MENU).subMenu,
+            R.id.select_all,
+            getString(R.string.select_all)
+        )
         layerTypeValues?.forEachIndexed { index, buildingType ->
-            addSubMenuItem(navigationView.menu.getItem(Menus.FILTER_SUB_MENU).subMenu, index, buildingType)
+            addSubMenuItem(
+                navigationView.menu.getItem(Menus.FILTER_SUB_MENU).subMenu,
+                index,
+                buildingType
+            )
         }
     }
 
@@ -261,7 +299,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun changVisibilityState(isVisible: Boolean) {
-        val awarenessTab = findViewById<BottomNavigationView>(R.id.bottom_navigation).menu[Menus.AWARENESS]
+        val awarenessTab =
+            findViewById<BottomNavigationView>(R.id.bottom_navigation).menu[Menus.AWARENESS]
 
         if (isVisible) {
             awarenessTab.title = getString(R.string.visible)
