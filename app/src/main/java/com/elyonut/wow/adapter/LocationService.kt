@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
+import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.mapbox.android.core.location.*
@@ -13,21 +14,21 @@ import java.lang.ref.WeakReference
 private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
 private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 
-class LocationService(
-    private var context: Context
-) : ILocationService {
+class LocationService private constructor(private var context: Context) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
     private var lastUpdatedLocation = Location("")
-    private var locationManager =
+    val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
+    private var callback = LocationUpdatesCallback(this)
+    private var locationManager: LocationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var locationEngine: LocationEngine =
         LocationEngineProvider.getBestLocationEngine(context)
-    val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
-    private var callback = LocationUpdatesCallback(this)
 
-    init { // Temp until we make it a singleton ot use Dagger
-        logger.initLogger()
+    init {
+        logger.initLogger() // Temp until we make it a singleton ot use Dagger
     }
+
+    companion object : SingletonHolder<LocationService, Context>(::LocationService)
 
     override fun getCurrentLocation() = lastUpdatedLocation
 
@@ -82,7 +83,10 @@ class LocationService(
                 return
             }
 
-            logger?.info("Location changed!")
+            logger?.info(
+                "Location changed! New location is: latitude- " +
+                        location.latitude + " longitude- " + location.longitude
+            )
             locationServiceWeakReference.get()?.lastUpdatedLocation = location
             locationServiceWeakReference.get()?.locationChangedSubscribers?.forEach {
                 it(location)

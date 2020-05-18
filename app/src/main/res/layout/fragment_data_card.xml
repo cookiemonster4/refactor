@@ -79,7 +79,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
                     android:onClick="@{() -> dataCardViewModel.readMoreButtonClicked()}"
-                    android:text="@string/read_more_hebrew"
+                    android:text="@string/read_more"
                     android:textColor="@android:color/secondary_text_light"
                     android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"
