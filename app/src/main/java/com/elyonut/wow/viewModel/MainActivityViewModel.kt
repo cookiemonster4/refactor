@@ -5,20 +5,19 @@ import android.view.MenuItem
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.elyonut.wow.LayerManager
+import com.elyonut.wow.MapVectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.IPermissions
-import com.elyonut.wow.utilities.TempDB
 import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.utilities.Constants
 import com.google.android.material.checkbox.MaterialCheckBox
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val layerManager = LayerManager.getInstance(application)
+    private val layerManager = MapVectorLayersManager.getInstance(application)
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()

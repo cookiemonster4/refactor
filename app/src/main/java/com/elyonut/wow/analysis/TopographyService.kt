@@ -138,7 +138,7 @@ class TopographyService {
 //        return getExplodedFromCache(featureModel.id!!, featureCoords, threatHeight)
 //    }
 
-    fun getBuildingsAtZone(featureModel: FeatureModel): List<VectorEnvelope>{
+    fun getBuildingsAtZone(featureModel: FeatureModel): List<VectorEnvelope> {
         val featureCoords = getCoordinates(featureModel.geometry)
 
         val multipleVectors =

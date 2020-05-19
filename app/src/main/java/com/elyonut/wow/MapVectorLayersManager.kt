@@ -8,7 +8,7 @@ import com.elyonut.wow.utilities.TempDB
 import com.google.gson.JsonPrimitive
 import kotlin.reflect.KClass
 
-class LayerManager private constructor(context: Context) {
+class MapVectorLayersManager private constructor(context: Context) {
     private val tempDB = TempDB.getInstance(context)
     var layers: List<LayerModel>? = null
 
@@ -16,7 +16,7 @@ class LayerManager private constructor(context: Context) {
         layers = tempDB.getFeatures()
     }
 
-    companion object : SingletonHolder<LayerManager, Context>(::LayerManager)
+    companion object : SingletonHolder<MapVectorLayersManager, Context>(::MapVectorLayersManager)
 
     fun getLayerById(id: String): List<FeatureModel>? {
         return layers?.find { layer -> id == layer.id }?.features
@@ -45,7 +45,8 @@ class LayerManager private constructor(context: Context) {
 
     // for filter
     fun getValuesOfLayerProperty(layerId: String, propertyName: String): List<String>? {
-           return getLayerById(layerId)?.map { a -> a.properties?.get(propertyName)!!.asString}?.distinct()
+        return getLayerById(layerId)?.map { a -> a.properties?.get(propertyName)!!.asString }
+            ?.distinct()
     }
 
     fun getFeatureLocation(featureID: String): LatLngModel {
@@ -53,12 +54,18 @@ class LayerManager private constructor(context: Context) {
         layers?.forEach { it ->
             feature = it.features.find { it.id == featureID }
 
-            if(feature != null){
-                return LatLngModel(feature?.properties?.get("latitude")!!.asDouble, feature?.properties?.get("longitude")!!.asDouble)
+            if (feature != null) {
+                return LatLngModel(
+                    feature?.properties?.get("latitude")!!.asDouble,
+                    feature?.properties?.get("longitude")!!.asDouble
+                )
             }
         }
 
-        return LatLngModel(feature?.properties?.get("latitude")!!.asDouble, feature?.properties?.get("longitude")!!.asDouble)
+        return LatLngModel(
+            feature?.properties?.get("latitude")!!.asDouble,
+            feature?.properties?.get("longitude")!!.asDouble
+        )
     }
 
     fun getFeatureName(featureID: String): String {
@@ -66,7 +73,7 @@ class LayerManager private constructor(context: Context) {
         layers?.forEach { it ->
             feature = it.features.find { it.id == featureID }
 
-            if(feature != null){
+            if (feature != null) {
                 return feature?.properties?.get("namestr")!!.asString
             }
 

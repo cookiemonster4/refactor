@@ -3,16 +3,15 @@ package com.elyonut.wow.viewModel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.elyonut.wow.LayerManager
+import com.elyonut.wow.MapVectorLayersManager
 import com.elyonut.wow.utilities.NumericFilterTypes
-import com.elyonut.wow.utilities.TempDB
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
 class FilterViewModel(application: Application) : AndroidViewModel(application) {
     // TODO: null handling
 
-    private val layerManager = LayerManager.getInstance(application)
+    private val layerManager = MapVectorLayersManager.getInstance(application)
     private lateinit var propertiesList: List<String>
     private var propertiesHashMap = HashMap<String, KClass<*>>()
     var chosenLayerId = MutableLiveData<String>()

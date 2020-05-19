@@ -18,17 +18,22 @@ class TempDB private constructor(private var context: Context) {
 
         val gson = GsonBuilder().create()
 
-        val buffer = BufferedReader(InputStreamReader(context.assets.open("constructionFeatures2.geojson")))
-        val restaurantsBuffer = BufferedReader(InputStreamReader(context.assets.open("restaurants.geojson")))
-        val centerTLVBuffer = BufferedReader(InputStreamReader(context.assets.open("buildingsCenterTLVExtended.geojson")))
+        val buffer =
+            BufferedReader(InputStreamReader(context.assets.open("constructionFeatures2.geojson")))
+        val restaurantsBuffer =
+            BufferedReader(InputStreamReader(context.assets.open("restaurants.geojson")))
+        val centerTLVBuffer =
+            BufferedReader(InputStreamReader(context.assets.open("buildingsCenterTLVExtended.geojson")))
 
         val features = gson.fromJson(buffer, Array<FeatureModel>::class.java)
         val restaurantsFeatures = gson.fromJson(restaurantsBuffer, Array<FeatureModel>::class.java)
         val centerTLVFeatures = gson.fromJson(centerTLVBuffer, Array<FeatureModel>::class.java)
 
         val layerModel = LayerModel(Constants.THREAT_LAYER_ID, "בניינים", features.toList())
-        val restaurantsLayerModel = LayerModel("restaurants", "מסעדות", restaurantsFeatures.toList())
-        val centerTLVLayerModel = LayerModel(Constants.BUILDINGS_LAYER_ID, "מרכז תל אביב", centerTLVFeatures.toList())
+        val restaurantsLayerModel =
+            LayerModel("restaurants", "מסעדות", restaurantsFeatures.toList())
+        val centerTLVLayerModel =
+            LayerModel(Constants.BUILDINGS_LAYER_ID, "מרכז תל אביב", centerTLVFeatures.toList())
 
         layersList.add(restaurantsLayerModel)
         layersList.add(centerTLVLayerModel)

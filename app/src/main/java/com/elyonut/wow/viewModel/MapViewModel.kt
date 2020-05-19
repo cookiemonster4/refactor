@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.elyonut.wow.LayerManager
+import com.elyonut.wow.MapVectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
@@ -66,10 +66,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManualCoverage: Boolean = false
     var selectLocationManualCoverageAll: Boolean = false
     private lateinit var map: MapboxMap
-    private val tempDB = TempDB.getInstance(application)
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions = PermissionsService.getInstance(application)
-    val layerManager = LayerManager.getInstance(application)
+    val layerManager = MapVectorLayersManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()

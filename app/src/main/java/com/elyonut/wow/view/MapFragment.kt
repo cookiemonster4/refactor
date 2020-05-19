@@ -116,7 +116,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO maybe change to init drawings + should the map be responsibe? or other class
     private fun initArea() {
         if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // TODO Should be encapsulated
+            mapViewModel.areaOfInterest.value =
+                sharedViewModel.areaOfInterest // TODO Should be encapsulated
 
             val polygonPoints = ArrayList<Point>()
             sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
@@ -235,7 +236,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             if (shouldSendAlert(threat.feature.id()!!)) {
 
                 val message =
-                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.feature.id()!!)
+                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(
+                        threat.feature.id()!!
+                    )
                 val featureType =
                     threat.type
                 addAlertToContainer(
