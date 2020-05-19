@@ -365,6 +365,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             return false
         }
 
+        // What are these layers? why do we delete them?
         loadedMapStyle.removeLayer("threat-source-layer")
         loadedMapStyle.removeSource("threat-source")
         loadedMapStyle.removeLayer("layer-selected-location")
@@ -377,6 +378,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         mapViewModel.setLayerVisibility(Constants.THREAT_COVERAGE_LAYER_ID, visibility(NONE))
 
+        // Checking in which state are we - maybe we should add an enum
         if (mapViewModel.isAreaSelectionMode) {
             mapViewModel.drawPolygonMode(latLng)
         } else {
@@ -450,16 +452,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     }
                 }
 
+            } else { // If we are not in the above states, than we should open a data card if a building was clicked
+//                val features = loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.THREAT_LAYER_ID).querySourceFeatures(Expression.)
+                val building = mapViewModel.getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
 
-            } else {
+                if (building != null) {
+                    selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeature(building))
 
-                val point = map.projection.toScreenLocation(latLng)
-                val features = map.queryRenderedFeatures(point, Constants.THREAT_LAYER_ID)
-
-                if (features.size > 0) {
-                    selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
-
-                    val threat = mapViewModel.buildingThreatToCurrentLocation(features[0])
+                    val threat = mapViewModel.buildingThreatToCurrentLocation(building)
 
                     val bundle = Bundle()
                     bundle.putParcelable("threat", threat)

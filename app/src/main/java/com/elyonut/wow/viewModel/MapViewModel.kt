@@ -31,7 +31,6 @@ import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.Constants.Companion.LOCATION_CHECK_INTERVAL
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.NumericFilterTypes
-import com.elyonut.wow.utilities.TempDB
 import com.mapbox.geojson.*
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -570,7 +569,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
-        val feature = getBuildingAtLocation(LatLng(location.latitude, location.longitude))
+        val feature = getBuildingAtLocation(LatLng(location.latitude, location.longitude), Constants.BUILDINGS_LAYER_ID)
         val isLOS = topographyService.isLOS(
             feature,
             Coordinate(
@@ -583,16 +582,18 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         return threatAnalyzer.featureToThreat(building, currentLocation, isLOS)
     }
 
-    private fun getBuildingAtLocation(
-        location: LatLng
+    fun getBuildingAtLocation(
+        location: LatLng,
+        layerId: String
     ): Feature? {
 
         val point = map.projection.toScreenLocation(location)
-        val features = map.queryRenderedFeatures(point, Constants.BUILDINGS_LAYER_ID) //????
+        val features = map.queryRenderedFeatures(point, layerId) //????
 
         if (features.isNullOrEmpty())
             return null
 
+        // How is it a list? why do we sort them and send the last one?
         val sortedByName =
             features.sortedBy { myObject -> myObject.getNumberProperty("height").toDouble() }
         return sortedByName.last()
