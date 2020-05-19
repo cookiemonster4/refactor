@@ -1,5 +1,6 @@
 package com.elyonut.wow
 
+import android.content.Context
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.LatLngModel
 import com.elyonut.wow.model.LayerModel
@@ -7,12 +8,15 @@ import com.elyonut.wow.utilities.TempDB
 import com.google.gson.JsonPrimitive
 import kotlin.reflect.KClass
 
-class LayerManager(tempDB: TempDB) {
+class LayerManager private constructor(context: Context) {
+    private val tempDB = TempDB.getInstance(context)
     var layers: List<LayerModel>? = null
 
     init {
         layers = tempDB.getFeatures()
     }
+
+    companion object : SingletonHolder<LayerManager, Context>(::LayerManager)
 
     fun getLayerById(id: String): List<FeatureModel>? {
         return layers?.find { layer -> id == layer.id }?.features

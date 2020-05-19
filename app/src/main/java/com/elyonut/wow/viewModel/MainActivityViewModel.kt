@@ -18,7 +18,7 @@ import com.google.android.material.checkbox.MaterialCheckBox
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val layerManager = LayerManager(TempDB((application)))
+    private val layerManager = LayerManager.getInstance(application)
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()

@@ -66,10 +66,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectLocationManualCoverage: Boolean = false
     var selectLocationManualCoverageAll: Boolean = false
     private lateinit var map: MapboxMap
-    private val tempDB = TempDB(application)
+    private val tempDB = TempDB.getInstance(application)
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions = PermissionsService.getInstance(application)
-    val layerManager = LayerManager(tempDB)
+    val layerManager = LayerManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()

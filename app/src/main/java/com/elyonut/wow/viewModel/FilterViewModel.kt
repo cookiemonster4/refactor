@@ -12,7 +12,7 @@ import kotlin.reflect.full.isSubclassOf
 class FilterViewModel(application: Application) : AndroidViewModel(application) {
     // TODO: null handling
 
-    private val layerManager = LayerManager(TempDB((application)))
+    private val layerManager = LayerManager.getInstance(application)
     private lateinit var propertiesList: List<String>
     private var propertiesHashMap = HashMap<String, KClass<*>>()
     var chosenLayerId = MutableLiveData<String>()
