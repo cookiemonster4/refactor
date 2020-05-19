@@ -99,7 +99,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun onMapReady(mapboxMap: MapboxMap) {
         map = mapboxMap
         topographyService = TopographyService(map) // TODO remove from here?
-        threatAnalyzer = ThreatAnalyzer(map, topographyService)
+        threatAnalyzer = ThreatAnalyzer(getApplication(), map, topographyService)
         setMapStyle(Maps.MAPBOX_STYLE_URL) {
             viewModelScope.launch { startLocationService() }
         }

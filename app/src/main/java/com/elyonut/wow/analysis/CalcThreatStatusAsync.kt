@@ -27,13 +27,13 @@ class CalcThreatStatusAsync(
 
     override fun doInBackground(vararg locations: LatLng): RiskData {
         val latLng = locations[0]
-        val allFeatures = mapViewModel.layerManager.getLayerById(Constants.THREAT_LAYER_ID)
+        val threatLayerFeatures = mapViewModel.layerManager.getLayerById(Constants.THREAT_LAYER_ID)
         var riskStatus = RiskStatus.LOW
         var threatFeaturesConstruction: List<FeatureModel> = ArrayList()
-        if (allFeatures != null) {
+        if (threatLayerFeatures != null) {
             logger.info("location changed, calculating threats!")
             threatFeaturesConstruction =
-                mapViewModel.threatAnalyzer.getThreatFeaturesConstruction(latLng, allFeatures)
+                mapViewModel.threatAnalyzer.getThreatFeaturesConstruction(latLng, threatLayerFeatures)
 
             if (threatFeaturesConstruction.isNotEmpty()) {
                 riskStatus = RiskStatus.HIGH

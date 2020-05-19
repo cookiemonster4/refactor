@@ -1,5 +1,6 @@
 package com.elyonut.wow.analysis
 
+import android.content.Context
 import android.graphics.RectF
 import android.os.Build
 import com.elyonut.wow.App
@@ -7,6 +8,7 @@ import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.model.*
+import com.elyonut.wow.utilities.TempDB
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
@@ -16,7 +18,13 @@ import com.mapbox.turf.TurfMeasurement
 import java.io.InputStream
 import java.util.stream.Collectors
 
-class ThreatAnalyzer(var mapboxMap: MapboxMap, private var topographyService: TopographyService) {
+class ThreatAnalyzer(var context: Context, var mapboxMap: MapboxMap, private var topographyService: TopographyService) {
+    private val tempDB = TempDB.getInstance(context)
+    var layers: List<LayerModel>? = null
+
+    init {
+        layers = tempDB.getFeatures()
+    }
 
     private val logger: ILogger = TimberLogAdapter()
     val threatsInLOS = arrayListOf<Threat>() // Or of FeatureModel, dependes on what we decide
