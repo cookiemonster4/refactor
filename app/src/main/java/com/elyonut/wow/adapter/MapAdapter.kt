@@ -37,7 +37,7 @@ class MapAdapter(var layerManager: LayerManager) : IMap {
 
     override fun createThreatRadiusSource(): ArrayList<FeatureModel> {
         val circleLayerFeatureList = ArrayList<FeatureModel>()
-        val allFeatures = (layerManager.getLayer(Constants.THREAT_LAYER_ID))
+        val allFeatures = (layerManager.getLayerById(Constants.THREAT_LAYER_ID))
         allFeatures?.forEach {
             val circlePolygonArea = createCirclePolygonArea(it)
             val properties = createThreatProperties(it)

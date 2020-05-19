@@ -14,7 +14,7 @@ class LayerManager(tempDB: TempDB) {
         layers = tempDB.getFeatures()
     }
 
-    fun getLayer(id: String): List<FeatureModel>? {
+    fun getLayerById(id: String): List<FeatureModel>? {
         return layers?.find { layer -> id == layer.id }?.features
     }
 
@@ -22,8 +22,9 @@ class LayerManager(tempDB: TempDB) {
         return layers?.map { it.id }
     }
 
+    // for filter
     fun getLayerProperties(id: String): HashMap<String, KClass<*>> {
-        val currentLayer = getLayer(id)
+        val currentLayer = getLayerById(id)
         val propertiesHashMap = HashMap<String, KClass<*>>()
 
         // Temp- until we have a real DB and real data
@@ -38,8 +39,9 @@ class LayerManager(tempDB: TempDB) {
         return propertiesHashMap
     }
 
+    // for filter
     fun getValuesOfLayerProperty(layerId: String, propertyName: String): List<String>? {
-           return getLayer(layerId)?.map { a -> a.properties?.get(propertyName)!!.asString}?.distinct()
+           return getLayerById(layerId)?.map { a -> a.properties?.get(propertyName)!!.asString}?.distinct()
     }
 
     fun getFeatureLocation(featureID: String): LatLngModel {

@@ -20,7 +20,7 @@ class CalcThreatCoverageAllConstructionAsync(
         if (input != null) {
             logger.info("calculating coverage for all enemies!")
 
-            val allFeatures = mapViewModel.layerManager.getLayer(Constants.THREAT_LAYER_ID)
+            val allFeatures = mapViewModel.layerManager.getLayerById(Constants.THREAT_LAYER_ID)
 
 
             mapViewModel.threatAnalyzer.calculateCoverageAlpha(allFeatures!!, input.rangeMeters, input.pointResolutionMeters, input.heightMeters)
