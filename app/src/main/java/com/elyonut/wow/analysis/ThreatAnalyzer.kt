@@ -3,36 +3,44 @@ package com.elyonut.wow.analysis
 import android.content.Context
 import android.graphics.RectF
 import android.os.Build
-import com.elyonut.wow.App
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.model.*
+import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.TempDB
 import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.turf.TurfMeasurement
-import java.io.InputStream
 import java.util.stream.Collectors
 
-class ThreatAnalyzer(var context: Context, var mapboxMap: MapboxMap, private var topographyService: TopographyService) {
+class ThreatAnalyzer(
+    var context: Context,
+    var mapboxMap: MapboxMap,
+    private var topographyService: TopographyService
+) {
     private val tempDB = TempDB.getInstance(context)
-    var layers: List<LayerModel>? = null
+    var layers: List<LayerModel>
+    var threatLayer: List<FeatureModel>
 
     init {
-        layers = tempDB.getFeatures()
+        layers = tempDB.getLayers()
+        threatLayer = tempDB.getThreatLayer()
     }
 
     private val logger: ILogger = TimberLogAdapter()
-    val threatsInLOS = arrayListOf<Threat>() // Or of FeatureModel, dependes on what we decide
 
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
     fun getThreatFeaturesBuildings(currentLocation: LatLng, boundingBox: RectF): List<Feature> {
-        val features = getFeaturesFromMapbox(mapboxMap, Constants.BUILDINGS_LAYER_ID, boundingBox)
+        val features = mutableListOf<Feature>()
+        layers.find { it.id == Constants.BUILDINGS_LAYER_ID }?.features?.forEach {
+            features.add(
+                MapboxParser.parseToMapboxFeature(it)
+            )
+        }
         return filterWithLOS(features, currentLocation)
     }
 

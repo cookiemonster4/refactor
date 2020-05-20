@@ -13,7 +13,7 @@ class MapVectorLayersManager private constructor(context: Context) {
     var layers: List<LayerModel>? = null
 
     init {
-        layers = tempDB.getFeatures()
+        layers = tempDB.getLayers()
     }
 
     companion object : SingletonHolder<MapVectorLayersManager, Context>(::MapVectorLayersManager)

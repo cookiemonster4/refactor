@@ -9,7 +9,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class TempDB private constructor(private var context: Context) {
-    private val layersList = ArrayList<LayerModel>()
+    private val layers = ArrayList<LayerModel>()
 
     init {
         val gson = GsonBuilder().create()
@@ -31,12 +31,13 @@ class TempDB private constructor(private var context: Context) {
         val centerTLVLayerModel =
             LayerModel(Constants.BUILDINGS_LAYER_ID, "מרכז תל אביב", centerTLVFeatures.toList())
 
-        layersList.add(restaurantsLayerModel)
-        layersList.add(centerTLVLayerModel)
-        layersList.add(layerModel)
+        layers.add(restaurantsLayerModel)
+        layers.add(centerTLVLayerModel)
+        layers.add(layerModel)
     }
 
     companion object : SingletonHolder<TempDB, Context>(::TempDB)
 
-    fun getFeatures(): ArrayList<LayerModel>? = layersList
+    fun getLayers(): ArrayList<LayerModel> = layers
+    fun getThreatLayer() = layers[2].features
 }
