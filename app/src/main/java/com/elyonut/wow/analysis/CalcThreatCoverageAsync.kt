@@ -46,7 +46,7 @@ class CalcThreatCoverageAsync(
             )
 
         val features =
-            result.map { c -> Feature.fromGeometry(Point.fromLngLat(c.longitude, c.latitude)) }
+            result.map { coordinate -> Feature.fromGeometry(Point.fromLngLat(coordinate.longitude, coordinate.latitude)) }
 
         threatCoverageSource?.setGeoJson(FeatureCollection.fromFeatures(features))
 

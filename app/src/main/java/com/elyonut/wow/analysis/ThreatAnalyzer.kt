@@ -160,7 +160,7 @@ class ThreatAnalyzer(
             Collectors.toList())*/
     }
 
-    private fun filterWithLOSCoordinatesAlpha(
+    fun filterWithLOSCoordinatesAlpha(
         currentLocation: LatLng,
         rangeMeters: Double,
         pointResolutionMeters: Double,
@@ -270,7 +270,7 @@ class ThreatAnalyzer(
     ): List<Coordinate> {
 
         if (heightMeters != Constants.DEFAULT_COVERAGE_HEIGHT_METERS) {
-            explodedCoordinates.forEach { bc -> bc.heightMeters = heightMeters }
+            explodedCoordinates.forEach { coordinate -> coordinate.heightMeters = heightMeters }
         }
         val visiblePoints = ArrayList<Coordinate>()
         explodedCoordinates.forEach { origin ->
@@ -284,13 +284,9 @@ class ThreatAnalyzer(
         }
 
         //return visiblePoints
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            visiblePoints.parallelStream()
-                .filter { coordinate -> !topographyService.isInsideBuilding(coordinate) }
-                .collect(Collectors.toList())
-        } else {
-            TODO("VERSION.SDK_INT < N")
-        } // filter buildings
+        return visiblePoints.parallelStream()
+            .filter { coordinate -> !topographyService.isInsideBuilding(coordinate) }
+            .collect(Collectors.toList()) // filter buildings
     }
 
     fun featureToThreat(
