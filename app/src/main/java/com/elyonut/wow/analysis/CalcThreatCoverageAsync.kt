@@ -19,7 +19,7 @@ class CalcThreatCoverageAsync(
     private val mapViewModel: MapViewModel,
     private val progressBar: ProgressBar
 
-    ) : AsyncTask<ThreatCoverageData, Int, List<Coordinate>>() {
+) : AsyncTask<ThreatCoverageData, Int, List<Coordinate>>() {
 
     private val logger: ILogger = TimberLogAdapter()
 
@@ -28,20 +28,27 @@ class CalcThreatCoverageAsync(
         if (input != null) {
             logger.info("calculating coverage!")
 
-            return mapViewModel.threatAnalyzer.calculateCoverageAlpha(input.currentLocation, input.rangeMeters, input.pointResolutionMeters, input.heightMeters)
+            return mapViewModel.threatAnalyzer.calculateCoverageAlpha(
+                input.currentLocation,
+                input.rangeMeters,
+                input.pointResolutionMeters,
+                input.heightMeters
+            )
         }
 
         return ArrayList()
     }
 
     override fun onPostExecute(result: List<Coordinate>) {
-        val threatCoverageSource: GeoJsonSource? = mapViewModel.threatAnalyzer.mapboxMap.style?.getSourceAs(
-            Constants.THREAT_COVERAGE_SOURCE_ID)
+        val threatCoverageSource: GeoJsonSource? =
+            mapViewModel.threatAnalyzer.mapboxMap.style?.getSourceAs(
+                Constants.THREAT_COVERAGE_SOURCE_ID
+            )
 
-        val features = result.map { c-> Feature.fromGeometry(Point.fromLngLat(c.longitude, c.latitude)) }
+        val features =
+            result.map { c -> Feature.fromGeometry(Point.fromLngLat(c.longitude, c.latitude)) }
 
         threatCoverageSource?.setGeoJson(FeatureCollection.fromFeatures(features))
-
 
         mapViewModel.setLayerVisibility(
             Constants.THREAT_COVERAGE_LAYER_ID,
