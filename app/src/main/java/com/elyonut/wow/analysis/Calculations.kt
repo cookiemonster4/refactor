@@ -3,9 +3,9 @@ package com.elyonut.wow.analysis
 import com.elyonut.wow.model.Coordinate
 import com.mapbox.mapboxsdk.geometry.LatLng
 
-class CalcThreatCoverageAsync1(var threatAnalyzer: ThreatAnalyzer) {
+class Calculations(var threatAnalyzer: ThreatAnalyzer) {
 
-    suspend fun calculateCoverageAlpha(currentLocation: LatLng,
+    fun calculateCoverageAlpha(currentLocation: LatLng,
                   rangeMeters: Double,
                   pointResolutionMeters: Double,
                   heightMeters: Double): List<Coordinate> {

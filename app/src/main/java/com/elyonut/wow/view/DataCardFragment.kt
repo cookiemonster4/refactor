@@ -51,16 +51,8 @@ class DataCardFragment : Fragment() {
 
         initObservers()
         initClosingCard()
-        initBuildingStateColor(threat)
 
         return binding.root
-    }
-
-    private fun initBuildingStateColor(threat: Threat) {
-            binding.buildingStateColor.background.setColorFilter(
-            Threat.color(threat),
-            PorterDuff.Mode.MULTIPLY
-        )
     }
 
     private fun initObservers() {

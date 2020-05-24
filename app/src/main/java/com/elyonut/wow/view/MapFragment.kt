@@ -292,8 +292,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
     // End of alert handling
 
-    private fun observeRiskStatus(isLocationAdapterInitialized: Boolean) {
-        if (isLocationAdapterInitialized) {
+    private fun observeRiskStatus(isLocationServiceInitialized: Boolean) {
+        if (isLocationServiceInitialized) {
             val riskStatusObserver = Observer<RiskStatus> { newStatus ->
                 sharedViewModel.isVisible.value =
                     (newStatus == RiskStatus.HIGH || newStatus == RiskStatus.MEDIUM)

@@ -10,7 +10,7 @@ import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
-import com.elyonut.wow.analysis.CalcThreatCoverageAsync1
+import com.elyonut.wow.analysis.Calculations
 import com.elyonut.wow.analysis.ThreatAnalyzer
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.IPermissions
@@ -79,7 +79,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             coordinates = async {
             if (coverageSearchHeightMetersChecked) {
 //                coordinates =
-                     return@async CalcThreatCoverageAsync1(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                     return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
                         coverageResolutionMeters,
@@ -87,7 +87,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                     )
             } else {
 //                coordinates =
-                return@async CalcThreatCoverageAsync1(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
                         coverageResolutionMeters,
