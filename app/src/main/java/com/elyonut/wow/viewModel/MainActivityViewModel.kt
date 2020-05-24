@@ -1,14 +1,12 @@
 package com.elyonut.wow.viewModel
 
 import android.app.Application
-import android.opengl.Visibility
 import android.view.MenuItem
-import android.view.View
 import android.widget.ProgressBar
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.elyonut.wow.MapVectorLayersManager
+import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
@@ -25,11 +23,10 @@ import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.geometry.LatLng
 import kotlinx.coroutines.*
 import timber.log.Timber
-import java.util.logging.Logger
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val layerManager = MapVectorLayersManager.getInstance(application)
+    private val layerManager = VectorLayersManager.getInstance(application)
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()

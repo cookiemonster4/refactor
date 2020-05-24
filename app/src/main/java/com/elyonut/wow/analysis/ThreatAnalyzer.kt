@@ -3,6 +3,7 @@ package com.elyonut.wow.analysis
 import android.content.Context
 import android.graphics.RectF
 import com.elyonut.wow.SingletonHolder
+import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.adapter.TimberLogAdapter
@@ -21,6 +22,7 @@ class ThreatAnalyzer(
 ) {
     private var topographyService = TopographyService
     private val tempDB: TempDB
+    private val vectorLayersManager = VectorLayersManager.getInstance(context)
     var layers: List<LayerModel>
     var threatLayer: List<FeatureModel>
 
@@ -38,15 +40,15 @@ class ThreatAnalyzer(
     // can we take it somewhere else so we won't need the map here?
     fun getThreatFeaturesBuildings(
         currentLocation: LatLng,
-        boundingBox: RectF,
         buildingAtLocation: Feature?
     ): List<Feature> {
         val features = mutableListOf<Feature>()
-        layers.find { it.id == Constants.BUILDINGS_LAYER_ID }?.features?.forEach {
+        vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.forEach {
             features.add(
                 MapboxParser.parseToMapboxFeature(it)
             )
         }
+
         return filterWithLOS(features, currentLocation, buildingAtLocation)
     }
 

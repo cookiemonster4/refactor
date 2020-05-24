@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.elyonut.wow.MapVectorLayersManager
+import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
@@ -67,7 +67,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var map: MapboxMap
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions = PermissionsService.getInstance(application)
-    val mapVectorLayersManager = MapVectorLayersManager.getInstance(application)
+    val mapVectorLayersManager = VectorLayersManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()
@@ -502,7 +502,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             mapView.bottom.toFloat()
         )
 
-        threatFeatures.value = threatAnalyzer.getThreatFeaturesBuildings(latLng, boundingBox, getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID))
+        threatFeatures.value = threatAnalyzer.getThreatFeaturesBuildings(
+            latLng,
+            getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
+        )
     }
 
     fun calculateCoverageFromPoint(
@@ -559,7 +562,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
-        val feature = getBuildingAtLocation(LatLng(location.latitude, location.longitude), Constants.BUILDINGS_LAYER_ID)
+        val feature = getBuildingAtLocation(
+            LatLng(location.latitude, location.longitude),
+            Constants.BUILDINGS_LAYER_ID
+        )
         val isLOS = topographyService.isLOS(
             feature,
             Coordinate(
@@ -663,7 +669,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
         val types =
-            mapVectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")?.toTypedArray()
+            mapVectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
+                ?.toTypedArray()
         val filters = types?.map { type -> Pair(type, shouldFilter) }
         val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)
 

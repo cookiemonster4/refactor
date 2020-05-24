@@ -3,7 +3,7 @@ package com.elyonut.wow.adapter
 import android.graphics.Color
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.IMap
-import com.elyonut.wow.MapVectorLayersManager
+import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.parser.MapboxParser
 import com.google.gson.JsonObject
@@ -17,7 +17,7 @@ import kotlin.collections.ArrayList
 private const val circleUnit = TurfConstants.UNIT_KILOMETERS
 private const val circleSteps = 180
 
-class MapAdapter(var mapVectorLayersManager: MapVectorLayersManager) : IMap {
+class MapAdapter(var vectorLayersManager: VectorLayersManager) : IMap {
 
     override fun addLayer(layerId: String) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -37,7 +37,7 @@ class MapAdapter(var mapVectorLayersManager: MapVectorLayersManager) : IMap {
 
     override fun createThreatRadiusSource(): ArrayList<FeatureModel> {
         val circleLayerFeatureList = ArrayList<FeatureModel>()
-        val allFeatures = (mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID))
+        val allFeatures = (vectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID))
         allFeatures?.forEach {
             val circlePolygonArea = createCirclePolygonArea(it)
             val properties = createThreatProperties(it)

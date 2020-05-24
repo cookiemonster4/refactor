@@ -10,14 +10,14 @@ import kotlin.collections.HashMap
 
 private const val MY_RISK_RADIUS = 0.3
 
-class AnalyzeManager(private val mapVectorLayersManager: MapVectorLayersManager) : IAnalyze {
+class AnalyzeManager(private val vectorLayersManager: VectorLayersManager) : IAnalyze {
 
     /**
      * calc the risk status according to my location.
      * return: the ids of the threat by their risk status
      */
     override fun calcRiskStatus(location: Location): Pair<RiskStatus, HashMap<RiskStatus, ArrayList<String>>> {
-        val allFeatures = mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
+        val allFeatures = vectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
         var threatLocation: LatLng
         lateinit var riskStatus: RiskStatus
         val threatIdsByRiskStatus = HashMap<RiskStatus, ArrayList<String>>()

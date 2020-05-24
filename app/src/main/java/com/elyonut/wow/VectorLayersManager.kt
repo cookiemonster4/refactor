@@ -8,7 +8,7 @@ import com.elyonut.wow.utilities.TempDB
 import com.google.gson.JsonPrimitive
 import kotlin.reflect.KClass
 
-class MapVectorLayersManager private constructor(context: Context) {
+class VectorLayersManager private constructor(context: Context) {
     private val tempDB = TempDB.getInstance(context)
     var layers: List<LayerModel>? = null
 
@@ -16,7 +16,7 @@ class MapVectorLayersManager private constructor(context: Context) {
         layers = tempDB.getLayers()
     }
 
-    companion object : SingletonHolder<MapVectorLayersManager, Context>(::MapVectorLayersManager)
+    companion object : SingletonHolder<VectorLayersManager, Context>(::VectorLayersManager)
 
     fun getLayerById(id: String): List<FeatureModel>? {
         return layers?.find { layer -> id == layer.id }?.features
