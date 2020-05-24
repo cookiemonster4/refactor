@@ -17,8 +17,8 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.turf.TurfMeasurement
 import java.util.stream.Collectors
 
-class ThreatAnalyzer(
-    var context: Context
+class ThreatAnalyzer private constructor(
+    context: Context
 ) {
     private var topographyService = TopographyService
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
@@ -83,7 +83,6 @@ class ThreatAnalyzer(
 
     fun calculateCoverageAlpha(
         featureModels: List<FeatureModel>,
-        rangeMeters: Double,
         pointResolutionMeters: Double,
         heightMeters: Double
     ) {

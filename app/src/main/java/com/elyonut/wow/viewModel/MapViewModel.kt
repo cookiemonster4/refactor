@@ -80,8 +80,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var circleSource: GeoJsonSource // areaOfInterest
     private lateinit var fillSource: GeoJsonSource // areaOfInterest
     private lateinit var firstPointOfPolygon: Point // areaOfInterest
-    private lateinit var topographyService: TopographyService
-    lateinit var threatAnalyzer: ThreatAnalyzer
+    private var topographyService = TopographyService
+    var threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
     private var calcThreatsTask: CalcThreatStatusAsync? = null
     private var calcThreatCoverageTask: CalcThreatCoverageAsync? = null
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
@@ -96,8 +96,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     @SuppressLint("WrongConstant")
     fun onMapReady(mapboxMap: MapboxMap) {
         map = mapboxMap
-        topographyService = TopographyService // TODO remove from here?
-        threatAnalyzer = ThreatAnalyzer(getApplication())
         setMapStyle(Maps.MAPBOX_STYLE_URL) {
             viewModelScope.launch { startLocationService() }
         }

@@ -23,7 +23,11 @@ class CalcThreatCoverageAllConstructionAsync(
             val allFeatures = mapViewModel.mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
 
 
-            mapViewModel.threatAnalyzer.calculateCoverageAlpha(allFeatures!!, input.rangeMeters, input.pointResolutionMeters, input.heightMeters)
+            mapViewModel.threatAnalyzer.calculateCoverageAlpha(
+                allFeatures!!,
+                input.pointResolutionMeters,
+                input.heightMeters
+            )
         }
     }
 
