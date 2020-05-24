@@ -21,16 +21,8 @@ class ThreatAnalyzer(
     var context: Context
 ) {
     private var topographyService = TopographyService
-    private val tempDB: TempDB
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
-    var layers: List<LayerModel>
-    var threatLayer: List<FeatureModel>
-
-    init {
-        tempDB = TempDB.getInstance(context)
-        layers = tempDB.getLayers()
-        threatLayer = tempDB.getThreatLayer()
-    }
+    var threatLayer: List<FeatureModel> = TempDB.getInstance(context).getThreatLayer()
 
     private val logger: ILogger = TimberLogAdapter()
 
@@ -38,18 +30,22 @@ class ThreatAnalyzer(
 
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
-    fun getThreatFeaturesBuildings(
+    fun getBuildingsWithinLOS(
         currentLocation: LatLng,
         buildingAtLocation: Feature?
     ): List<Feature> {
-        val features = mutableListOf<Feature>()
-        vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.forEach {
-            features.add(
-                MapboxParser.parseToMapboxFeature(it)
-            )
+        val buildings = vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.map {
+            MapboxParser.parseToMapboxFeature(it)
         }
 
-        return filterWithLOS(features, currentLocation, buildingAtLocation)
+        val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
+        return buildings?.filter {
+            topographyService.isThreatBuilding(
+                currentLocationCoord,
+                it,
+                buildingAtLocation
+            )
+        } ?: arrayListOf()
     }
 
     // returns a threatList?
@@ -117,21 +113,6 @@ class ThreatAnalyzer(
                 }
 
             }
-        }
-    }
-
-    private fun filterWithLOS(
-        buildingFeatureCollection: List<Feature>,
-        currentLocation: LatLng,
-        buildingAtLocation: Feature?
-    ): List<Feature> {
-        val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
-        return buildingFeatureCollection.filter {
-            topographyService.isThreatBuilding(
-                currentLocationCoord,
-                it,
-                buildingAtLocation
-            )
         }
     }
 

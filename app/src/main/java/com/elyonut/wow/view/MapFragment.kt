@@ -392,7 +392,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 loadedMapStyle.addImage(
                     "marker-icon-alertID",
                     BitmapFactory.decodeResource(
-                        App.resourses, R.drawable.mapbox_marker_icon_default
+                        App.resources_, R.drawable.mapbox_marker_icon_default
                     )
                 )
 
@@ -411,9 +411,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
                 when {
                     mapViewModel.selectLocationManual -> { // מבנים שולטים על נקודה
-                        mapViewModel.updateThreatFeaturesBuildings(mapView, latLng)
+                        mapViewModel.updateBuildingsWithinLOS(latLng)
                         mapViewModel.selectLocationManual = false
-                        mapViewModel.threatFeatures.value?.let { visualizeThreats(it) }
+                        mapViewModel.buildingsWithinLOS.value?.let { visualizeThreats(it) }
                     }
                     mapViewModel.selectLocationManualCoverage -> {
                         sharedViewModel.mapClickedLatlng.postValue(latLng)

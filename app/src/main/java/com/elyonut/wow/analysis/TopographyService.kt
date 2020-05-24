@@ -11,19 +11,14 @@ import com.mapbox.geojson.*
 import java.io.InputStream
 import kotlin.math.*
 
-
 object TopographyService {
-
-//    private var mapboxMap: MapboxMap
-    private val LOS_HEIGHT_METERS = 1.5
+    private const val LOS_HEIGHT_METERS = 1.5
     private val vectorIndex: VectorEnvelopeIndex = VectorEnvelopeIndex()
 
     var explodedMap: ArrayMap<String, List<Coordinate>> = ArrayMap()
 
     init {
-//        this.mapboxMap = mapboxMap
-
-        val stream: InputStream = App.resourses.assets.open("tlv-buildings.geojson")
+        val stream: InputStream = App.resources_.assets.open("tlv-buildings.geojson")
         val size = stream.available()
         val buffer = ByteArray(size)
         stream.read(buffer)
@@ -35,11 +30,12 @@ object TopographyService {
 
     fun isThreatBuilding(
         currentLocation: Coordinate,
-        feature: Feature,
+        building: Feature,
         buildingAtLocation: Feature?
     ): Boolean {
-        val threatCoordinates = getGeometryCoordinates(feature.geometry()!!)
-        val threatType = feature.getProperty("type")?.asString
+        val threatCoordinates = getGeometryCoordinates(building.geometry()!!)
+        val threatType = building.getProperty("type")?.asString
+
         if (threatType != null && threatType.contains("mikush")) {
             return isMikushInRange(currentLocation, threatCoordinates)
         }
@@ -49,18 +45,16 @@ object TopographyService {
         var inRange = false
         for (coord in threatCoordinates) {
             val distance = distanceMeters(currentLocation, coord)
-            if (distance <= threatRangeMeters) {
-                inRange = true
+            inRange = distance <= threatRangeMeters
+            if (inRange) {
                 break
             }
+
+            return false
         }
 
-        if (inRange) {
-            val threatHeight = feature.getNumberProperty("height").toDouble()
-            return isLOS(buildingAtLocation, currentLocation, threatCoordinates, threatHeight)
-        }
-
-        return false
+        val threatHeight = building.getNumberProperty("height").toDouble()
+        return isLOS(buildingAtLocation, currentLocation, threatCoordinates, threatHeight)
     }
 
     fun isLOS(
@@ -162,11 +156,7 @@ object TopographyService {
     }
 
     fun isInsideBuilding(location: Coordinate): Boolean {
-        val buildingAtLocation = vectorIndex.getVectorQuad(location.longitude, location.latitude)
-        if (buildingAtLocation != null) {
-            return true
-        }
-        return false
+        return vectorIndex.getVectorQuad(location.longitude, location.latitude) != null
     }
 
 
@@ -189,14 +179,9 @@ object TopographyService {
         currentLocation: Coordinate,
         coordinates: List<Coordinate>
     ): Boolean {
-
-        for (coord in coordinates) {
-            val distance = distanceMeters(currentLocation, coord)
-            if (distance <= KnowledgeBase.MIKUSH_RANGE_METERS)
-                return true
+        return coordinates.any { coordinate ->
+            distanceMeters(currentLocation, coordinate) <= KnowledgeBase.MIKUSH_RANGE_METERS
         }
-
-        return false
     }
 
     private fun isLOSLocalIndex(

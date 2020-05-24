@@ -3,7 +3,6 @@ package com.elyonut.wow.viewModel
 import android.annotation.SuppressLint
 import android.app.Application
 import android.graphics.Color
-import android.graphics.RectF
 import android.location.Location
 import android.os.AsyncTask
 import android.util.ArrayMap
@@ -39,7 +38,6 @@ import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression.*
@@ -71,7 +69,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectedBuildingId = MutableLiveData<String>()
     var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()
-    var threatFeatures = MutableLiveData<List<Feature>>()
+    var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     val isLocationAdapterInitialized = MutableLiveData<Boolean>()
     private val logger: ILogger = TimberLogAdapter()
     var isAreaSelectionMode = false
@@ -493,16 +491,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Beggining of onMapClick by our beloved uniqAI
-    fun updateThreatFeaturesBuildings(mapView: MapView, latLng: LatLng) {
-
-        val boundingBox = RectF(
-            mapView.left.toFloat(),
-            mapView.top.toFloat(),
-            mapView.right.toFloat(),
-            mapView.bottom.toFloat()
-        )
-
-        threatFeatures.value = threatAnalyzer.getThreatFeaturesBuildings(
+    fun updateBuildingsWithinLOS(latLng: LatLng) {
+        buildingsWithinLOS.value = threatAnalyzer.getBuildingsWithinLOS(
             latLng,
             getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
         )
