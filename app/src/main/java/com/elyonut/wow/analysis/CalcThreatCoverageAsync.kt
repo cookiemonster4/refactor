@@ -41,7 +41,7 @@ class CalcThreatCoverageAsync(
 
     override fun onPostExecute(result: List<Coordinate>) {
         val threatCoverageSource: GeoJsonSource? =
-            mapViewModel.threatAnalyzer.mapboxMap.style?.getSourceAs(
+            mapViewModel.map.style?.getSourceAs(
                 Constants.THREAT_COVERAGE_SOURCE_ID
             )
 

@@ -7,11 +7,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.Menu
-import android.view.MenuItem
-import android.view.SubMenu
-import android.view.WindowManager
+import android.view.*
 import android.widget.CheckBox
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -43,6 +41,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import com.mapbox.geojson.Polygon
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.geometry.LatLng
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import java.util.*
@@ -146,6 +145,10 @@ class MainActivity : AppCompatActivity(),
             sharedViewModel.shouldOpenThreatsFragment.value = it
         })
 
+        mainViewModel.coordinatesfeaturesInCoverage.observe(
+            this,
+            Observer { sharedViewModel.coordinatesfeaturesInCoverage.postValue(it) })
+
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (!it) {
                 mainViewModel.shouldDefineArea.value = it
@@ -157,6 +160,18 @@ class MainActivity : AppCompatActivity(),
         })
 
         sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
+        sharedViewModel.coverageSearchHeightMetersChecked.observe(
+            this,
+            Observer { mainViewModel.coverageSearchHeightMetersCheckedChanged(it) })
+
+        sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
+        mainViewModel.removeProgressBar.observe(this, Observer { it.visibility = View.GONE })
+    }
+
+    fun mapClicked(latLng: LatLng) {
+        val progressBar: ProgressBar = findViewById(R.id.progressBar)
+        progressBar.visibility = View.VISIBLE
+        mainViewModel.mapClicked(latLng, progressBar)
     }
 
     private fun requestPermissions() {

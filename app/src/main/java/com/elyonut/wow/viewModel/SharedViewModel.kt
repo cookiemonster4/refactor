@@ -7,7 +7,9 @@ import com.elyonut.wow.AlertsManager
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.NumericFilterTypes
 import com.elyonut.wow.model.Threat
+import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Polygon
+import com.mapbox.mapboxsdk.geometry.LatLng
 
 class SharedViewModel(application: Application) : AndroidViewModel(application) {
     val selectedLayerId = MutableLiveData<String>()
@@ -27,7 +29,8 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     var coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
     var coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
     var coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
-    var coverageSearchHeightMetersChecked: Boolean = false
+    var coverageSearchHeightMetersChecked = MutableLiveData<Boolean>()
+    var mapClickedLatlng = MutableLiveData<LatLng>()
     var alertsManager = AlertsManager(application)
     var isVisible = MutableLiveData<Boolean>()
     var shouldOpenThreatsFragment = MutableLiveData<Boolean>()
@@ -35,6 +38,7 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     val isSelectAllChecked = MutableLiveData<Boolean>()
     val mapStyleURL = MutableLiveData<String>()
     val shoulRemoveSelectedBuildingLayer = MutableLiveData<Boolean>()
+    val coordinatesfeaturesInCoverage = MutableLiveData<List<Feature>>()
 
     fun applySaveCoverageSettingsButtonClicked(coverageRange: Double, resolution: Double, height: Double?, heightChecked: Boolean) {
         this.coverageRangeMeters = coverageRange
@@ -44,6 +48,6 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
             this.coverageSearchHeightMeters = height
         }
 
-        this.coverageSearchHeightMetersChecked = heightChecked
+        this.coverageSearchHeightMetersChecked.postValue(heightChecked)
     }
 }

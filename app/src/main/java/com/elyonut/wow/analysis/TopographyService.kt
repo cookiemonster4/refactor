@@ -8,22 +8,20 @@ import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.PolygonModel
 import com.mapbox.geojson.*
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.maps.MapboxMap
 import java.io.InputStream
 import kotlin.math.*
 
 
-class TopographyService {
+object TopographyService {
 
-    private var mapboxMap: MapboxMap
+//    private var mapboxMap: MapboxMap
     private val LOS_HEIGHT_METERS = 1.5
     private val vectorIndex: VectorEnvelopeIndex = VectorEnvelopeIndex()
 
     var explodedMap: ArrayMap<String, List<Coordinate>> = ArrayMap()
 
-    constructor(mapboxMap: MapboxMap) {
-        this.mapboxMap = mapboxMap
+    init {
+//        this.mapboxMap = mapboxMap
 
         val stream: InputStream = App.resourses.assets.open("tlv-buildings.geojson")
         val size = stream.available()
@@ -35,7 +33,11 @@ class TopographyService {
         this.vectorIndex.loadBuildingFromGeoJson(jsonObj)
     }
 
-    fun isThreatBuilding(currentLocation: Coordinate, feature: Feature): Boolean {
+    fun isThreatBuilding(
+        currentLocation: Coordinate,
+        feature: Feature,
+        buildingAtLocation: Feature?
+    ): Boolean {
         val threatCoordinates = getGeometryCoordinates(feature.geometry()!!)
         val threatType = feature.getProperty("type")?.asString
         if (threatType != null && threatType.contains("mikush")) {
@@ -55,7 +57,7 @@ class TopographyService {
 
         if (inRange) {
             val threatHeight = feature.getNumberProperty("height").toDouble()
-            return isLOS(null, currentLocation, threatCoordinates, threatHeight)
+            return isLOS(buildingAtLocation, currentLocation, threatCoordinates, threatHeight)
         }
 
         return false
@@ -398,20 +400,20 @@ class TopographyService {
 //        return c1.heightMeters
 //    }
 
-    private fun getBuildingAtLocation(
-        location: LatLng
-    ): Feature? {
-
-        val point = mapboxMap.projection.toScreenLocation(location)
-        val features = mapboxMap.queryRenderedFeatures(point, Constants.BUILDINGS_LAYER_ID) //????
-
-        if (features.isNullOrEmpty())
-            return null
-
-        val sortedByName =
-            features.sortedBy { myObject -> myObject.getNumberProperty("height").toDouble() }
-        return sortedByName.last()
-    }
+//    private fun getBuildingAtLocation(
+//        location: LatLng
+//    ): Feature? {
+//
+//        val point = mapboxMap.projection.toScreenLocation(location)
+//        val features = mapboxMap.queryRenderedFeatures(point, Constants.BUILDINGS_LAYER_ID) //????
+//
+//        if (features.isNullOrEmpty())
+//            return null
+//
+//        val sortedByName =
+//            features.sortedBy { myObject -> myObject.getNumberProperty("height").toDouble() }
+//        return sortedByName.last()
+//    }
 
     private fun getCoordinatesForAnalysis(featureGeometry: Geometry): List<Coordinate> {
         val corners = getGeometryCoordinates(featureGeometry)

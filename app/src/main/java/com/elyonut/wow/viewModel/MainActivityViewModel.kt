@@ -1,7 +1,10 @@
 package com.elyonut.wow.viewModel
 
 import android.app.Application
+import android.opengl.Visibility
 import android.view.MenuItem
+import android.view.View
+import android.widget.ProgressBar
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,11 +12,20 @@ import com.elyonut.wow.MapVectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
+import com.elyonut.wow.analysis.CalcThreatCoverageAsync1
+import com.elyonut.wow.analysis.ThreatAnalyzer
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.IPermissions
+import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.utilities.Constants
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.geometry.LatLng
+import kotlinx.coroutines.*
+import timber.log.Timber
+import java.util.logging.Logger
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -36,6 +48,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions =
         PermissionsService.getInstance(application)
+    private var coverageSearchHeightMetersChecked: Boolean = false
+    val coordinatesfeaturesInCoverage = MutableLiveData<List<Feature>>()
+    private val _removeProgressBar = MutableLiveData<ProgressBar>()
+    val removeProgressBar: LiveData<ProgressBar>
+        get() = _removeProgressBar
 
     fun locationSetUp() {
         if (permissions.isLocationPermitted()) {
@@ -51,6 +68,51 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
 
         locationService.startLocationService()
+    }
+
+    fun mapClicked(
+        latLng: LatLng,
+        progressBar: ProgressBar
+    ) {
+        val coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
+        val coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
+        val coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
+        var coordinates: Deferred<List<Coordinate>> // List<Coordinate> = arrayListOf()
+        CoroutineScope(Dispatchers.Default).launch {
+            coordinates = async {
+            if (coverageSearchHeightMetersChecked) {
+//                coordinates =
+                     return@async CalcThreatCoverageAsync1(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                        latLng,
+                        coverageRangeMeters,
+                        coverageResolutionMeters,
+                        coverageSearchHeightMeters
+                    )
+            } else {
+//                coordinates =
+                return@async CalcThreatCoverageAsync1(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                        latLng,
+                        coverageRangeMeters,
+                        coverageResolutionMeters,
+                        Constants.DEFAULT_COVERAGE_HEIGHT_METERS
+                    )
+            } }
+
+            coordinatesfeaturesInCoverage.postValue(coordinates.await().map { coordinate ->
+                Feature.fromGeometry(
+                    Point.fromLngLat(
+                        coordinate.longitude,
+                        coordinate.latitude
+                    )
+                )
+            })
+            Timber.i("main activity coordinates:  %s", coordinatesfeaturesInCoverage.value.toString())
+            _removeProgressBar.postValue(progressBar)
+        }
+    }
+
+    fun coverageSearchHeightMetersCheckedChanged(coverageSearchHeightChecked: Boolean) {
+        coverageSearchHeightMetersChecked = coverageSearchHeightChecked
     }
 
     fun onNavigationItemSelected(item: MenuItem): Boolean {

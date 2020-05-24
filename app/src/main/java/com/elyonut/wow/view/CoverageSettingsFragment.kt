@@ -42,15 +42,21 @@ class CoverageSettingsFragment : Fragment() {
     }
 
     private fun initTextValues(view: View) {
-        val coverageRange =  view.coverageRangeValue
-        coverageRange.setText(sharedViewModel.coverageRangeMeters.toString(), TextView.BufferType.EDITABLE)
+        val coverageRange = view.coverageRangeValue
+        coverageRange.setText(
+            sharedViewModel.coverageRangeMeters.toString(),
+            TextView.BufferType.EDITABLE
+        )
 
-        val resolution =  view.pointResolutionValue
-        resolution.setText(sharedViewModel.coverageResolutionMeters.toString(), TextView.BufferType.EDITABLE)
+        val resolution = view.pointResolutionValue
+        resolution.setText(
+            sharedViewModel.coverageResolutionMeters.toString(),
+            TextView.BufferType.EDITABLE
+        )
 
-        val height =  view.searchHeightValue
+        val height = view.searchHeightValue
 
-        if(sharedViewModel.coverageSearchHeightMeters != Constants.DEFAULT_COVERAGE_HEIGHT_METERS) {
+        if (sharedViewModel.coverageSearchHeightMeters != Constants.DEFAULT_COVERAGE_HEIGHT_METERS) {
             height.setText(
                 sharedViewModel.coverageSearchHeightMeters.toString(),
                 TextView.BufferType.EDITABLE
@@ -58,7 +64,7 @@ class CoverageSettingsFragment : Fragment() {
         }
 
         val heightCheck = view.searchHeightCheckBox
-        heightCheck.isChecked = sharedViewModel.coverageSearchHeightMetersChecked
+        heightCheck.isChecked = sharedViewModel.coverageSearchHeightMetersChecked.value ?: false
     }
 
     private fun initSaveButton(view: View) {
@@ -66,11 +72,16 @@ class CoverageSettingsFragment : Fragment() {
 
         saveButton.setOnClickListener {
             var height = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
-            if(view.searchHeightValue.text.isNotEmpty()) {
+            if (view.searchHeightValue.text.isNotEmpty()) {
                 height = view.searchHeightValue.text.toString().toDouble()
             }
 
-            sharedViewModel.applySaveCoverageSettingsButtonClicked(view.coverageRangeValue.text.toString().toDouble(), view.pointResolutionValue.text.toString().toDouble(), height, view.searchHeightCheckBox.isChecked)
+            sharedViewModel.applySaveCoverageSettingsButtonClicked(
+                view.coverageRangeValue.text.toString().toDouble(),
+                view.pointResolutionValue.text.toString().toDouble(),
+                height,
+                view.searchHeightCheckBox.isChecked
+            )
             closeSettings()
         }
     }
@@ -85,6 +96,7 @@ class CoverageSettingsFragment : Fragment() {
 
     private fun closeSettings() {
         view?.clearFocus() // to close keyboard
-        activity?.supportFragmentManager?.beginTransaction()?.remove(this@CoverageSettingsFragment)?.commit()
+        activity?.supportFragmentManager?.beginTransaction()?.remove(this@CoverageSettingsFragment)
+            ?.commit()
     }
 }

@@ -42,11 +42,13 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.Property.NONE
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.util.*
@@ -216,6 +218,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         sharedViewModel.mapStyleURL.observe(this, Observer {
             mapViewModel.setMapStyle(it)
         })
+
+        sharedViewModel.coordinatesfeaturesInCoverage.observe(this, Observer { addCoveregae(it) })
     }
 
     // TODO SelfCentered instead current location
@@ -406,36 +410,33 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 loadedMapStyle.addLayer(symbolLayer)
 
                 when {
-                    mapViewModel.selectLocationManual -> {
+                    mapViewModel.selectLocationManual -> { // מבנים שולטים על נקודה
                         mapViewModel.updateThreatFeaturesBuildings(mapView, latLng)
                         mapViewModel.selectLocationManual = false
                         mapViewModel.threatFeatures.value?.let { visualizeThreats(it) }
                     }
-                    mapViewModel.selectLocationManualConstruction -> {
-
-                        mapViewModel.updateThreatFeaturesConstruction(latLng)
-                        mapViewModel.selectLocationManualConstruction = false
-                    }
                     mapViewModel.selectLocationManualCoverage -> {
-                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
-                        progressBar.visibility = VISIBLE
-                        if (sharedViewModel.coverageSearchHeightMetersChecked) {
-                            mapViewModel.calculateCoverageFromPoint(
-                                latLng,
-                                sharedViewModel.coverageRangeMeters,
-                                sharedViewModel.coverageResolutionMeters,
-                                sharedViewModel.coverageSearchHeightMeters,
-                                progressBar
-                            )
-                        } else {
-                            mapViewModel.calculateCoverageFromPoint(
-                                latLng,
-                                sharedViewModel.coverageRangeMeters,
-                                sharedViewModel.coverageResolutionMeters,
-                                Constants.DEFAULT_COVERAGE_HEIGHT_METERS,
-                                progressBar
-                            )
-                        }
+                        sharedViewModel.mapClickedLatlng.postValue(latLng)
+
+//                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
+//                        progressBar.visibility = VISIBLE
+//                        if (sharedViewModel.coverageSearchHeightMetersChecked.value!!) {
+//                            mapViewModel.calculateCoverageFromPoint(
+//                                latLng,
+//                                sharedViewModel.coverageRangeMeters,
+//                                sharedViewModel.coverageResolutionMeters,
+//                                sharedViewModel.coverageSearchHeightMeters,
+//                                progressBar
+//                            )
+//                        } else {
+//                            mapViewModel.calculateCoverageFromPoint(
+//                                latLng,
+//                                sharedViewModel.coverageRangeMeters,
+//                                sharedViewModel.coverageResolutionMeters,
+//                                Constants.DEFAULT_COVERAGE_HEIGHT_METERS,
+//                                progressBar
+//                            )
+//                        }
                         mapViewModel.selectLocationManualCoverage = false
                     }
                     mapViewModel.selectLocationManualCoverageAll -> {
@@ -480,6 +481,21 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         return true
     }
 
+    fun addCoveregae(coverageFeatures: List<Feature>) {
+        Timber.i("map coordinates:  %s", coverageFeatures.toString())
+        val threatCoverageSource: GeoJsonSource? =
+            map.style?.getSourceAs(
+                Constants.THREAT_COVERAGE_SOURCE_ID
+            )
+
+        threatCoverageSource?.setGeoJson(FeatureCollection.fromFeatures(coverageFeatures))
+
+        mapViewModel.setLayerVisibility(
+            Constants.THREAT_COVERAGE_LAYER_ID,
+            visibility(Property.VISIBLE)
+        )
+    }
+
     // From onMapClick
     private fun visualizeThreats(features: List<Feature>) {
 
@@ -514,6 +530,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             R.id.point_coverage -> {
                 mapViewModel.selectLocationManualCoverage = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
+            }
+            R.id.coverage_all -> {
+                mapViewModel.selectLocationManualCoverageAll = true
+//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
         }
     }
