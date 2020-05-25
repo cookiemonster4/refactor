@@ -220,6 +220,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
 
         sharedViewModel.coordinatesfeaturesInCoverage.observe(this, Observer { addCoveregae(it) })
+
+        mapViewModel.threats.observe(this, Observer {
+            if (it.isNotEmpty()) {
+                currentThreatUpdated()
+            }
+        })
     }
 
     // TODO SelfCentered instead current location
@@ -294,15 +300,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private fun observeRiskStatus(isLocationServiceInitialized: Boolean) {
         if (isLocationServiceInitialized) {
-            val riskStatusObserver = Observer<RiskStatus> { newStatus ->
-                sharedViewModel.isVisible.value =
-                    (newStatus == RiskStatus.HIGH || newStatus == RiskStatus.MEDIUM)
-                mapViewModel.checkRiskStatus()
-            }
-
-            mapViewModel.riskStatus.observe(this, riskStatusObserver)
+//            mapViewModel.riskStatus.observe(this, Observer { newStatus ->
+//                sharedViewModel.isVisible.value =
+//                    (newStatus == RiskStatus.HIGH || newStatus == RiskStatus.MEDIUM)
+//                mapViewModel.currentThreatUpdated()
+//            })
         }
 
+    }
+
+    fun currentThreatUpdated() {
+        sharedViewModel.isVisible.value = true
+        mapViewModel.currentThreatUpdated()
     }
 
     // TODO Remove filter
@@ -656,9 +665,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     override fun onDestroy() {
         super.onDestroy()
-        if (mapViewModel.riskStatus.hasObservers()) {
-            mapViewModel.riskStatus.removeObservers(this)
-        }
         mapViewModel.clean()
         map.removeOnMapClickListener(this)
         mapView.onDestroy()

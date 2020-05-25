@@ -100,7 +100,6 @@ class CalcThreatStatusAsync(
             selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
             if (!isManualSelection) {
                 mapViewModel.threats.postValue(modelThreatList)
-                mapViewModel.riskStatus.postValue(result.riskStatus)
             }
         }
     }

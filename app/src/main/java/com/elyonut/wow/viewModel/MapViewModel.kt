@@ -67,7 +67,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val permissions: IPermissions = PermissionsService.getInstance(application)
     val mapVectorLayersManager = VectorLayersManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
-    var riskStatus = MutableLiveData<RiskStatus>()
     var threats = MutableLiveData<ArrayList<Threat>>()
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     val isLocationAdapterInitialized = MutableLiveData<Boolean>()
@@ -167,26 +166,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // TODO Move to alertsManager
-    fun checkRiskStatus() {
-        val currentThreats = getCurrentThreats()
-        if (riskStatus.value == RiskStatus.HIGH) {
-            threatAlerts.value = currentThreats[ThreatLevel.High]
-        }
-    }
-
-    // TODO Move to ThreatAnalyzer
-    private fun getCurrentThreats(): ArrayMap<ThreatLevel, ArrayList<Threat>> {
-        val threats = ArrayMap<ThreatLevel, ArrayList<Threat>>()
-
-        threats[ThreatLevel.Low] = ArrayList()
-        threats[ThreatLevel.Medium] = ArrayList()
-        threats[ThreatLevel.High] = ArrayList()
-
-        this.threats.value?.forEach {
-            threats[it.level]?.add(it)
-        }
-
-        return threats
+    fun currentThreatUpdated() {
+        threatAlerts.value = this.threats.value
     }
 
     // TODO make generic

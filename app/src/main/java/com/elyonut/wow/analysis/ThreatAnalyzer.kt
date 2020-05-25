@@ -115,7 +115,7 @@ class ThreatAnalyzer private constructor(
         }
     }
 
-    private fun filterWithLOSModelFeatures(
+    fun filterWithLOSModelFeatures(
         buildingFeatureCollection: List<FeatureModel>,
         currentLocation: LatLng
     ): List<FeatureModel> {
