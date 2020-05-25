@@ -25,5 +25,6 @@ class Constants {
         const val EARTH_RADIUS_KM = 6371.0
         const val MAX_DISTANCE_TO_CURRENT_LOCATION = 20
         const val ALERT_INTERVAL_IN_SECONDS = 180
+        const val LOCATION_CHECK_INTERVAL = 5000L // 5 seconds
     }
 }
