@@ -100,29 +100,11 @@
                         android:textSize="22sp" />
 
                     <TextView
-                        android:id="@+id/knowledgeType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/knowledgeType_title(threat.knowledgeType)}" />
-
-                    <TextView
-                        android:id="@+id/eAmount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{@string/eAmount_title(threat.eAmount)}" />
-
-                    <TextView
-                        android:id="@+id/type"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{@string/type_title(threat.enemyType)}" />
-
-                    <TextView
-                        android:id="@+id/range"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{@string/range_title(threat.range)}"
-                        android:textColor="@android:color/secondary_text_light" />
+                        app:formatContent="@{threat}"
+                        tools:text="לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית נולום ארווס סאפיאן - פוסיליס קוויס, אקווזמן קוואזי במר מודוף. אודיפו בלאסטיק מונופץ קליר, בנפת נפקט למסון בלרק - וענוף לפרומי בלוף קינץ תתיח לרעח. לת צשחמי הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף."
+                        tools:visibility="visible" />
 
                     <TextView
                         android:id="@+id/moreContent"
