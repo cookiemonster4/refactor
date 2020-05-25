@@ -7,10 +7,11 @@ import com.elyonut.wow.database.AlertDatabaseDao
 import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.utilities.Constants
 import kotlinx.coroutines.*
+import timber.log.Timber
+import java.util.logging.Logger
 
 class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     var shouldRemoveAlert = MutableLiveData<Boolean>()
-    var alertToPop = MutableLiveData<AlertModel>()
     val alerts = database.getAll()
 
     init {
@@ -20,15 +21,6 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     fun addAlert(alert: AlertModel) {
         CoroutineScope(Dispatchers.Main).launch {
             insert(alert)
-            setAlertToPop()
-        }
-    }
-
-    private suspend fun setAlertToPop() {
-        withContext(Dispatchers.IO) {
-            database.getFirstUnreadAlert()?.let {
-                alertToPop.postValue(it)
-            }
         }
     }
 
@@ -36,7 +28,6 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
         CoroutineScope(Dispatchers.Main).launch {
             delete(alert)
             shouldRemoveAlert.postValue(true)
-            setAlertToPop()
         }
     }
 
@@ -61,7 +52,6 @@ class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
             CoroutineScope(Dispatchers.Main).launch {
                 alert.isRead = true
                 update(alert)
-                setAlertToPop()
             }
         }
     }

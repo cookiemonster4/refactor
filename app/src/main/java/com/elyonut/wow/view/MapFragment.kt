@@ -188,8 +188,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             setCurrentLocationButtonIcon(it)
         })
 
-        alertsManager.alertToPop.observe(this, Observer { alert ->
-            setAlertPopUp(alert)
+        alertsManager.alerts.observe(this, Observer {
+            alerts ->
+            if(alerts.isNotEmpty()) {
+                val alertToPop = alerts.sortedBy { alert -> alert.time }?.first { alert -> !alert.isRead  }
+                setAlertPopUp(alertToPop)
+            }
         })
 
         sharedViewModel.shoulRemoveSelectedBuildingLayer.observe(
@@ -223,7 +227,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     private fun sendNotification(threatAlerts: ArrayList<Threat>) {
         threatAlerts.forEach { threat ->
             if (shouldSendAlert(threat.feature.id()!!)) {
-
                 val message =
                     getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.feature.id()!!)
                 val featureType =
