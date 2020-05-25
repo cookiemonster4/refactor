@@ -3,76 +3,74 @@ package com.elyonut.wow
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
+import com.elyonut.wow.database.AlertDatabaseDao
 import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.utilities.Constants
-import java.util.*
+import kotlinx.coroutines.*
+import timber.log.Timber
+import java.util.logging.Logger
 
-class AlertsManager(var context: Context) {
-    var alerts = MutableLiveData<LinkedList<AlertModel>>()
-    var isAlertAccepted = MutableLiveData<Boolean>()
-    var isAlertAdded = MutableLiveData<Boolean>()
-    var deletedAlertPosition = MutableLiveData<Int>()
-    var shouldPopAlert = MutableLiveData<Boolean>()
+class AlertsManager(var context: Context, val database: AlertDatabaseDao) {
     var shouldRemoveAlert = MutableLiveData<Boolean>()
-    private var idCounter = 0
+    val alerts = database.getAll()
 
     init {
-        alerts.value = LinkedList()
-        shouldPopAlert.postValue(false)
         shouldRemoveAlert.postValue(false)
     }
 
     fun addAlert(alert: AlertModel) {
-        alerts.value?.add(
-            0,
-            AlertModel(idCounter, alert.threatId, alert.message, alert.image, alert.time)
-        )
-
-        updateAlertsList()
-        isAlertAdded.postValue(true)
-        shouldPopAlert.postValue(true)
-        idCounter++
+        CoroutineScope(Dispatchers.Main).launch {
+            insert(alert)
+        }
     }
 
-    fun deleteAlert(position: Int) {
-        alerts.value?.removeAt(position)
-        updateAlertsList()
-        shouldRemoveAlert.postValue(true)
-        shouldPopAlert.postValue(true)
-        deletedAlertPosition.postValue(position)
+    fun deleteAlert(alert: AlertModel) {
+        CoroutineScope(Dispatchers.Main).launch {
+            delete(alert)
+            shouldRemoveAlert.postValue(true)
+        }
     }
 
     fun zoomToLocation(alert: AlertModel) {
-        sendBroadcastIntent(Constants.ZOOM_LOCATION_ACTION, alert.threatId, alert.alertID)
+        sendBroadcastIntent(Constants.ZOOM_LOCATION_ACTION, alert.threatId)
+        markAsRead(alert)
         shouldRemoveAlert.postValue(true)
     }
 
-    fun acceptAlert(alert: AlertModel) {
-        sendBroadcastIntent(Constants.ALERT_ACCEPTED_ACTION, alert.threatId, alert.alertID)
-        shouldRemoveAlert.postValue(true)
-    }
-
-    private fun updateAlertsList() {
-        alerts.value = alerts.value
-    }
-
-    private fun sendBroadcastIntent(actionName: String, threatId: String, alertID: Int) {
+    private fun sendBroadcastIntent(actionName: String, threatId: String) {
         val actionIntent = Intent(actionName).apply {
             putExtra("threatID", threatId)
-            putExtra("alertID", alertID)
         }
 
         this.context.sendBroadcast(actionIntent)
     }
 
-    fun updateMessageAccepted(messageID: String) {
-        val alert = alerts.value?.find { it.threatId == messageID }
+    fun markAsRead(alert: AlertModel) {
+        shouldRemoveAlert.postValue(true)
 
-        if (alert != null) {
-            alert.isRead = true
+        alert.let {
+            CoroutineScope(Dispatchers.Main).launch {
+                alert.isRead = true
+                update(alert)
+            }
         }
+    }
 
-        updateAlertsList()
-        isAlertAccepted.postValue(true)
+    private suspend fun insert(alert: AlertModel) {
+        withContext(Dispatchers.IO) {
+            database.insert(alert)
+        }
+    }
+
+    private suspend fun update(alert: AlertModel) {
+        withContext(Dispatchers.IO) {
+            database.update(alert)
+        }
+    }
+
+    private suspend fun delete(alert: AlertModel) {
+        withContext(Dispatchers.IO) {
+            database.delete(alert)
+        }
     }
 }
