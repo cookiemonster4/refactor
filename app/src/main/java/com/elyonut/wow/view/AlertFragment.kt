@@ -89,7 +89,7 @@ class AlertFragment(private var alert: AlertModel) : Fragment() {
                 FragmentTransaction.TRANSIT_FRAGMENT_CLOSE
             )?.commit()
 
-        alertsManager.shouldRemoveAlert.value = false
+        alertsManager.shouldRemoveAlert.postValue(false)
     }
 
     override fun onAttach(context: Context) {
