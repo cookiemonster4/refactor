@@ -9,6 +9,6 @@ import kotlinx.android.parcel.RawValue
 open class FeatureModel(
     val id: String,
     var geometry: PolygonModel,
-    var properties: @RawValue JsonObject? = JsonObject(),
+    var properties: @RawValue JsonObject = JsonObject(),
     var type: String
 ) : Parcelable

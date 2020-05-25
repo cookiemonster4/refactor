@@ -5,7 +5,6 @@ import android.app.Application
 import android.graphics.Color
 import android.location.Location
 import android.os.AsyncTask
-import android.util.ArrayMap
 import android.view.Gravity
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
@@ -22,9 +21,7 @@ import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.model.Coordinate
-import com.elyonut.wow.model.RiskStatus
 import com.elyonut.wow.model.Threat
-import com.elyonut.wow.model.ThreatLevel
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.Constants.Companion.LOCATION_CHECK_INTERVAL
@@ -54,7 +51,6 @@ import kotlin.collections.forEach
 import kotlin.collections.isNotEmpty
 import kotlin.collections.listOf
 import kotlin.collections.map
-import kotlin.collections.set
 import kotlin.collections.toTypedArray
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
@@ -526,25 +522,30 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
-        val location = locationService.getCurrentLocation()
-        val currentLocation = LatLng(location.latitude, location.longitude)
+        val currentLocation = locationService.getCurrentLocation()
+        val currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude)
 
         val threatCoordinates = topographyService.getGeometryCoordinates(building.geometry()!!)
         val threatHeight = building.getNumberProperty("height").toDouble()
         val feature = getBuildingAtLocation(
-            LatLng(location.latitude, location.longitude),
+            LatLng(currentLocation.latitude, currentLocation.longitude),
             Constants.BUILDINGS_LAYER_ID
         )
         val isLOS = topographyService.isLOS(
             feature,
             Coordinate(
-                currentLocation.latitude,
-                currentLocation.longitude
+                currentLatLng.latitude,
+                currentLatLng.longitude
             ), threatCoordinates, threatHeight
         )
 
-
-        return threatAnalyzer.featureToThreat(building, currentLocation, isLOS)
+        return threatAnalyzer.featureModelToThreat(
+            MapboxParser.parseToFeatureModel(building),
+            currentLatLng,
+            isLOS
+        )
+//
+//        return threatAnalyzer.featureToThreat(building, currentLatLng, isLOS)
     }
 
     fun getBuildingAtLocation(

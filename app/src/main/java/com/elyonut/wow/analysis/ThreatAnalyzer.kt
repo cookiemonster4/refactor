@@ -1,7 +1,6 @@
 package com.elyonut.wow.analysis
 
 import android.content.Context
-import android.graphics.RectF
 import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.utilities.Constants
@@ -13,7 +12,6 @@ import com.elyonut.wow.utilities.TempDB
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.turf.TurfMeasurement
 import java.util.stream.Collectors
 
@@ -276,45 +274,24 @@ class ThreatAnalyzer private constructor(
             .collect(Collectors.toList()) // filter buildings
     }
 
-    fun featureToThreat(
-        feature: Feature,
-        currentLocation: LatLng,
-        isLos: Boolean
-    ): Threat {
-        val threat = Threat()
-        val height = feature.getNumberProperty("height").toDouble()
-        threat.level = getThreatLevel(height)
+    // Needs to be without Model in the name when we delete the other function
+    fun featureModelToThreat(featureModel: FeatureModel, currentLocation: LatLng, isLos: Boolean): Threat {
+        val threat = Threat(featureModel)
+        enrichThreat(threat, currentLocation, isLos)
+        return threat
+    }
 
-        val geometryCoordinates = topographyService.getGeometryCoordinates(feature.geometry()!!)
-        val featureLatitude = geometryCoordinates[0].latitude
-        val featureLongitude = geometryCoordinates[0].longitude
-        val featureLocation = LatLng(featureLatitude, featureLongitude)
-        val threatFeatureProperties = feature.properties()
-
-        threat.feature = feature
-        threat.location =
-            GeoLocation(LocationType.Polygon, geometryCoordinates as ArrayList<Coordinate>)
-        threat.distanceMeters = currentLocation.distanceTo(featureLocation)
+    private fun enrichThreat(threat: Threat, currentLocation: LatLng, isLOS: Boolean) {
         threat.azimuth = bearingToAzimuth(
-            TurfMeasurement.bearing( // bearing - a person's way of standing or moving. בעברית- כוון או יחס
+            TurfMeasurement.bearing( // how to get without mapbox
                 Point.fromLngLat(currentLocation.longitude, currentLocation.latitude),
-                Point.fromLngLat(featureLongitude, featureLatitude)
+                Point.fromLngLat(threat.longitude, threat.latitude)
             )
         )
-        threat.creator = "ישראל ישראלי"
-        threat.description = "תיאור"
-        threat.id = threatFeatureProperties?.get("id")?.asString ?: ""
-        threat.name = threatFeatureProperties?.get("namestr")?.asString ?: ""
-        threat.isLos = isLos
-        threat.type = threatFeatureProperties?.get("type")?.asString ?: ""
-        threat.height = height
-        threat.latitude = threatFeatureProperties?.get("latitude")?.asDouble ?: 0.0
-        threat.longitude = threatFeatureProperties?.get("longitude")?.asDouble ?: 0.0
-        threat.eAmount = threatFeatureProperties?.get("eAmount")?.asString ?: ""
-        threat.knowledgeType = threatFeatureProperties?.get("knowledgeType")?.asString ?: ""
-        threat.range = threatFeatureProperties?.get("range")?.asDouble ?: 0.0
 
-        return threat
+        threat.distanceMeters =
+            currentLocation.distanceTo(LatLng(threat.latitude, threat.longitude))
+        threat.isLos = isLOS
     }
 
     private fun bearingToAzimuth(bearing: Double): Double {

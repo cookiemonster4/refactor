@@ -3,20 +3,24 @@ package com.elyonut.wow.model
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE
+import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
+import kotlinx.android.parcel.RawValue
 
-class Threat() : Parcelable {
-    var id: String = ""
+class Threat(id: String, geometry: PolygonModel, properties: JsonObject) :
+    FeatureModel(id, geometry, properties, "feature"), Parcelable {
     var name: String = ""
-    var description: String = ""
+    var description: String = "" // do i need it outside of properties?
     var level: ThreatLevel = ThreatLevel.None
     var creator: String = ""
     var distanceMeters: Double = 0.0
-    lateinit var location: GeoLocation
+    lateinit var location: GeoLocation // Geometry?
     lateinit var feature: Feature
+
+    //    var properties: @RawValue JsonObject? = JsonObject()
     var isLos: Boolean = false
     var azimuth: Double = 0.0
-    var type: String = ""
+    var enemyType: String = ""
     var height: Double = 0.0
     var latitude: Double = 0.0
     var longitude: Double = 0.0
@@ -24,8 +28,37 @@ class Threat() : Parcelable {
     var knowledgeType: String = ""
     var range: Double = 0.0
 
-    constructor(parcel: Parcel) : this() {
-        id = parcel.readString()
+    init {
+        name = properties.get("namestr")?.asString ?: ""
+        height = properties.get("height")?.asDouble ?: 0.0
+        latitude = properties.get("latitude")?.asDouble ?: 0.0
+        longitude = properties.get("longitude")?.asDouble ?: 0.0
+        enemyType = properties.get("type")?.asString ?: ""
+        range = properties.get("range")?.asDouble ?: 0.0
+    }
+//    constructor(id: String, geometry: Geometry, properties: JsonObject) : this() {
+//        this.id = id
+//        name = properties.get("namestr")?.asString ?: ""
+//        height = properties.get("height")?.asDouble ?: 0.0
+//        latitude = properties.get("latitude")?.asDouble ?: 0.0
+//        longitude = properties.get("longitude")?.asDouble ?: 0.0
+//        enemyType = properties.get("type")?.asString ?: ""
+//        range = properties.get("range")?.asDouble ?: 0.0
+//    }
+
+    constructor(featureModel: FeatureModel) : this(
+        featureModel.id,
+        featureModel.geometry,
+        featureModel.properties
+    ) {
+//        Threat(featureModel.id, featureModel.geometry, featureModel.properties)
+    }
+
+    constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readParcelable(PolygonModel::class.java.classLoader),
+        parcel.readValue(JsonObject::class.java.classLoader) as JsonObject
+    ) {
         name = parcel.readString()
         description = parcel.readString()
         creator = parcel.readString()
@@ -35,7 +68,7 @@ class Threat() : Parcelable {
         feature = Feature.fromJson(parcel.readString())
         isLos = parcel.readInt() == 1
         azimuth = parcel.readDouble()
-        type = parcel.readString()
+        enemyType = parcel.readString()
         height = parcel.readDouble()
         latitude = parcel.readDouble()
         longitude = parcel.readDouble()
@@ -55,13 +88,14 @@ class Threat() : Parcelable {
         parcel.writeString(feature.toJson())
         parcel.writeInt(if (isLos) 1 else 0)
         parcel.writeDouble(azimuth)
-        parcel.writeString(type)
+        parcel.writeString(enemyType)
         parcel.writeDouble(height)
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)
         parcel.writeString(eAmount)
         parcel.writeString(knowledgeType)
         parcel.writeDouble(range)
+        parcel.writeValue(properties)
     }
 
     override fun describeContents(): Int {

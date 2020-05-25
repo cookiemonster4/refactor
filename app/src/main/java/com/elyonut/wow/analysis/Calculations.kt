@@ -28,8 +28,8 @@ class Calculations(var threatAnalyzer: ThreatAnalyzer) {
         val currentThreatsFeatures =
             threatAnalyzer.filterWithLOSModelFeatures(threatsLayerFeatures, latLng)
         return currentThreatsFeatures.map { threatFeature ->
-            threatAnalyzer.featureToThreat(
-                MapboxParser.parseToMapboxFeature(threatFeature),
+            threatAnalyzer.featureModelToThreat(
+                threatFeature,
                 latLng,
                 true
             )

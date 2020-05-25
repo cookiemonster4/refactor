@@ -25,8 +25,8 @@ import com.elyonut.wow.*
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
-import com.elyonut.wow.model.RiskStatus
 import com.elyonut.wow.model.Threat
+import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.BuildingTypeMapping
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.Maps
@@ -243,16 +243,16 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // Beggining of alert handling
     private fun sendNotification(threatAlerts: ArrayList<Threat>) {
         threatAlerts.forEach { threat ->
-            if (shouldSendAlert(threat.feature.id()!!)) {
+            if (shouldSendAlert(threat.id)) {
 
                 val message =
                     getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(
-                        threat.feature.id()!!
+                        threat.id
                     )
                 val featureType =
-                    threat.type
+                    threat.enemyType
                 addAlertToContainer(
-                    threat.feature.id()!!,
+                    threat.id,
                     message,
                     BuildingTypeMapping.mapping[featureType]!!
                 )
@@ -591,7 +591,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO update layers. handle according to datacard
     private fun onListFragmentInteraction(item: Threat?) {
         if (item != null) {
-            val feature = item.feature
+//            val feature = item.feature
+            val feature = MapboxParser.parseToMapboxFeature(item)
             val featureCollection = FeatureCollection.fromFeatures(arrayOf(feature))
             val geoJsonSource = GeoJsonSource("threat-source", featureCollection)
             val loadedMapStyle = map.style

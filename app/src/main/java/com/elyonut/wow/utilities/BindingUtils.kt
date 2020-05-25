@@ -11,7 +11,9 @@ fun TextView.setMoreContentFormatted(item: Threat?) {
         builder.append(String.format("גובה (מטרים): %.3f\n", item.height))
         builder.append(String.format("מרחק (מטרים): %.3f\n", item.distanceMeters))
         builder.append(String.format("אזימוט: %.3f\n", item.azimuth))
-        builder.append(String.format("האם בקו ראיה: %s", if (item.isLos) "כן" else "לא"))
+        builder.append(String.format("האם בקו ראיה: %s\n", if (item.isLos) "כן" else "לא"))
+        item.properties.keySet()
+            .forEach { key -> builder.append(key + ": " + item.properties[key] + "\n") }
         text = builder.toString()
     }
 }

@@ -2,6 +2,7 @@ package com.elyonut.wow.parser
 
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.PolygonModel
+import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.geojson.Polygon
@@ -20,7 +21,7 @@ class MapboxParser {
             return FeatureModel(
                 feature.id() ?: "",
                 parseToGeometryModel(feature.geometry() as Polygon),
-                feature.properties(),
+                feature.properties() ?: JsonObject(),
                 feature.type()
             )
         }

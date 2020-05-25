@@ -27,13 +27,17 @@ class CalcThreatStatusAsync(
 
     override fun doInBackground(vararg locations: LatLng): RiskData {
         val latLng = locations[0]
-        val threatLayerFeatures = mapViewModel.mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
+        val threatLayerFeatures =
+            mapViewModel.mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
         var riskStatus = RiskStatus.LOW
         var threatFeaturesConstruction: List<FeatureModel> = ArrayList()
         if (threatLayerFeatures != null) {
             logger.info("location changed, calculating threats!")
             threatFeaturesConstruction =
-                mapViewModel.threatAnalyzer.getThreatFeaturesConstruction(latLng, threatLayerFeatures)
+                mapViewModel.threatAnalyzer.getThreatFeaturesConstruction(
+                    latLng,
+                    threatLayerFeatures
+                )
 
             if (threatFeaturesConstruction.isNotEmpty()) {
                 riskStatus = RiskStatus.HIGH
@@ -56,39 +60,43 @@ class CalcThreatStatusAsync(
                 features.add(feature)
 
                 //create threat model for UI list
-                val modelThreat = Threat()
-                val properties = threat.properties!!
-                modelThreat.feature = feature
-                modelThreat.isLos = true
-                modelThreat.name = properties["namestr"].asString
-                modelThreat.type = properties["type"].asString
-                modelThreat.level = KnowledgeBase.getThreatLevel(modelThreat.type)
-                modelThreat.latitude = properties["latitude"].asDouble
-                modelThreat.longitude = properties["longitude"].asDouble
-                modelThreat.eAmount = properties["eAmount"].asString
-                modelThreat.knowledgeType = properties["knowledgeType"].asString
-                modelThreat.range = properties["range"].asDouble
-                val height = properties["height"]
-
-                if (height != null) {
-                    modelThreat.height = height.asDouble
-                }
-
-                val coordinates = (feature.geometry() as Polygon).coordinates()
-                val featureLatitude = coordinates[0][0].latitude()
-                val featureLongitude = coordinates[0][0].longitude()
-                val featureLocation = LatLng(featureLatitude, featureLongitude)
-
-                modelThreat.distanceMeters = result.currentLocation.distanceTo(featureLocation)
-                modelThreat.azimuth = bearingToAzimuth(
-                    TurfMeasurement.bearing(
-                        Point.fromLngLat(
-                            result.currentLocation.longitude,
-                            result.currentLocation.latitude
-                        ),
-                        Point.fromLngLat(featureLongitude, featureLatitude)
-                    )
+                val modelThreat = mapViewModel.threatAnalyzer.featureModelToThreat(
+                    threat,
+                    result.currentLocation,
+                    true
                 )
+//                val properties = threat.properties!!
+//                modelThreat.feature = feature
+//                modelThreat.isLos = true
+//                modelThreat.name = properties["namestr"].asString
+//                modelThreat.enemyType = properties["type"].asString
+//                modelThreat.level = KnowledgeBase.getThreatLevel(modelThreat.enemyType)
+//                modelThreat.latitude = properties["latitude"].asDouble
+//                modelThreat.longitude = properties["longitude"].asDouble
+//                modelThreat.eAmount = properties["eAmount"].asString
+//                modelThreat.knowledgeType = properties["knowledgeType"].asString
+//                modelThreat.range = properties["range"].asDouble
+//                val height = properties["height"]
+//
+//                if (height != null) {
+//                    modelThreat.height = height.asDouble
+//                }
+//
+//                val coordinates = (feature.geometry() as Polygon).coordinates()
+//                val featureLatitude = coordinates[0][0].latitude()
+//                val featureLongitude = coordinates[0][0].longitude()
+//                val featureLocation = LatLng(featureLatitude, featureLongitude)
+//
+//                modelThreat.distanceMeters = result.currentLocation.distanceTo(featureLocation)
+//                modelThreat.azimuth = bearingToAzimuth(
+//                    TurfMeasurement.bearing(
+//                        Point.fromLngLat(
+//                            result.currentLocation.longitude,
+//                            result.currentLocation.latitude
+//                        ),
+//                        Point.fromLngLat(featureLongitude, featureLatitude)
+//                    )
+//                )
                 modelThreatList.add(modelThreat)
             }
             val selectedBuildingSource: GeoJsonSource? = if (isManualSelection) {
