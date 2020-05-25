@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "alerts_table")
 data class AlertModel(
     @PrimaryKey(autoGenerate = true)
-    val alertID: Int = 0,
+    val id: Int = 0,
 
     @ColumnInfo(name = "threat_id")
     val threatId: String,

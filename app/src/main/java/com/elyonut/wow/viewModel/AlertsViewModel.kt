@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.elyonut.wow.AlertsManager
 import com.elyonut.wow.model.AlertModel
-import java.util.*
 
 class AlertsViewModel(application: Application, var alertsManager: AlertsManager): AndroidViewModel(application) {
 
@@ -18,7 +17,7 @@ class AlertsViewModel(application: Application, var alertsManager: AlertsManager
     }
 
     fun acceptAlertClicked(alert: AlertModel) {
-        alertsManager.updateMessageAccepted(alert)
+        alertsManager.markAsRead(alert)
     }
 
     fun deleteAlertClicked(alert: AlertModel) {

@@ -16,12 +16,9 @@ interface AlertDatabaseDao {
     @Delete
     fun delete(alert: AlertModel)
 
-    @Query("SELECT * from alerts_table WHERE alertID = :key")
-    fun get(key: Long): AlertModel?
-
     @Query("SELECT * from alerts_table WHERE is_read = 0 ORDER BY time ASC LIMIT 1")
-    fun getLastUnreadAlert(): AlertModel?
+    fun getFirstUnreadAlert(): AlertModel?
 
-    @Query("SELECT * FROM alerts_table ORDER BY alertID DESC")
-    fun getAllAlerts(): LiveData<List<AlertModel>>
+    @Query("SELECT * FROM alerts_table ORDER BY id DESC")
+    fun getAll(): LiveData<List<AlertModel>>
 }
