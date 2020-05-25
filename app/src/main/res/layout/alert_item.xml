@@ -50,9 +50,10 @@
 
                     <androidx.appcompat.widget.AppCompatImageButton
                         android:id="@+id/deleteAlert"
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
                         android:background="@drawable/cancel"
+                        android:cropToPadding="false"
                         android:onClick="@{() -> clickListener.onDeleteClick(alert)}" />
 
                 </LinearLayout>
