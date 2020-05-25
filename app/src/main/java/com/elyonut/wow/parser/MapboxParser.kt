@@ -18,9 +18,9 @@ class MapboxParser {
 
         fun parseToFeatureModel(feature: Feature): FeatureModel {
             return FeatureModel(
-                feature.id(),
-                feature.properties(),
+                feature.id() ?: "",
                 parseToGeometryModel(feature.geometry() as Polygon),
+                feature.properties(),
                 feature.type()
             )
         }

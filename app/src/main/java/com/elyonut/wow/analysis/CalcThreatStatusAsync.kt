@@ -90,7 +90,6 @@ class CalcThreatStatusAsync(
                     )
                 )
                 modelThreatList.add(modelThreat)
-
             }
             val selectedBuildingSource: GeoJsonSource? = if (isManualSelection) {
                 mapViewModel.map.style?.getSourceAs(Constants.SELECTED_BUILDING_SOURCE_ID)
@@ -98,8 +97,9 @@ class CalcThreatStatusAsync(
                 mapViewModel.map.style?.getSourceAs(Constants.ACTIVE_THREATS_SOURCE_ID)
             }
             selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
+
             if (!isManualSelection) {
-                mapViewModel.threats.postValue(modelThreatList)
+                mapViewModel.threats.postValue(modelThreatList) // maybe we should check if the list is the same...
             }
         }
     }

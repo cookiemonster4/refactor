@@ -145,9 +145,6 @@ class ThreatAnalyzer private constructor(
                 currentLocationExploded
             )
         }
-
-/*        return coverageSquare.parallelStream().filter{coord -> topographyService.isLOS(coord, currentLocationExploded)}.collect(
-            Collectors.toList())*/
     }
 
     fun filterWithLOSCoordinatesAlpha(
@@ -332,16 +329,6 @@ class ThreatAnalyzer private constructor(
         height < 10 -> ThreatLevel.Low
         height < 100 -> ThreatLevel.Medium
         else -> ThreatLevel.High
-    }
-
-    private fun getFeaturesFromMapbox(
-        mapboxMap: MapboxMap,
-        layerId: String,
-        boundingBox: RectF
-    ): List<Feature> {
-        val features = mapboxMap.queryRenderedFeatures(boundingBox, layerId)
-        return features
-
     }
 
     private fun calculateCoverageSquare(

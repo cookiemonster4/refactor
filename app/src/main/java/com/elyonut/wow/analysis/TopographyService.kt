@@ -66,8 +66,6 @@ object TopographyService {
 
         var locationCoordinates = listOf(currentLocation)
 
-//        val buildingAtLocation =
-//            getBuildingAtLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
         if (buildingAtLocation != null) {
             locationCoordinates = getCoordinatesForAnalysis(buildingAtLocation.geometry()!!)
             val locationHeight = buildingAtLocation.getNumberProperty("height").toDouble()
@@ -119,20 +117,12 @@ object TopographyService {
         val buildingAtLocation =
             vectorIndex.getVectorQuad(currentLocation.longitude, currentLocation.latitude)
         if (buildingAtLocation != null) {
-            // locationCoordinates = getCoordinatesForAnalysis(buildingAtLocation.polygon)
             locationCoordinates = getGeometryCoordinates(buildingAtLocation.polygon)
             val locationHeight = buildingAtLocation.properties["height"]!!.toDouble()
             locationCoordinates.forEach { bc -> bc.heightMeters = locationHeight }
         }
         return locationCoordinates
     }
-
-//    fun explodeFeatureCoordinate(featureModel: FeatureModel): List<Coordinate> {
-//
-//        val featureCoords = getCoordinates(featureModel.geometry)
-//        val threatHeight = featureModel.properties?.get("height")!!.asDouble
-//        return getExplodedFromCache(featureModel.id!!, featureCoords, threatHeight)
-//    }
 
     fun getBuildingsAtZone(featureModel: FeatureModel): List<VectorEnvelope> {
         val featureCoords = getCoordinates(featureModel.geometry)
@@ -263,7 +253,6 @@ object TopographyService {
             candidate.heightMeters = getHeight(candidate)
             val maxHeight = canDistance * currTan
             val canHeight = candidate.heightMeters - min.heightMeters
-            //   console.log(canHeight + "," + maxHeight);
             if (canHeight > maxHeight) {
                 return false
             }
@@ -376,29 +365,6 @@ object TopographyService {
         }
         return c1.heightMeters
     }
-
-//    private fun getHeightMapBox(c1: Coordinate): Double {
-//        if (c1.heightMeters == -10000.0) {
-//            val buildingAtLocation = getBuildingAtLocation(LatLng(c1.latitude, c1.longitude))
-//            return buildingAtLocation?.getNumberProperty("height")?.toDouble() ?: LOS_HEIGHT_METERS
-//        }
-//        return c1.heightMeters
-//    }
-
-//    private fun getBuildingAtLocation(
-//        location: LatLng
-//    ): Feature? {
-//
-//        val point = mapboxMap.projection.toScreenLocation(location)
-//        val features = mapboxMap.queryRenderedFeatures(point, Constants.BUILDINGS_LAYER_ID) //????
-//
-//        if (features.isNullOrEmpty())
-//            return null
-//
-//        val sortedByName =
-//            features.sortedBy { myObject -> myObject.getNumberProperty("height").toDouble() }
-//        return sortedByName.last()
-//    }
 
     private fun getCoordinatesForAnalysis(featureGeometry: Geometry): List<Coordinate> {
         val corners = getGeometryCoordinates(featureGeometry)

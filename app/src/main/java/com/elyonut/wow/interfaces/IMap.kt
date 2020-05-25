@@ -13,6 +13,4 @@ interface IMap {
     fun colorFilter(layerId: String, colorsList: Dictionary<Int, Color>)
 
     fun initOfflineMap()
-
-    fun createThreatRadiusSource(): ArrayList<FeatureModel>
 }
