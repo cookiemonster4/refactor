@@ -19,8 +19,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
 
 class CalcThreatStatusAsync(
-    private val mapViewModel: MapViewModel,
-    private val isManualSelection: Boolean
+    private val mapViewModel: MapViewModel
 ) : AsyncTask<LatLng, Int, RiskData>() {
 
     private val logger: ILogger = TimberLogAdapter()
@@ -67,16 +66,7 @@ class CalcThreatStatusAsync(
                 )
                 modelThreatList.add(modelThreat)
             }
-            val selectedBuildingSource: GeoJsonSource? = if (isManualSelection) {
-                mapViewModel.map.style?.getSourceAs(Constants.SELECTED_BUILDING_SOURCE_ID)
-            } else {
-                mapViewModel.map.style?.getSourceAs(Constants.ACTIVE_THREATS_SOURCE_ID)
-            }
-            selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
-
-            if (!isManualSelection) {
                 mapViewModel.threats.postValue(modelThreatList) // maybe we should check if the list is the same...
-            }
         }
     }
 }

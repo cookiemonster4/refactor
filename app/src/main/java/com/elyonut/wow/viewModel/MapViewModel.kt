@@ -140,7 +140,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             return //Returning as the current task execution is not finished yet.
         }
 
-        calcThreatsTask = CalcThreatStatusAsync(this, false)
+        calcThreatsTask = CalcThreatStatusAsync(this)
         val latLng = LatLng(location.latitude, location.longitude)
         calcThreatsTask!!.execute(latLng)
 
@@ -162,8 +162,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // TODO Move to alertsManager
-    fun currentThreatUpdated() {
-        threatAlerts.value = this.threats.value
+    fun currentThreatsUpdated() {
+        threatAlerts.value = threats.value
+        map.style?.getSourceAs<GeoJsonSource>(Constants.ACTIVE_THREATS_SOURCE_ID)?.let {
+            val features =
+                threats.value?.map { threat -> MapboxParser.parseToMapboxFeature(threat) }
+                    ?: arrayListOf()
+            it.setGeoJson(FeatureCollection.fromFeatures(features))
+        }
     }
 
     // TODO make generic

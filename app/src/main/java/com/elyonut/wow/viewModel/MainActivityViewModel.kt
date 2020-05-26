@@ -74,11 +74,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         val coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
         val coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
         val coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
-        var coordinates: Deferred<List<Coordinate>> // List<Coordinate> = arrayListOf()
+        var coordinates: Deferred<List<Coordinate>>
         CoroutineScope(Dispatchers.Default).launch {
             coordinates = async {
             if (coverageSearchHeightMetersChecked) {
-//                coordinates =
                      return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
@@ -86,7 +85,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         coverageSearchHeightMeters
                     )
             } else {
-//                coordinates =
                 return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,

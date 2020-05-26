@@ -3,9 +3,11 @@ package com.elyonut.wow.analysis
 import android.content.Context
 import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.VectorLayersManager
+import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.adapter.TimberLogAdapter
+import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.model.*
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.TempDB
@@ -20,12 +22,16 @@ class ThreatAnalyzer private constructor(
 ) {
     private var topographyService = TopographyService
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
+    private var locationService: ILocationService = LocationService.getInstance(context)
     var threatLayer: List<FeatureModel> = TempDB.getInstance(context).getThreatLayer()
 
     private val logger: ILogger = TimberLogAdapter()
 
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
 
+    init {
+        locationService.subscribeToLocationChanges {  }
+    }
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
     fun getBuildingsWithinLOS(
@@ -275,7 +281,11 @@ class ThreatAnalyzer private constructor(
     }
 
     // Needs to be without Model in the name when we delete the other function
-    fun featureModelToThreat(featureModel: FeatureModel, currentLocation: LatLng, isLos: Boolean): Threat {
+    fun featureModelToThreat(
+        featureModel: FeatureModel,
+        currentLocation: LatLng,
+        isLos: Boolean
+    ): Threat {
         val threat = Threat(featureModel)
         enrichThreat(threat, currentLocation, isLos)
         return threat

@@ -22,7 +22,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.*
-import com.elyonut.wow.database.DB
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
@@ -304,7 +303,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     fun currentThreatUpdated() {
         sharedViewModel.isVisible.value = true
-        mapViewModel.currentThreatUpdated()
+        mapViewModel.currentThreatsUpdated()
     }
 
     // TODO Remove filter
@@ -419,26 +418,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     }
                     mapViewModel.selectLocationManualCoverage -> {
                         sharedViewModel.mapClickedLatlng.postValue(latLng)
-
-//                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
-//                        progressBar.visibility = VISIBLE
-//                        if (sharedViewModel.coverageSearchHeightMetersChecked.value!!) {
-//                            mapViewModel.calculateCoverageFromPoint(
-//                                latLng,
-//                                sharedViewModel.coverageRangeMeters,
-//                                sharedViewModel.coverageResolutionMeters,
-//                                sharedViewModel.coverageSearchHeightMeters,
-//                                progressBar
-//                            )
-//                        } else {
-//                            mapViewModel.calculateCoverageFromPoint(
-//                                latLng,
-//                                sharedViewModel.coverageRangeMeters,
-//                                sharedViewModel.coverageResolutionMeters,
-//                                Constants.DEFAULT_COVERAGE_HEIGHT_METERS,
-//                                progressBar
-//                            )
-//                        }
                         mapViewModel.selectLocationManualCoverage = false
                     }
                     mapViewModel.selectLocationManualCoverageAll -> {
