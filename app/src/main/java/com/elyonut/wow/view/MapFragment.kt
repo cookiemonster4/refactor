@@ -22,6 +22,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.*
+import com.elyonut.wow.database.DB
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
@@ -63,7 +64,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private lateinit var broadcastReceiver: BroadcastReceiver
     private var zoomFilter = IntentFilter(Constants.ZOOM_LOCATION_ACTION)
-    private var alertAcceptedFilter = IntentFilter(Constants.ALERT_ACCEPTED_ACTION)
     private lateinit var alertsManager: AlertsManager
     private lateinit var binding: FragmentMapBinding
     private lateinit var areaSelectionBinding: AreaSelectionBinding
@@ -101,16 +101,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 when (intent.action) {
                     Constants.ZOOM_LOCATION_ACTION -> {
                         mapViewModel.setZoomLocation(intent.getStringExtra("threatID"))
-                        alertsManager.updateMessageAccepted(intent.getStringExtra("threatID"))
                         (context as FragmentActivity).supportFragmentManager.popBackStack()
-
-                    }
-                    Constants.ALERT_ACCEPTED_ACTION -> {
-                        alertsManager.updateMessageAccepted(intent.getStringExtra("threatID"))
                     }
                 }
-
-                alertsManager.shouldPopAlert.postValue(true)
             }
         }
     }
@@ -198,10 +191,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             setCurrentLocationButtonIcon(it)
         })
 
-        alertsManager.shouldPopAlert.observe(this, Observer { shouldPop ->
-            if (shouldPop && alertsManager.alerts.value!!.count { !it.isRead } > 0) {
-                alertsManager.shouldPopAlert.postValue(false)
-                setAlertPopUp(alertsManager.alerts.value?.findLast { !it.isRead }!!)
+        alertsManager.alerts.observe(this, Observer {
+            alerts ->
+            if(alerts.isNotEmpty()) {
+                val alertToPop = alerts.sortedBy { alert -> alert.time }?.first { alert -> !alert.isRead  }
+                setAlertPopUp(alertToPop)
             }
         })
 
@@ -660,7 +654,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     override fun onResume() {
         super.onResume()
         activity?.registerReceiver(broadcastReceiver, zoomFilter)
-        activity?.registerReceiver(broadcastReceiver, alertAcceptedFilter)
         mapView.onResume()
     }
 
