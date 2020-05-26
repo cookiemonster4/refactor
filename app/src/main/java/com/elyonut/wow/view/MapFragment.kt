@@ -191,11 +191,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             setCurrentLocationButtonIcon(it)
         })
 
-        alertsManager.alerts.observe(this, Observer {
-            alerts ->
-            if(alerts.isNotEmpty()) {
-                val alertToPop = alerts.sortedBy { alert -> alert.time }?.first { alert -> !alert.isRead  }
-                setAlertPopUp(alertToPop)
+        alertsManager.alerts.observe(this, Observer { alerts ->
+            if (alerts.isNotEmpty()) {
+                alerts.sortedBy { alert -> alert.time }.firstOrNull { alert -> !alert.isRead }
+                    ?.let { setAlertPopUp(it) }
             }
         })
 
