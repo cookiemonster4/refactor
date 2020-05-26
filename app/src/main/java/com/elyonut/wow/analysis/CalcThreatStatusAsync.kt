@@ -65,38 +65,6 @@ class CalcThreatStatusAsync(
                     result.currentLocation,
                     true
                 )
-//                val properties = threat.properties!!
-//                modelThreat.feature = feature
-//                modelThreat.isLos = true
-//                modelThreat.name = properties["namestr"].asString
-//                modelThreat.enemyType = properties["type"].asString
-//                modelThreat.level = KnowledgeBase.getThreatLevel(modelThreat.enemyType)
-//                modelThreat.latitude = properties["latitude"].asDouble
-//                modelThreat.longitude = properties["longitude"].asDouble
-//                modelThreat.eAmount = properties["eAmount"].asString
-//                modelThreat.knowledgeType = properties["knowledgeType"].asString
-//                modelThreat.range = properties["range"].asDouble
-//                val height = properties["height"]
-//
-//                if (height != null) {
-//                    modelThreat.height = height.asDouble
-//                }
-//
-//                val coordinates = (feature.geometry() as Polygon).coordinates()
-//                val featureLatitude = coordinates[0][0].latitude()
-//                val featureLongitude = coordinates[0][0].longitude()
-//                val featureLocation = LatLng(featureLatitude, featureLongitude)
-//
-//                modelThreat.distanceMeters = result.currentLocation.distanceTo(featureLocation)
-//                modelThreat.azimuth = bearingToAzimuth(
-//                    TurfMeasurement.bearing(
-//                        Point.fromLngLat(
-//                            result.currentLocation.longitude,
-//                            result.currentLocation.latitude
-//                        ),
-//                        Point.fromLngLat(featureLongitude, featureLatitude)
-//                    )
-//                )
                 modelThreatList.add(modelThreat)
             }
             val selectedBuildingSource: GeoJsonSource? = if (isManualSelection) {
@@ -110,12 +78,5 @@ class CalcThreatStatusAsync(
                 mapViewModel.threats.postValue(modelThreatList) // maybe we should check if the list is the same...
             }
         }
-    }
-
-    private fun bearingToAzimuth(bearing: Double): Double {
-        var angle = bearing % 360
-        if (angle < 0) {
-            angle += 360; }
-        return angle
     }
 }

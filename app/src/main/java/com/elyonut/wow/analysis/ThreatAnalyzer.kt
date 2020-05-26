@@ -281,6 +281,7 @@ class ThreatAnalyzer private constructor(
         return threat
     }
 
+    // Where should this be? here ot in Threat class? needs to be rewritten without mapbox
     private fun enrichThreat(threat: Threat, currentLocation: LatLng, isLOS: Boolean) {
         threat.azimuth = bearingToAzimuth(
             TurfMeasurement.bearing( // how to get without mapbox
