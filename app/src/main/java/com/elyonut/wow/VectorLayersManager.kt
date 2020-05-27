@@ -29,6 +29,12 @@ class VectorLayersManager private constructor(context: Context) {
         _layers.value?.add(LayerModel(id, name, features))
     }
 
+    fun updateLayer(id: String, features: List<FeatureModel>) {
+        val tempLayersList =_layers.value
+        tempLayersList?.find { layer -> id == layer.id }?.features = features
+        _layers.value = tempLayersList
+    }
+
     fun getLayerById(id: String): List<FeatureModel>? {
         return _layers.value?.find { layer -> id == layer.id }?.features
     }

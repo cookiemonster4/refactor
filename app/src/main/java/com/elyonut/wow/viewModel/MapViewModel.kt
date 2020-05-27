@@ -10,6 +10,7 @@ import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
@@ -21,6 +22,7 @@ import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.model.Coordinate
+import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
@@ -63,7 +65,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val permissions: IPermissions = PermissionsService.getInstance(application)
     val mapVectorLayersManager = VectorLayersManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
-    var threats = MutableLiveData<ArrayList<Threat>>()
+    var currentThreats = MutableLiveData<ArrayList<Threat>>()
+//    var mapLayers:MutableLiveData<List<FeatureModel>> =
+//        Transformations.map(mapVectorLayersManager.layers, ) // MutableLiveData<ArrayList<Threat>>()
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     val isLocationAdapterInitialized = MutableLiveData<Boolean>()
     private val logger: ILogger = TimberLogAdapter()
@@ -86,6 +90,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         logger.initLogger()
+    }
+
+    fun layersUpdated() {
+
     }
 
     @SuppressLint("WrongConstant")
@@ -163,10 +171,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO Move to alertsManager
     fun currentThreatsUpdated() {
-        threatAlerts.value = threats.value
+        threatAlerts.value = currentThreats.value
         map.style?.getSourceAs<GeoJsonSource>(Constants.ACTIVE_THREATS_SOURCE_ID)?.let {
             val features =
-                threats.value?.map { threat -> MapboxParser.parseToMapboxFeature(threat) }
+                currentThreats.value?.map { threat -> MapboxParser.parseToMapboxFeature(threat) }
                     ?: arrayListOf()
             it.setGeoJson(FeatureCollection.fromFeatures(features))
         }

@@ -13,7 +13,6 @@ class Calculations(var threatAnalyzer: ThreatAnalyzer) {
         pointResolutionMeters: Double,
         heightMeters: Double
     ): List<Coordinate> {
-
         return threatAnalyzer.filterWithLOSCoordinatesAlpha(
             currentLocation,
             rangeMeters,
@@ -23,10 +22,8 @@ class Calculations(var threatAnalyzer: ThreatAnalyzer) {
         )
     }
 
-    fun calcThreatStatus(threatsLayerFeatures: List<FeatureModel>, latLng: LatLng): List<Threat> {
-        val currentThreatsFeatures =
-            threatAnalyzer.filterWithLOSModelFeatures(latLng)
-        return currentThreatsFeatures.map { threatFeature ->
+    fun calcThreatStatus(latLng: LatLng): List<Threat> {
+        return threatAnalyzer.filterWithLOSModelFeatures(latLng).map { threatFeature ->
             threatAnalyzer.featureModelToThreat(
                 threatFeature,
                 latLng,

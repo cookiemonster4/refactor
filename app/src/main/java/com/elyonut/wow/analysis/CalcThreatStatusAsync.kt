@@ -1,7 +1,6 @@
 package com.elyonut.wow.analysis
 
 import android.os.AsyncTask
-import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.model.RiskData
 import com.elyonut.wow.model.RiskStatus
@@ -54,7 +53,7 @@ class CalcThreatStatusAsync(
                 )
                 modelThreatList.add(modelThreat)
             }
-            mapViewModel.threats.postValue(modelThreatList) // maybe we should check if the list is the same...
+            mapViewModel.currentThreats.postValue(modelThreatList) // maybe we should check if the list is the same...
         }
     }
 }

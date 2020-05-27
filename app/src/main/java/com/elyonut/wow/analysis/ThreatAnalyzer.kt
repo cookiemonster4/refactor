@@ -35,6 +35,12 @@ class ThreatAnalyzer private constructor(
         locationService.subscribeToLocationChanges { /*calculateThreats() */ }
     }
 
+    fun locationChanged(latLng: LatLng) {
+        currentThreats = calculateThreats(latLng)
+        vectorLayersManager.updateLayer(Constants.THREAT_LAYER_ID, currentThreats)
+
+    }
+
     fun calculateThreats(latLng: LatLng): List<Threat> {
         return filterWithLOSModelFeatures(latLng).map { threatFeature ->
             featureModelToThreat(

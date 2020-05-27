@@ -213,7 +213,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         sharedViewModel.coordinatesfeaturesInCoverage.observe(this, Observer { addCoveregae(it) })
 
-        mapViewModel.threats.observe(this, Observer {
+        mapViewModel.currentThreats.observe(this, Observer {
             if (it.isNotEmpty()) {
                 currentThreatUpdated()
             }
@@ -521,7 +521,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     // TODO Maybe navigation
     private fun openThreatListFragment() {
-        mapViewModel.threats.value?.let {
+        mapViewModel.currentThreats.value?.let {
             val bundle = Bundle()
             bundle.putParcelableArrayList("threats", it)
 
