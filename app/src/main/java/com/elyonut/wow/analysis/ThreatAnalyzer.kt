@@ -23,15 +23,15 @@ class ThreatAnalyzer private constructor(
     private var topographyService = TopographyService
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
     private var locationService: ILocationService = LocationService.getInstance(context)
-    private var threatLayer: List<Threat> =
-        TempDB.getInstance(context).getThreatLayer()
-            .map { Threat(it) } // = TempDB.getInstance(context).getThreatLayer()
+    private var threatLayer = TempDB.getInstance(context).getThreatLayer().map { Threat(it) }
+    private lateinit var currentThreats: List<Threat>
 
     private val logger: ILogger = TimberLogAdapter()
 
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
 
     init {
+//        vectorLayersManager.addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, threatLayer)
         locationService.subscribeToLocationChanges { /*calculateThreats() */ }
     }
 

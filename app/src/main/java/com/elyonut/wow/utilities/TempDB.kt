@@ -10,6 +10,7 @@ import java.io.InputStreamReader
 
 class TempDB private constructor(private var context: Context) {
     private val layers = ArrayList<LayerModel>()
+    private var threatLayer: List<FeatureModel> = listOf()
 
     init {
         val gson = GsonBuilder().create()
@@ -21,11 +22,11 @@ class TempDB private constructor(private var context: Context) {
         val centerTLVBuffer =
             BufferedReader(InputStreamReader(context.assets.open("buildingsCenterTLVExtended.geojson")))
 
-        val features = gson.fromJson(buffer, Array<FeatureModel>::class.java)
+        threatLayer = gson.fromJson(buffer, Array<FeatureModel>::class.java).toList()
         val restaurantsFeatures = gson.fromJson(restaurantsBuffer, Array<FeatureModel>::class.java)
         val centerTLVFeatures = gson.fromJson(centerTLVBuffer, Array<FeatureModel>::class.java)
 
-        val layerModel = LayerModel(Constants.THREAT_LAYER_ID, "בניינים", features.toList())
+//        val layerModel = LayerModel(Constants.THREAT_LAYER_ID, "בניינים", threatLayer)
         val restaurantsLayerModel =
             LayerModel("restaurants", "מסעדות", restaurantsFeatures.toList())
         val centerTLVLayerModel =
@@ -33,11 +34,11 @@ class TempDB private constructor(private var context: Context) {
 
         layers.add(restaurantsLayerModel)
         layers.add(centerTLVLayerModel)
-        layers.add(layerModel)
+//        layers.add(layerModel)
     }
 
     companion object : SingletonHolder<TempDB, Context>(::TempDB)
 
     fun getLayers(): ArrayList<LayerModel> = layers
-    fun getThreatLayer() = layers[2].features
+    fun getThreatLayer() = threatLayer
 }

@@ -610,7 +610,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun addLayersToMapStyle(style: Style) {
-        mapVectorLayersManager.layers?.forEach { layerModel ->
+        mapVectorLayersManager.layers.value?.forEach { layerModel ->
             val features = layerModel.features.map { featureModel ->
                 MapboxParser.parseToMapboxFeature(featureModel)
             }

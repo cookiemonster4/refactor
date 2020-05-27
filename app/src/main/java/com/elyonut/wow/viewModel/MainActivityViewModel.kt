@@ -158,7 +158,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun getLayersList(): List<LayerModel>? {
-        return layerManager.layers
+        return layerManager.layers.value
     }
 
     fun getLayerTypeValues(): List<String>? {

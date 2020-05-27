@@ -1,29 +1,40 @@
 package com.elyonut.wow
 
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.LatLngModel
 import com.elyonut.wow.model.LayerModel
+import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.TempDB
 import com.google.gson.JsonPrimitive
 import kotlin.reflect.KClass
 
 class VectorLayersManager private constructor(context: Context) {
     private val tempDB = TempDB.getInstance(context)
-    var layers: List<LayerModel>? = null
+    private var _layers = MutableLiveData<MutableList<LayerModel>>()
+    val layers: LiveData<MutableList<LayerModel>>
+        get() = _layers
+
 
     init {
-        layers = tempDB.getLayers()
+        _layers.value = tempDB.getLayers()
+        addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, tempDB.getThreatLayer())
     }
 
     companion object : SingletonHolder<VectorLayersManager, Context>(::VectorLayersManager)
 
+    fun addLayer(id: String, name: String, features: List<FeatureModel>) {
+        _layers.value?.add(LayerModel(id, name, features))
+    }
+
     fun getLayerById(id: String): List<FeatureModel>? {
-        return layers?.find { layer -> id == layer.id }?.features
+        return _layers.value?.find { layer -> id == layer.id }?.features
     }
 
     fun initLayersIdList(): List<String>? {
-        return layers?.map { it.id }
+        return _layers.value?.map { it.id }
     }
 
     // for filter
@@ -45,13 +56,13 @@ class VectorLayersManager private constructor(context: Context) {
 
     // for filter
     fun getValuesOfLayerProperty(layerId: String, propertyName: String): List<String>? {
-        return getLayerById(layerId)?.map { a -> a.properties?.get(propertyName)!!.asString }
+        return getLayerById(layerId)?.map { a -> a.properties.get(propertyName)!!.asString }
             ?.distinct()
     }
 
     fun getFeatureLocation(featureID: String): LatLngModel {
         var feature: FeatureModel? = null
-        layers?.forEach { it ->
+        _layers.value?.forEach { it ->
             feature = it.features.find { it.id == featureID }
 
             if (feature != null) {
@@ -70,7 +81,7 @@ class VectorLayersManager private constructor(context: Context) {
 
     fun getFeatureName(featureID: String): String {
         var feature: FeatureModel? = null
-        layers?.forEach { it ->
+        _layers.value?.forEach { it ->
             feature = it.features.find { it.id == featureID }
 
             if (feature != null) {
