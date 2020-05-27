@@ -7,6 +7,7 @@ import com.elyonut.wow.analysis.quadtree.Envelope
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.PolygonModel
+import com.elyonut.wow.model.Threat
 import com.mapbox.geojson.*
 import java.io.InputStream
 import kotlin.math.*
@@ -37,7 +38,7 @@ object TopographyService {
         val threatType = building.getProperty("type")?.asString
 
         if (threatType != null && threatType.contains("mikush")) {
-            return isMikushInRange(currentLocation, threatCoordinates)
+            return isInRange(currentLocation, threatCoordinates, KnowledgeBase.MIKUSH_RANGE_METERS)
         }
 
         val threatRangeMeters = KnowledgeBase.getRangeMeters(threatType)
@@ -79,17 +80,17 @@ object TopographyService {
 
     }
 
-    fun isThreat(currentLocation: Coordinate, featureModel: FeatureModel): Boolean {
+    fun isThreat(currentLocation: Coordinate, threat: Threat): Boolean {
 
-        val threatType = featureModel.properties?.get("type")?.asString
-        if (threatType != null && threatType.contains("mikush")) {
-            val coordinates = getCoordinates(featureModel.geometry)
-            return isMikushInRange(currentLocation, coordinates)
+        val threatType = threat.enemyType
+        if (threatType.contains("mikush")) {
+            val coordinates = getCoordinates(threat.geometry)
+            return isInRange(currentLocation, coordinates, KnowledgeBase.MIKUSH_RANGE_METERS)
         }
 
         val threatRangeMeters = KnowledgeBase.getRangeMeters(threatType)
 
-        val threatCoordinates = getCoordinates(featureModel.geometry)
+        val threatCoordinates = getCoordinates(threat.geometry)
 
         var inRange = false
         for (coord in threatCoordinates) {
@@ -101,9 +102,9 @@ object TopographyService {
         }
 
         if (inRange) {
-            val threatHeight = featureModel.properties?.get("height")!!.asDouble
+            val threatHeight = threat.properties?.get("height")!!.asDouble
             val threatCoordinatesExploded =
-                getExplodedFromCache(featureModel.id!!, threatCoordinates, threatHeight)
+                getExplodedFromCache(threat.id!!, threatCoordinates, threatHeight)
 
             return isLOSLocalIndex(currentLocation, threatCoordinatesExploded)
         }
@@ -165,12 +166,13 @@ object TopographyService {
         return explodedThreatCoordinates
     }
 
-    private fun isMikushInRange(
-        currentLocation: Coordinate,
-        coordinates: List<Coordinate>
+    private fun isInRange(
+        location: Coordinate,
+        coordinates: List<Coordinate>,
+        range: Double
     ): Boolean {
         return coordinates.any { coordinate ->
-            distanceMeters(currentLocation, coordinate) <= KnowledgeBase.MIKUSH_RANGE_METERS
+            distanceMeters(location, coordinate) <= range
         }
     }
 

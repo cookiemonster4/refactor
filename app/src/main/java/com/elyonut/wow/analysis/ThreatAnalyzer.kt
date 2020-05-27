@@ -102,8 +102,8 @@ class ThreatAnalyzer private constructor(
         heightMeters: Double
     ) {
         threatLayer.forEach { threat ->
-            val threatType = threat.properties.get("type")?.asString
-            if (threatType != null && !threatType.contains("mikush")) {
+            val threatType = threat.enemyType
+            if (!threatType.contains("mikush")) {
 
                 val threatRangeMeters = KnowledgeBase.getRangeMeters(threatType)
                 val buildingsAtZone = topographyService.getBuildingsAtZone(threat)
@@ -125,7 +125,6 @@ class ThreatAnalyzer private constructor(
                         true
                     )
                 }
-
             }
         }
     }
