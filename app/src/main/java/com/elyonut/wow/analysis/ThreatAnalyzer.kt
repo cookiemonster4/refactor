@@ -23,7 +23,9 @@ class ThreatAnalyzer private constructor(
     private var topographyService = TopographyService
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
     private var locationService: ILocationService = LocationService.getInstance(context)
-    var threatLayer: List<FeatureModel> = TempDB.getInstance(context).getThreatLayer()
+    private var threatLayer: List<Threat> =
+        TempDB.getInstance(context).getThreatLayer()
+            .map { Threat(it) } // = TempDB.getInstance(context).getThreatLayer()
 
     private val logger: ILogger = TimberLogAdapter()
 
@@ -34,9 +36,7 @@ class ThreatAnalyzer private constructor(
     }
 
     fun calculateThreats(latLng: LatLng): List<Threat> {
-        val currentThreatsFeatures =
-            filterWithLOSModelFeatures(latLng)
-        return currentThreatsFeatures.map { threatFeature ->
+        return filterWithLOSModelFeatures(latLng).map { threatFeature ->
             featureModelToThreat(
                 threatFeature,
                 latLng,
@@ -101,12 +101,12 @@ class ThreatAnalyzer private constructor(
         pointResolutionMeters: Double,
         heightMeters: Double
     ) {
-        threatLayer.forEach { featureModel ->
-            val threatType = featureModel.properties?.get("type")?.asString
+        threatLayer.forEach { threat ->
+            val threatType = threat.properties.get("type")?.asString
             if (threatType != null && !threatType.contains("mikush")) {
 
                 val threatRangeMeters = KnowledgeBase.getRangeMeters(threatType)
-                val buildingsAtZone = topographyService.getBuildingsAtZone(featureModel)
+                val buildingsAtZone = topographyService.getBuildingsAtZone(threat)
 
                 logger.info("calculating $threatType, $threatRangeMeters meters, ${buildingsAtZone.size} buildings")
                 buildingsAtZone.forEach { building ->
@@ -134,10 +134,10 @@ class ThreatAnalyzer private constructor(
         currentLocation: LatLng
     ): List<FeatureModel> {
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
-        return threatLayer.parallelStream().filter { featureModel ->
+        return threatLayer.parallelStream().filter { threat ->
             topographyService.isThreat(
                 currentLocationCoord,
-                featureModel
+                threat
             )
         }.collect(
             Collectors.toList()
