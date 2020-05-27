@@ -24,7 +24,6 @@ class CalcThreatCoverageAllConstructionAsync(
 
 
             mapViewModel.threatAnalyzer.calculateCoverageAlpha(
-                allFeatures!!,
                 input.pointResolutionMeters,
                 input.heightMeters
             )

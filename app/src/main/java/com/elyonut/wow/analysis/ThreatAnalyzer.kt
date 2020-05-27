@@ -30,8 +30,21 @@ class ThreatAnalyzer private constructor(
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
 
     init {
-        locationService.subscribeToLocationChanges {  }
+        locationService.subscribeToLocationChanges { /*calculateThreats() */ }
     }
+
+    fun calculateThreats(latLng: LatLng): List<Threat> {
+        val currentThreatsFeatures =
+            filterWithLOSModelFeatures(latLng)
+        return currentThreatsFeatures.map { threatFeature ->
+            featureModelToThreat(
+                threatFeature,
+                latLng,
+                true
+            )
+        }
+    }
+
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
     fun getBuildingsWithinLOS(
@@ -54,10 +67,9 @@ class ThreatAnalyzer private constructor(
 
     // returns a threatList?
     fun getThreatFeaturesConstruction(
-        currentLocation: LatLng,
-        featureModels: List<FeatureModel>
+        currentLocation: LatLng
     ): List<FeatureModel> {
-        return filterWithLOSModelFeatures(featureModels, currentLocation)
+        return filterWithLOSModelFeatures(currentLocation)
     }
 
     fun calculateCoverage(
@@ -86,11 +98,10 @@ class ThreatAnalyzer private constructor(
     }
 
     fun calculateCoverageAlpha(
-        featureModels: List<FeatureModel>,
         pointResolutionMeters: Double,
         heightMeters: Double
     ) {
-        featureModels.forEach { featureModel ->
+        threatLayer.forEach { featureModel ->
             val threatType = featureModel.properties?.get("type")?.asString
             if (threatType != null && !threatType.contains("mikush")) {
 
@@ -120,11 +131,10 @@ class ThreatAnalyzer private constructor(
     }
 
     fun filterWithLOSModelFeatures(
-        buildingFeatureCollection: List<FeatureModel>,
         currentLocation: LatLng
     ): List<FeatureModel> {
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
-        return buildingFeatureCollection.parallelStream().filter { featureModel ->
+        return threatLayer.parallelStream().filter { featureModel ->
             topographyService.isThreat(
                 currentLocationCoord,
                 featureModel
@@ -312,13 +322,6 @@ class ThreatAnalyzer private constructor(
         return angle
     }
 
-    private fun getThreatLevel(height: Double): ThreatLevel = when {
-        height < 3 -> ThreatLevel.None
-        height < 10 -> ThreatLevel.Low
-        height < 100 -> ThreatLevel.Medium
-        else -> ThreatLevel.High
-    }
-
     private fun calculateCoverageSquare(
         currentLocation: LatLng,
         rangeMeters: Double,
@@ -434,6 +437,4 @@ class ThreatAnalyzer private constructor(
         }
         return visibleProjections
     }
-
-
 }

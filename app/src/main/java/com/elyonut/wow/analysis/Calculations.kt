@@ -3,7 +3,6 @@ package com.elyonut.wow.analysis
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.Threat
-import com.elyonut.wow.parser.MapboxParser
 import com.mapbox.mapboxsdk.geometry.LatLng
 
 class Calculations(var threatAnalyzer: ThreatAnalyzer) {
@@ -26,7 +25,7 @@ class Calculations(var threatAnalyzer: ThreatAnalyzer) {
 
     fun calcThreatStatus(threatsLayerFeatures: List<FeatureModel>, latLng: LatLng): List<Threat> {
         val currentThreatsFeatures =
-            threatAnalyzer.filterWithLOSModelFeatures(threatsLayerFeatures, latLng)
+            threatAnalyzer.filterWithLOSModelFeatures(latLng)
         return currentThreatsFeatures.map { threatFeature ->
             threatAnalyzer.featureModelToThreat(
                 threatFeature,

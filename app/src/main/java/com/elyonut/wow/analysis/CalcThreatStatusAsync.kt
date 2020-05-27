@@ -11,12 +11,7 @@ import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.viewModel.MapViewModel
 import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
-import com.mapbox.geojson.Point
-import com.mapbox.geojson.Polygon
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import com.mapbox.turf.TurfMeasurement
 
 class CalcThreatStatusAsync(
     private val mapViewModel: MapViewModel
@@ -26,21 +21,14 @@ class CalcThreatStatusAsync(
 
     override fun doInBackground(vararg locations: LatLng): RiskData {
         val latLng = locations[0]
-        val threatLayerFeatures =
-            mapViewModel.mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
         var riskStatus = RiskStatus.LOW
         var threatFeaturesConstruction: List<FeatureModel> = ArrayList()
-        if (threatLayerFeatures != null) {
-            logger.info("location changed, calculating threats!")
-            threatFeaturesConstruction =
-                mapViewModel.threatAnalyzer.getThreatFeaturesConstruction(
-                    latLng,
-                    threatLayerFeatures
-                )
+        logger.info("location changed, calculating threats!")
+        threatFeaturesConstruction =
+            mapViewModel.threatAnalyzer.getThreatFeaturesConstruction(latLng)
 
-            if (threatFeaturesConstruction.isNotEmpty()) {
-                riskStatus = RiskStatus.HIGH
-            }
+        if (threatFeaturesConstruction.isNotEmpty()) {
+            riskStatus = RiskStatus.HIGH
         }
 
         return RiskData(latLng, riskStatus, threatFeaturesConstruction)
@@ -66,7 +54,7 @@ class CalcThreatStatusAsync(
                 )
                 modelThreatList.add(modelThreat)
             }
-                mapViewModel.threats.postValue(modelThreatList) // maybe we should check if the list is the same...
+            mapViewModel.threats.postValue(modelThreatList) // maybe we should check if the list is the same...
         }
     }
 }
