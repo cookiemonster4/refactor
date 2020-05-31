@@ -5,6 +5,9 @@
     <data>
 
         <variable
+            name="feature"
+            type="com.elyonut.wow.model.FeatureModel" />
+        <variable
             name="threat"
             type="com.elyonut.wow.model.Threat" />
 
@@ -96,13 +99,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:text="@{threat.getTitle()}"
+                        android:text="@{feature.getTitle()}"
                         android:textSize="22sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{threat.toStringProperties()}"
+                        android:text="@{feature.toStringProperties()}"
                         tools:text="לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית נולום ארווס סאפיאן - פוסיליס קוויס, אקווזמן קוואזי במר מודוף. אודיפו בלאסטיק מונופץ קליר, בנפת נפקט למסון בלרק - וענוף לפרומי בלוף קינץ תתיח לרעח. לת צשחמי הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף."
                         tools:visibility="visible" />
 

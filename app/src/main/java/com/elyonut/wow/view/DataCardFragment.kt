@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
+import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
@@ -43,8 +44,10 @@ class DataCardFragment : Fragment() {
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
         val threat: Threat = arguments!!.getParcelable("threat")!!
+        val feature: FeatureModel = arguments!!.getParcelable("threat")!!
 
         binding.threat = threat
+        binding.feature = feature
         binding.dataCardViewModel = dataCardViewModel
         binding.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
