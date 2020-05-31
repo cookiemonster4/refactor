@@ -6,6 +6,7 @@ import android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE
 import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import kotlinx.android.parcel.RawValue
+import java.lang.StringBuilder
 
 class Threat(id: String, geometry: PolygonModel, properties: JsonObject) :
     FeatureModel(id, geometry, properties, "feature"), Parcelable {
@@ -69,6 +70,16 @@ class Threat(id: String, geometry: PolygonModel, properties: JsonObject) :
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    override fun toStringProperties(): String {
+        val builder = StringBuilder()
+        builder.append(super.toStringProperties())
+        builder.append("מרחק: $distanceMeters \n")
+        builder.append("אזימוט: $azimuth \n")
+        builder.append("האם בקו ראיה: $isLos \n")
+
+        return builder.toString()
     }
 
     companion object CREATOR : Parcelable.Creator<Threat> {

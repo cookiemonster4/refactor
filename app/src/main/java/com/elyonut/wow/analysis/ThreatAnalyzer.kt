@@ -32,7 +32,7 @@ class ThreatAnalyzer private constructor(
 
     init {
 //        vectorLayersManager.addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, threatLayer)
-        locationService.subscribeToLocationChanges { /*calculateThreats() */ }
+        locationService.subscribeToLocationChanges { /*locationChanged(latLng) */ }
     }
 
     fun locationChanged(latLng: LatLng) {
