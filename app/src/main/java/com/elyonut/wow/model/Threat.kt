@@ -82,6 +82,8 @@ class Threat(id: String, geometry: PolygonModel, properties: JsonObject) :
         return builder.toString()
     }
 
+    override fun getTitle(): String = name
+
     companion object CREATOR : Parcelable.Creator<Threat> {
         override fun createFromParcel(parcel: Parcel): Threat {
             return Threat(parcel)

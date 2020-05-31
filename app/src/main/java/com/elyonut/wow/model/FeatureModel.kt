@@ -19,4 +19,6 @@ open class FeatureModel(
             .forEach { key -> builder.append(key + ": " + properties[key] + "\n") }
         return builder.toString()
     }
+
+    open fun getTitle() = "Feature $id"
 }
