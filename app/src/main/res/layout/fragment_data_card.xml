@@ -7,9 +7,6 @@
         <variable
             name="feature"
             type="com.elyonut.wow.model.FeatureModel" />
-        <variable
-            name="threat"
-            type="com.elyonut.wow.model.Threat" />
 
         <variable
             name="dataCardViewModel"
@@ -52,7 +49,7 @@
                     android:layout_height="70dp"
                     android:layout_marginTop="8dp"
                     android:contentDescription="@string/type_image"
-                    android:imageUrl="@{dataCardViewModel.getImageUrl(threat.enemyType)}"
+                    android:imageUrl="@{feature.getImageUrl()}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/linearLayout"
                     app:layout_constraintTop_toTopOf="@+id/linearLayout" />

@@ -46,7 +46,6 @@ class DataCardFragment : Fragment() {
         val threat: Threat = arguments!!.getParcelable("threat")!!
         val feature: FeatureModel = arguments!!.getParcelable("threat")!!
 
-        binding.threat = threat
         binding.feature = feature
         binding.dataCardViewModel = dataCardViewModel
         binding.buildingDataCard.layoutParams =

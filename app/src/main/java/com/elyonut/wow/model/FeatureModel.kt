@@ -21,4 +21,5 @@ open class FeatureModel(
     }
 
     open fun getTitle() = "Feature $id"
+    open fun getImageUrl(): Int? = properties.get("imageUrl").asInt
 }
