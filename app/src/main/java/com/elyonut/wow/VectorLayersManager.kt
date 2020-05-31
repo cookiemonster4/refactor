@@ -20,7 +20,7 @@ class VectorLayersManager private constructor(context: Context) {
 
     init {
         _layers.value = tempDB.getLayers()
-        addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, tempDB.getThreatLayer())
+//        addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, tempDB.getThreatLayer())
     }
 
     companion object : SingletonHolder<VectorLayersManager, Context>(::VectorLayersManager)

@@ -25,6 +25,7 @@ import com.elyonut.wow.*
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
+import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.BuildingTypeMapping
@@ -220,6 +221,29 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
     }
 
+    fun setLayersObservers() {
+        mapViewModel.mapLayers.observe(this, Observer { layersUpdated(it) })
+    }
+
+    fun layersUpdated(layers: List<LayerModel>) {
+        mapViewModel.updateCurrentThreats()
+        updateMapSources(layers)
+    }
+
+    private fun updateMapSources(layers: List<LayerModel>) {
+        layers.forEach { layer ->
+            map.style?.getSourceAs<GeoJsonSource>(layer.id)?.let { geojson ->
+                geojson.setGeoJson(
+                    FeatureCollection.fromFeatures(
+                        layer.features.map { feature ->
+                            MapboxParser.parseToMapboxFeature(feature)
+                        }
+                    )
+                )
+            }
+        }
+    }
+
     // TODO SelfCentered instead current location
     private fun setCurrentLocationButtonIcon(isInCurrentLocation: Boolean) {
         val currentLocationButton: FloatingActionButton = binding.currentLocation
@@ -339,6 +363,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         map = mapboxMap
         map.addOnMapClickListener(this)
         mapViewModel.onMapReady(map)
+        setLayersObservers()
     }
 
     private fun initMapLayersButton() { // Data binding? is there a way use?
@@ -444,7 +469,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                     val threat = mapViewModel.buildingThreatToCurrentLocation(building)
 
                     val bundle = Bundle()
-                    bundle.putParcelable("threat", threat)
+                    bundle.putParcelable("feature", threat)
 
                     // take to function!
                     val dataCardFragmentInstance = DataCardFragment.newInstance()
@@ -584,7 +609,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
                 // open card fragment and pass the threat as an argument
                 val bundle = Bundle()
-                bundle.putParcelable("threat", item)
+                bundle.putParcelable("feature", item)
                 val dataCardFragmentInstance = DataCardFragment.newInstance()
                 dataCardFragmentInstance.arguments = bundle
 

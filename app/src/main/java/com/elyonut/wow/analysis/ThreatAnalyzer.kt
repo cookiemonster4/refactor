@@ -1,6 +1,7 @@
 package com.elyonut.wow.analysis
 
 import android.content.Context
+import android.location.Location
 import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.adapter.LocationService
@@ -15,6 +16,7 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.turf.TurfMeasurement
+import kotlinx.coroutines.*
 import java.util.stream.Collectors
 
 class ThreatAnalyzer private constructor(
@@ -24,24 +26,45 @@ class ThreatAnalyzer private constructor(
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
     private var locationService: ILocationService = LocationService.getInstance(context)
     private var threatLayer = TempDB.getInstance(context).getThreatLayer().map { Threat(it) }
-    private lateinit var currentThreats: List<Threat>
+    private var currentThreats: List<Threat> = listOf()
 
     private val logger: ILogger = TimberLogAdapter()
 
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
 
     init {
-//        vectorLayersManager.addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, threatLayer)
-        locationService.subscribeToLocationChanges { /*locationChanged(latLng) */ }
+        vectorLayersManager.addLayer(
+            Constants.THREAT_LAYER_ID,
+            Constants.THREAT_LAYER_NAME,
+            threatLayer
+        )
+        vectorLayersManager.addLayer(
+            Constants.ACTIVE_THREATS_LAYER_ID,
+            Constants.ACTIVE_THREATS_LAYER_ID,
+            currentThreats
+        )
+        locationService.subscribeToLocationChanges { locationChanged(it) }
     }
 
-    fun locationChanged(latLng: LatLng) {
-        currentThreats = calculateThreats(latLng)
-        vectorLayersManager.updateLayer(Constants.THREAT_LAYER_ID, currentThreats)
-
+    private fun locationChanged(location: Location) {
+        CoroutineScope(Dispatchers.Default).launch {
+            currentThreats = async {
+                calculateThreats(
+                    LatLng(
+                        location.latitude,
+                        location.longitude,
+                        location.altitude
+                    )
+                )
+            }.await()
+        }.invokeOnCompletion {
+            CoroutineScope(Dispatchers.Main).launch {
+                vectorLayersManager.updateLayer(Constants.ACTIVE_THREATS_LAYER_ID, currentThreats)
+            }
+        }
     }
 
-    fun calculateThreats(latLng: LatLng): List<Threat> {
+    private fun calculateThreats(latLng: LatLng): List<Threat> {
         return filterWithLOSModelFeatures(latLng).map { threatFeature ->
             featureModelToThreat(
                 threatFeature,

@@ -8,10 +8,7 @@ import android.os.AsyncTask
 import android.view.Gravity
 import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
@@ -23,6 +20,7 @@ import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.FeatureModel
+import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
@@ -66,8 +64,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     val mapVectorLayersManager = VectorLayersManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
     var currentThreats = MutableLiveData<ArrayList<Threat>>()
-//    var mapLayers:MutableLiveData<List<FeatureModel>> =
-//        Transformations.map(mapVectorLayersManager.layers, ) // MutableLiveData<ArrayList<Threat>>()
+    var mapLayers: LiveData<List<LayerModel>> =
+        Transformations.map(
+            mapVectorLayersManager.layers,
+            ::layersUpdated
+        ) // MutableLiveData<List<LayerModel>>()
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     val isLocationAdapterInitialized = MutableLiveData<Boolean>()
     private val logger: ILogger = TimberLogAdapter()
@@ -92,8 +93,15 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         logger.initLogger()
     }
 
-    fun layersUpdated() {
+    fun layersUpdated(layers: List<LayerModel>) = layers
 
+    fun updateCurrentThreats() {
+        var threatLayer =
+            mapLayers.value?.find { layerModel -> layerModel.id == Constants.ACTIVE_THREATS_LAYER_ID }?.features
+                ?: arrayListOf()
+        if (threatLayer.isNotEmpty()) {
+            currentThreats.value = threatLayer as ArrayList<Threat>
+        }
     }
 
     @SuppressLint("WrongConstant")
@@ -114,7 +122,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         initMapLocationComponent()
         locationService.subscribeToLocationChanges {
-            changeLocation(it)
+//            changeLocation(it)
             locationChanged(it)
         }
         isLocationAdapterInitialized.value = true
@@ -172,12 +180,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     // TODO Move to alertsManager
     fun currentThreatsUpdated() {
         threatAlerts.value = currentThreats.value
-        map.style?.getSourceAs<GeoJsonSource>(Constants.ACTIVE_THREATS_SOURCE_ID)?.let {
-            val features =
-                currentThreats.value?.map { threat -> MapboxParser.parseToMapboxFeature(threat) }
-                    ?: arrayListOf()
-            it.setGeoJson(FeatureCollection.fromFeatures(features))
-        }
+//        map.style?.getSourceAs<GeoJsonSource>(Constants.ACTIVE_THREATS_LAYER_ID)?.let {
+//            val features =
+//                currentThreats.value?.map { threat -> MapboxParser.parseToMapboxFeature(threat) }
+//                    ?: arrayListOf()
+//            it.setGeoJson(FeatureCollection.fromFeatures(features))
+//        }
     }
 
     // TODO make generic
@@ -192,16 +200,16 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO make generic
     private fun setActiveThreatsLayer(loadedMapStyle: Style) {
-        loadedMapStyle.addSource(GeoJsonSource(Constants.ACTIVE_THREATS_SOURCE_ID))
-        loadedMapStyle.addLayer(
-            FillExtrusionLayer(
-                Constants.ACTIVE_THREATS_LAYER_ID,
-                Constants.ACTIVE_THREATS_SOURCE_ID
-            ).withProperties(
-                fillExtrusionOpacity(Constants.HIGH_OPACITY),
-                fillExtrusionHeight(get("height"))
-            )
-        )
+//        loadedMapStyle.addSource(GeoJsonSource(Constants.ACTIVE_THREATS_SOURCE_ID))
+//        loadedMapStyle.addLayer(
+//            FillExtrusionLayer(
+//                Constants.ACTIVE_THREATS_LAYER_ID,
+//                Constants.ACTIVE_THREATS_SOURCE_ID
+//            ).withProperties(
+//                fillExtrusionOpacity(Constants.HIGH_OPACITY),
+//                fillExtrusionHeight(get("height"))
+//            )
+//        )
     }
 
     // TODO make generic
@@ -543,7 +551,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         val threatHeight = building.getNumberProperty("height").toDouble()
         val feature = getBuildingAtLocation(
             LatLng(currentLocation.latitude, currentLocation.longitude),
-            Constants.BUILDINGS_LAYER_ID
+            Constants.BUILDINGS_LAYER_ID // why this layer and not threat ???
         )
         val isLOS = topographyService.isLOS(
             feature,
@@ -618,7 +626,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun addLayersToMapStyle(style: Style) {
-        mapVectorLayersManager.layers.value?.forEach { layerModel ->
+        mapLayers.value?.forEach { layerModel ->
             val features = layerModel.features.map { featureModel ->
                 MapboxParser.parseToMapboxFeature(featureModel)
             }
@@ -638,6 +646,15 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                         fillExtrusionColor(Color.LTGRAY), fillExtrusionOpacity(0.8f),
                         fillExtrusionHeight(get("height"))
                     )
+                Constants.ACTIVE_THREATS_LAYER_ID ->
+                    FillExtrusionLayer(
+                        Constants.ACTIVE_THREATS_LAYER_ID,
+                        Constants.ACTIVE_THREATS_LAYER_ID
+                    ).withProperties(
+                        fillExtrusionOpacity(Constants.HIGH_OPACITY),
+                        fillExtrusionHeight(get("height"))
+                    )
+
                 else -> {
                     FillLayer(layerModel.id, layerModel.id)
                 }

@@ -43,8 +43,7 @@ class DataCardFragment : Fragment() {
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
-        val threat: Threat = arguments!!.getParcelable("threat")!!
-        val feature: FeatureModel = arguments!!.getParcelable("threat")!!
+        val feature: FeatureModel = arguments!!.getParcelable("feature")!!
 
         binding.feature = feature
         binding.dataCardViewModel = dataCardViewModel
