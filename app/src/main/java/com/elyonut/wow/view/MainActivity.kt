@@ -293,8 +293,6 @@ class MainActivity : AppCompatActivity(),
     // Do we need this function??
     private fun initNavigationMenu() {
         navigationView.setNavigationItemSelectedListener(this)
-
-
     }
 
     private fun initFilterSection() {

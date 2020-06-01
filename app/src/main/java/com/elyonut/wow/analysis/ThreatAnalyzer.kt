@@ -74,6 +74,21 @@ class ThreatAnalyzer private constructor(
         }
     }
 
+//    fun calculateCoverageAlpha(
+//        currentLocation: LatLng,
+//        rangeMeters: Double,
+//        pointResolutionMeters: Double,
+//        heightMeters: Double
+//    ): List<Coordinate> {
+//        return filterWithLOSCoordinatesAlpha(
+//            currentLocation,
+//            rangeMeters,
+//            pointResolutionMeters,
+//            heightMeters,
+//            true
+//        )
+//    }
+
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
     fun getBuildingsWithinLOS(
@@ -158,7 +173,7 @@ class ThreatAnalyzer private constructor(
         }
     }
 
-    fun filterWithLOSModelFeatures(
+    private fun filterWithLOSModelFeatures(
         currentLocation: LatLng
     ): List<FeatureModel> {
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)

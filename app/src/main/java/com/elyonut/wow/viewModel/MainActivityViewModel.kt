@@ -11,7 +11,6 @@ import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
 import com.elyonut.wow.adapter.PermissionsService
-import com.elyonut.wow.analysis.Calculations
 import com.elyonut.wow.analysis.ThreatAnalyzer
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.IPermissions
@@ -28,6 +27,7 @@ import timber.log.Timber
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
     private val mapVectorLayersManager = VectorLayersManager.getInstance(application)
+    private val threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()
@@ -83,14 +83,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         CoroutineScope(Dispatchers.Default).launch {
             coordinates = async {
                 if (coverageSearchHeightMetersChecked) {
-                    return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                    return@async threatAnalyzer.calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
                         coverageResolutionMeters,
                         coverageSearchHeightMeters
                     )
                 } else {
-                    return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                    return@async threatAnalyzer.calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
                         coverageResolutionMeters,
