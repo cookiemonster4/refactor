@@ -19,7 +19,6 @@ import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.model.Coordinate
-import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
@@ -67,7 +66,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var mapLayers: LiveData<List<LayerModel>> =
         Transformations.map(mapVectorLayersManager.layers, ::layersUpdated)
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
-    val isLocationAdapterInitialized = MutableLiveData<Boolean>()
     private val logger: ILogger = TimberLogAdapter()
     var isAreaSelectionMode = false
     var areaOfInterest = MutableLiveData<Polygon>()
@@ -79,8 +77,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var firstPointOfPolygon: Point // areaOfInterest
     private var topographyService = TopographyService
     var threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
-    private var calcThreatsTask: CalcThreatStatusAsync? = null
-    private var calcThreatCoverageTask: CalcThreatCoverageAsync? = null
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
@@ -93,7 +89,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private fun layersUpdated(layers: List<LayerModel>) = layers
 
     fun updateCurrentThreats() {
-        var threatLayer =
+        val threatLayer =
             mapLayers.value?.find { layerModel -> layerModel.id == Constants.ACTIVE_THREATS_LAYER_ID }?.features
                 ?: arrayListOf()
         if (threatLayer.isNotEmpty()) {
@@ -119,10 +115,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
         initMapLocationComponent()
         locationService.subscribeToLocationChanges {
-//            changeLocation(it)
             locationChanged(it)
         }
-        isLocationAdapterInitialized.value = true
     }
 
     private fun initMapLocationComponent() {
@@ -147,23 +141,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         map.locationComponent.forceLocationUpdate(location)
     }
 
-    // TODO move to threatAnalyzer
-    private fun changeLocation(location: Location) {
-        if (calcThreatsTask != null && calcThreatsTask!!.status != AsyncTask.Status.FINISHED) {
-            return //Returning as the current task execution is not finished yet.
-        }
-
-        calcThreatsTask = CalcThreatStatusAsync(this)
-        val latLng = LatLng(location.latitude, location.longitude)
-        calcThreatsTask!!.execute(latLng)
-
-    }
-
     fun setMapStyle(URL: String, callback: (() -> Unit)? = null) {
         map.setStyle(URL) { style ->
             addLayersToMapStyle(style)
             addThreatCoverageLayer(style)
-            setActiveThreatsLayer(style)
             setSelectedBuildingLayer(style)
             setThreatLayerOpacity(style, Constants.REGULAR_OPACITY)
             circleSource = initCircleSource(style)
@@ -177,12 +158,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     // TODO Move to alertsManager
     fun currentThreatsUpdated() {
         threatAlerts.value = currentThreats.value
-//        map.style?.getSourceAs<GeoJsonSource>(Constants.ACTIVE_THREATS_LAYER_ID)?.let {
-//            val features =
-//                currentThreats.value?.map { threat -> MapboxParser.parseToMapboxFeature(threat) }
-//                    ?: arrayListOf()
-//            it.setGeoJson(FeatureCollection.fromFeatures(features))
-//        }
     }
 
     // TODO make generic
@@ -193,20 +168,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 opacity
             )
         )
-    }
-
-    // TODO make generic
-    private fun setActiveThreatsLayer(loadedMapStyle: Style) {
-//        loadedMapStyle.addSource(GeoJsonSource(Constants.ACTIVE_THREATS_SOURCE_ID))
-//        loadedMapStyle.addLayer(
-//            FillExtrusionLayer(
-//                Constants.ACTIVE_THREATS_LAYER_ID,
-//                Constants.ACTIVE_THREATS_SOURCE_ID
-//            ).withProperties(
-//                fillExtrusionOpacity(Constants.HIGH_OPACITY),
-//                fillExtrusionHeight(get("height"))
-//            )
-//        )
     }
 
     // TODO make generic
@@ -492,29 +453,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    fun calculateCoverageFromPoint(
-        latLng: LatLng,
-        coverageRangeMeters: Double,
-        coverageResolutionMeters: Double,
-        coverageSearchHeightMeters: Double,
-        progressBar: ProgressBar
-    ) {
-
-        if (calcThreatCoverageTask != null && calcThreatCoverageTask!!.status != AsyncTask.Status.FINISHED) {
-            return //Returning as the current task execution is not finished yet.
-        }
-
-        calcThreatCoverageTask = CalcThreatCoverageAsync(this, progressBar)
-        calcThreatCoverageTask!!.execute(
-            ThreatCoverageData(
-                latLng,
-                coverageRangeMeters,
-                coverageResolutionMeters,
-                coverageSearchHeightMeters
-            )
-        )
-    }
-
     fun calculateCoverageForAll(
         latLng: LatLng,
         coverageRangeMeters: Double,
@@ -563,8 +501,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             currentLatLng,
             isLOS
         )
-//
-//        return threatAnalyzer.featureToThreat(building, currentLatLng, isLOS)
     }
 
     fun getBuildingAtLocation(

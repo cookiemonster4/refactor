@@ -47,7 +47,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val permissions: IPermissions =
         PermissionsService.getInstance(application)
     private var coverageSearchHeightMetersChecked: Boolean = false
-    val coordinatesfeaturesInCoverage = MutableLiveData<List<Feature>>()
+    val coordinatesFeaturesInCoverage = MutableLiveData<List<Feature>>()
     private val _removeProgressBar = MutableLiveData<ProgressBar>()
     val removeProgressBar: LiveData<ProgressBar>
         get() = _removeProgressBar
@@ -99,7 +99,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 }
             }
 
-            coordinatesfeaturesInCoverage.postValue(coordinates.await().map { coordinate ->
+            coordinatesFeaturesInCoverage.postValue(coordinates.await().map { coordinate ->
                 Feature.fromGeometry(
                     Point.fromLngLat(
                         coordinate.longitude,
@@ -109,7 +109,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             })
             Timber.i(
                 "main activity coordinates:  %s",
-                coordinatesfeaturesInCoverage.value.toString()
+                coordinatesFeaturesInCoverage.value.toString()
             )
             _removeProgressBar.postValue(progressBar)
         }
@@ -164,10 +164,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
 
         return shouldCloseDrawer
-    }
-
-    fun getLayersList(): List<LayerModel>? {
-        return mapVectorLayersManager.layers.value
     }
 
     fun getLayerTypeValues(): List<String>? {

@@ -133,11 +133,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             this,
             Observer { showDescriptionFragment() }
         )
-        mapViewModel.isLocationAdapterInitialized.observe(
-            this,
-            Observer {
-                observeRiskStatus(it)
-            })
 
         mapViewModel.threatAlerts.observe(this, Observer {
             sendNotification(it)
@@ -212,7 +207,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             mapViewModel.setMapStyle(it)
         })
 
-        sharedViewModel.coordinatesfeaturesInCoverage.observe(this, Observer { addCoveregae(it) })
+        sharedViewModel.coordinatesfeaturesInCoverage.observe(this, Observer { addCoverage(it) })
 
         mapViewModel.currentThreats.observe(this, Observer {
             if (it.isNotEmpty()) {
@@ -221,11 +216,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
     }
 
-    fun setLayersObservers() {
+    private fun setLayersObservers() {
         mapViewModel.mapLayers.observe(this, Observer { layersUpdated(it) })
     }
 
-    fun layersUpdated(layers: List<LayerModel>) {
+    private fun layersUpdated(layers: List<LayerModel>) {
         mapViewModel.updateCurrentThreats()
         updateMapSources(layers)
     }
@@ -314,18 +309,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
     // End of alert handling
 
-    private fun observeRiskStatus(isLocationServiceInitialized: Boolean) {
-        if (isLocationServiceInitialized) {
-//            mapViewModel.riskStatus.observe(this, Observer { newStatus ->
-//                sharedViewModel.isVisible.value =
-//                    (newStatus == RiskStatus.HIGH || newStatus == RiskStatus.MEDIUM)
-//                mapViewModel.currentThreatUpdated()
-//            })
-        }
-
-    }
-
-    fun currentThreatUpdated() {
+    private fun currentThreatUpdated() {
         sharedViewModel.isVisible.value = true
         mapViewModel.currentThreatsUpdated()
     }
@@ -460,7 +444,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 }
 
             } else { // If we are not in the above states, than we should open a data card if a building was clicked
-//                val features = loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.THREAT_LAYER_ID).querySourceFeatures(Expression.)
                 val building = mapViewModel.getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
 
                 if (building != null) {
@@ -487,7 +470,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         return true
     }
 
-    fun addCoveregae(coverageFeatures: List<Feature>) {
+    private fun addCoverage(coverageFeatures: List<Feature>) {
         Timber.i("map coordinates:  %s", coverageFeatures.toString())
         val threatCoverageSource: GeoJsonSource? =
             map.style?.getSourceAs(
@@ -539,7 +522,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             }
             R.id.coverage_all -> {
                 mapViewModel.selectLocationManualCoverageAll = true
-//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -588,7 +570,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO update layers. handle according to datacard
     private fun onListFragmentInteraction(item: Threat?) {
         if (item != null) {
-//            val feature = item.feature
             val feature = MapboxParser.parseToMapboxFeature(item)
             val featureCollection = FeatureCollection.fromFeatures(arrayOf(feature))
             val geoJsonSource = GeoJsonSource("threat-source", featureCollection)

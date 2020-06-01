@@ -1,5 +1,6 @@
 package com.elyonut.wow.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -146,7 +147,7 @@ class MainActivity : AppCompatActivity(),
             sharedViewModel.shouldOpenThreatsFragment.value = it
         })
 
-        mainViewModel.coordinatesfeaturesInCoverage.observe(
+        mainViewModel.coordinatesFeaturesInCoverage.observe(
             this,
             Observer { sharedViewModel.coordinatesfeaturesInCoverage.postValue(it) })
 
@@ -156,7 +157,7 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        sharedViewModel.alertsManager.alerts.observe(this, Observer<List<AlertModel>> {
+        sharedViewModel.alertsManager.alerts.observe(this, Observer {
             editAlertsBadge(it)
         })
 
@@ -170,6 +171,7 @@ class MainActivity : AppCompatActivity(),
         mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
     }
 
+    @SuppressLint("InflateParams")
     private fun updateLayersCheckbox(layers: List<LayerModel>) {
         val menu = navigationView.menu
         val layersSubMenu = menu.getItem(Menus.LAYERS_MENU).subMenu
@@ -187,7 +189,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    fun mapClicked(latLng: LatLng) {
+    private fun mapClicked(latLng: LatLng) {
         val progressBar: ProgressBar = findViewById(R.id.progressBar)
         progressBar.visibility = View.VISIBLE
         mainViewModel.mapClicked(latLng, progressBar)
@@ -252,7 +254,7 @@ class MainActivity : AppCompatActivity(),
 
         if (areaOfInterestJson != "") {
             sharedViewModel.areaOfInterest =
-                gson.fromJson<Polygon>(areaOfInterestJson, Polygon::class.java)
+                gson.fromJson(areaOfInterestJson, Polygon::class.java)
         } else {
             AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle(getString(R.string.area_not_defined))
@@ -295,6 +297,7 @@ class MainActivity : AppCompatActivity(),
         navigationView.setNavigationItemSelectedListener(this)
     }
 
+    // TODO fix to observe layers from view model, how to do this?
     private fun initFilterSection() {
         val layerTypeValues = mainViewModel.getLayerTypeValues()?.toTypedArray()
         addSubMenuItem(
@@ -311,6 +314,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    @SuppressLint("InflateParams")
     private fun addSubMenuItem(subMenu: SubMenu, id: Int, name: String) {
         val menuItem = subMenu.add(R.id.filter_options, id, Menu.NONE, name)
         val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox

@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.LatLngModel
 import com.elyonut.wow.model.LayerModel
-import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.TempDB
 import com.google.gson.JsonPrimitive
 import kotlin.reflect.KClass
@@ -20,7 +19,6 @@ class VectorLayersManager private constructor(context: Context) {
 
     init {
         _layers.value = tempDB.getLayers()
-//        addLayer(Constants.THREAT_LAYER_ID, Constants.THREAT_LAYER_NAME, tempDB.getThreatLayer())
     }
 
     companion object : SingletonHolder<VectorLayersManager, Context>(::VectorLayersManager)

@@ -19,15 +19,12 @@ import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.*
 import java.util.stream.Collectors
 
-class ThreatAnalyzer private constructor(
-    context: Context
-) {
+class ThreatAnalyzer private constructor(context: Context) {
     private var topographyService = TopographyService
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
     private var locationService: ILocationService = LocationService.getInstance(context)
     private var threatLayer = TempDB.getInstance(context).getThreatLayer().map { Threat(it) }
     private var currentThreats: List<Threat> = listOf()
-
     private val logger: ILogger = TimberLogAdapter()
 
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
@@ -74,21 +71,6 @@ class ThreatAnalyzer private constructor(
         }
     }
 
-//    fun calculateCoverageAlpha(
-//        currentLocation: LatLng,
-//        rangeMeters: Double,
-//        pointResolutionMeters: Double,
-//        heightMeters: Double
-//    ): List<Coordinate> {
-//        return filterWithLOSCoordinatesAlpha(
-//            currentLocation,
-//            rangeMeters,
-//            pointResolutionMeters,
-//            heightMeters,
-//            true
-//        )
-//    }
-
     // when in Los it means the building is a threat?
     // can we take it somewhere else so we won't need the map here?
     fun getBuildingsWithinLOS(
@@ -116,6 +98,7 @@ class ThreatAnalyzer private constructor(
         return filterWithLOSModelFeatures(currentLocation)
     }
 
+    // Do we need this?
     fun calculateCoverage(
         currentLocation: LatLng,
         rangeMeters: Double,
@@ -204,7 +187,7 @@ class ThreatAnalyzer private constructor(
         }
     }
 
-    fun filterWithLOSCoordinatesAlpha(
+    private fun filterWithLOSCoordinatesAlpha(
         currentLocation: LatLng,
         rangeMeters: Double,
         pointResolutionMeters: Double,
@@ -359,7 +342,7 @@ class ThreatAnalyzer private constructor(
     }
 
     private fun bearingToAzimuth(bearing: Double): Double {
-        var angle = bearing % 360;
+        var angle = bearing % 360
         if (angle < 0) {
             angle += 360; }
         return angle
@@ -475,8 +458,6 @@ class ThreatAnalyzer private constructor(
             val projection =
                 topographyService.calcRoutePointsLinear(center, outer, false, pointResolutionMeters)
             visibleProjections.addAll(topographyService.getVisiblePoints(center, projection))
-            /*val bestAlpha = topographyService.getProjectionBestAlpha(center, projection)
-            visibleProjections.addAll(projection.filter { current -> topographyService.isPointVisible(center, current, bestAlpha) })*/
         }
         return visibleProjections
     }
