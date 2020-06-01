@@ -44,7 +44,7 @@ class ThreatAnalyzer private constructor(context: Context) {
     }
 
     private fun locationChanged(location: Location) {
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch { // TODO add logs to check how many times it is called and maybe add some checks?
             currentThreats = async {
                 calculateThreats(
                     LatLng(
