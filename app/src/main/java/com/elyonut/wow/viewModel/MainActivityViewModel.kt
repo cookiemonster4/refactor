@@ -6,6 +6,7 @@ import android.widget.ProgressBar
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.LocationService
@@ -26,7 +27,7 @@ import timber.log.Timber
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val layerManager = VectorLayersManager.getInstance(application)
+    private val mapVectorLayersManager = VectorLayersManager.getInstance(application)
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()
@@ -50,6 +51,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val _removeProgressBar = MutableLiveData<ProgressBar>()
     val removeProgressBar: LiveData<ProgressBar>
         get() = _removeProgressBar
+    var mapLayers: LiveData<List<LayerModel>> =
+        Transformations.map(mapVectorLayersManager.layers, ::layersUpdated)
+
+    private fun layersUpdated(layers: List<LayerModel>) = layers
 
     fun locationSetUp() {
         if (permissions.isLocationPermitted()) {
@@ -77,21 +82,22 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         var coordinates: Deferred<List<Coordinate>>
         CoroutineScope(Dispatchers.Default).launch {
             coordinates = async {
-            if (coverageSearchHeightMetersChecked) {
-                     return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                if (coverageSearchHeightMetersChecked) {
+                    return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
                         coverageResolutionMeters,
                         coverageSearchHeightMeters
                     )
-            } else {
-                return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
+                } else {
+                    return@async Calculations(ThreatAnalyzer.getInstance(getApplication())).calculateCoverageAlpha(
                         latLng,
                         coverageRangeMeters,
                         coverageResolutionMeters,
                         Constants.DEFAULT_COVERAGE_HEIGHT_METERS
                     )
-            } }
+                }
+            }
 
             coordinatesfeaturesInCoverage.postValue(coordinates.await().map { coordinate ->
                 Feature.fromGeometry(
@@ -101,7 +107,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                     )
                 )
             })
-            Timber.i("main activity coordinates:  %s", coordinatesfeaturesInCoverage.value.toString())
+            Timber.i(
+                "main activity coordinates:  %s",
+                coordinatesfeaturesInCoverage.value.toString()
+            )
             _removeProgressBar.postValue(progressBar)
         }
     }
@@ -158,11 +167,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun getLayersList(): List<LayerModel>? {
-        return layerManager.layers.value
+        return mapVectorLayersManager.layers.value
     }
 
     fun getLayerTypeValues(): List<String>? {
-        return layerManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
+        return mapVectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
     }
 }
 

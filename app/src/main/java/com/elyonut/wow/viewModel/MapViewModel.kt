@@ -65,10 +65,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var selectedBuildingId = MutableLiveData<String>()
     var currentThreats = MutableLiveData<ArrayList<Threat>>()
     var mapLayers: LiveData<List<LayerModel>> =
-        Transformations.map(
-            mapVectorLayersManager.layers,
-            ::layersUpdated
-        ) // MutableLiveData<List<LayerModel>>()
+        Transformations.map(mapVectorLayersManager.layers, ::layersUpdated)
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     val isLocationAdapterInitialized = MutableLiveData<Boolean>()
     private val logger: ILogger = TimberLogAdapter()
@@ -93,7 +90,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         logger.initLogger()
     }
 
-    fun layersUpdated(layers: List<LayerModel>) = layers
+    private fun layersUpdated(layers: List<LayerModel>) = layers
 
     fun updateCurrentThreats() {
         var threatLayer =

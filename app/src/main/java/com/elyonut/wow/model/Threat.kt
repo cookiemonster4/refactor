@@ -77,7 +77,7 @@ class Threat(id: String, geometry: PolygonModel, properties: JsonObject) :
         val builder = StringBuilder()
         builder.append("מרחק: $distanceMeters \n")
         builder.append("אזימוט: $azimuth \n")
-        builder.append("האם בקו ראיה: $isLos \n")
+        builder.append("האם בקו ראיה: ${if (isLos) "כן" else "לא"}\n")
         builder.append(super.toStringProperties())
 
         return builder.toString()

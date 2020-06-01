@@ -30,6 +30,7 @@ import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.model.AlertModel
+import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.Menus
@@ -42,9 +43,7 @@ import com.google.gson.Gson
 import com.mapbox.geojson.Polygon
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.geometry.LatLng
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import java.util.*
 
 private const val PERMISSION_REQUEST_ACCESS_LOCATION = 101
 
@@ -64,6 +63,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var sharedPreferences: SharedPreferences
     private val gson = Gson()
     private lateinit var alertsFragmentInstance: AlertsFragment
+    private lateinit var navigationView: NavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity(),
             ViewModelProviders.of(this)[SharedViewModel::class.java]
 
         alertsFragmentInstance = AlertsFragment.newInstance()
+        navigationView = findViewById(R.id.navigationView)
 
         setObservers()
         mainViewModel.locationSetUp()
@@ -166,6 +167,24 @@ class MainActivity : AppCompatActivity(),
 
         sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
         mainViewModel.removeProgressBar.observe(this, Observer { it.visibility = View.GONE })
+        mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
+    }
+
+    private fun updateLayersCheckbox(layers: List<LayerModel>) {
+        val menu = navigationView.menu
+        val layersSubMenu = menu.getItem(Menus.LAYERS_MENU).subMenu
+
+        if (layersSubMenu.size() != layers.size) {
+            layers.forEachIndexed { index, layerModel ->
+                val menuItem = layersSubMenu.add(R.id.nav_layers, index, index, layerModel.name)
+                val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox
+                checkBoxView.tag = layerModel
+                menuItem.actionView = checkBoxView
+                checkBoxView.setOnCheckedChangeListener { _, _ ->
+                    (::onNavigationItemSelected)(menuItem)
+                }
+            }
+        }
     }
 
     fun mapClicked(latLng: LatLng) {
@@ -271,25 +290,11 @@ class MainActivity : AppCompatActivity(),
         toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
+    // Do we need this function??
     private fun initNavigationMenu() {
-        val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setNavigationItemSelectedListener(this)
 
-        val layers = mainViewModel.getLayersList()?.toTypedArray()
 
-        if (layers != null) {
-            val menu = navigationView.menu
-            val layersSubMenu = menu.getItem(Menus.LAYERS_MENU).subMenu
-            layers.forEachIndexed { index, layerModel ->
-                val menuItem = layersSubMenu.add(R.id.nav_layers, index, index, layerModel.name)
-                val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox
-                checkBoxView.tag = layerModel
-                menuItem.actionView = checkBoxView
-                checkBoxView.setOnCheckedChangeListener { _, _ ->
-                    (::onNavigationItemSelected)(menuItem)
-                }
-            }
-        }
     }
 
     private fun initFilterSection() {
