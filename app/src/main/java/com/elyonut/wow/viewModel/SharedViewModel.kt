@@ -40,14 +40,19 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     val chosenTypeToFilter = MutableLiveData<Pair<String, Boolean>>()
     val isSelectAllChecked = MutableLiveData<Boolean>()
     val mapStyleURL = MutableLiveData<String>()
-    val shoulRemoveSelectedBuildingLayer = MutableLiveData<Boolean>()
-    val coordinatesfeaturesInCoverage = MutableLiveData<List<Feature>>()
+    val shouldRemoveSelectedBuildingLayer = MutableLiveData<Boolean>()
+    val coordinatesFeaturesInCoverage = MutableLiveData<List<Feature>>()
 
-    fun applySaveCoverageSettingsButtonClicked(coverageRange: Double, resolution: Double, height: Double?, heightChecked: Boolean) {
+    fun applySaveCoverageSettingsButtonClicked(
+        coverageRange: Double,
+        resolution: Double,
+        height: Double?,
+        heightChecked: Boolean
+    ) {
         this.coverageRangeMeters = coverageRange
         this.coverageResolutionMeters = resolution
 
-        if(height!= null){
+        if (height != null) {
             this.coverageSearchHeightMeters = height
         }
 

@@ -187,7 +187,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             }
         })
 
-        sharedViewModel.shoulRemoveSelectedBuildingLayer.observe(
+        sharedViewModel.shouldRemoveSelectedBuildingLayer.observe(
             this,
             Observer { shouldRemoveLayer ->
                 if (shouldRemoveLayer) {
@@ -201,7 +201,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             mapViewModel.setMapStyle(it)
         })
 
-        sharedViewModel.coordinatesfeaturesInCoverage.observe(this, Observer { addCoverage(it) })
+        sharedViewModel.coordinatesFeaturesInCoverage.observe(this, Observer { addCoverage(it) })
 
         mapViewModel.currentThreats.observe(this, Observer {
             if (it.isNotEmpty()) {

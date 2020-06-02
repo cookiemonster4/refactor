@@ -1,7 +1,6 @@
 package com.elyonut.wow.view
 
 import android.content.Context
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +14,6 @@ import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
 import com.elyonut.wow.model.FeatureModel
-import com.elyonut.wow.model.Threat
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
@@ -113,7 +111,7 @@ class DataCardFragment : Fragment() {
 
     private fun onCloseCard() {
         dataCardViewModel.close()
-        sharedViewModel.shoulRemoveSelectedBuildingLayer.value = true
+        sharedViewModel.shouldRemoveSelectedBuildingLayer.value = true
     }
 
     override fun onAttach(context: Context) {

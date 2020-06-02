@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(),
 
         mainViewModel.coordinatesFeaturesInCoverage.observe(
             this,
-            Observer { sharedViewModel.coordinatesfeaturesInCoverage.postValue(it) })
+            Observer { sharedViewModel.coordinatesFeaturesInCoverage.postValue(it) })
 
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (!it) {
