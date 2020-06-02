@@ -70,7 +70,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     private val logger: ILogger = TimberLogAdapter()
     var isAreaSelectionMode = false
-    var _areaOfInterest = MutableLiveData<Polygon>()
+    private var _areaOfInterest = MutableLiveData<Polygon>()
     val areaOfInterest: LiveData<Polygon>
         get() = _areaOfInterest
     var lineLayerPointList = ArrayList<Point>()

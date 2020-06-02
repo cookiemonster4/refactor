@@ -120,7 +120,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun setObservers() {
-        mapViewModel._areaOfInterest.observe(this, Observer {
+        mapViewModel.areaOfInterest.observe(this, Observer {
             sharedViewModel.areaOfInterest = it
         })
         mapViewModel.selectedBuildingId.observe(
