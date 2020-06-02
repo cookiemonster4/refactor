@@ -5,18 +5,23 @@ import android.location.Location
 import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.adapter.LocationService
-import com.elyonut.wow.utilities.Constants
-import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.interfaces.ILocationService
-import com.elyonut.wow.model.*
+import com.elyonut.wow.interfaces.ILogger
+import com.elyonut.wow.model.Coordinate
+import com.elyonut.wow.model.FeatureModel
+import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
+import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.TempDB
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.turf.TurfMeasurement
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.stream.Collectors
 
 class ThreatAnalyzer private constructor(context: Context) {
@@ -44,30 +49,25 @@ class ThreatAnalyzer private constructor(context: Context) {
     }
 
     private fun locationChanged(location: Location) {
-        CoroutineScope(Dispatchers.Default).launch {
-            currentThreats = async {
-                calculateThreats(
-                    LatLng(
-                        location.latitude,
-                        location.longitude,
-                        location.altitude
+        CoroutineScope(Dispatchers.Main).launch {
+            currentThreats =
+                withContext(Dispatchers.Default) {
+                    calculateThreats(
+                        LatLng(
+                            location.latitude,
+                            location.longitude,
+                            location.altitude
+                        )
                     )
-                )
-            }.await()
+                }
         }.invokeOnCompletion {
-            CoroutineScope(Dispatchers.Main).launch {
-                vectorLayersManager.updateLayer(Constants.ACTIVE_THREATS_LAYER_ID, currentThreats)
-            }
+            vectorLayersManager.updateLayer(Constants.ACTIVE_THREATS_LAYER_ID, currentThreats)
         }
     }
 
     private fun calculateThreats(latLng: LatLng): List<Threat> {
         return filterWithLOSModelFeatures(latLng).map { threatFeature ->
-            featureModelToThreat(
-                threatFeature,
-                latLng,
-                true
-            )
+            featureModelToThreat(threatFeature, latLng, true)
         }
     }
 
@@ -77,17 +77,14 @@ class ThreatAnalyzer private constructor(context: Context) {
         currentLocation: LatLng,
         buildingAtLocation: Feature?
     ): List<Feature> {
-        val buildings = vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.map {
-            MapboxParser.parseToMapboxFeature(it)
-        }
-
         val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
+        val buildings =
+            vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.map {
+                MapboxParser.parseToMapboxFeature(it)
+            }
+
         return buildings?.filter {
-            topographyService.isThreatBuilding(
-                currentLocationCoord,
-                it,
-                buildingAtLocation
-            )
+            topographyService.isThreatBuilding(currentLocationCoord, it, buildingAtLocation)
         } ?: arrayListOf()
     }
 

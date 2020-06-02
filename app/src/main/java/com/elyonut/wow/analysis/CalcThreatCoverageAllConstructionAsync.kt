@@ -6,12 +6,13 @@ import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.viewModel.MapViewModel
+import com.mapbox.mapboxsdk.geometry.LatLng
 
 class CalcThreatCoverageAllConstructionAsync(
     private val mapViewModel: MapViewModel,
     private val progressBar: ProgressBar
 
-    ) : AsyncTask<ThreatCoverageData, Int, Unit>() {
+) : AsyncTask<ThreatCoverageData, Int, Unit>() {
 
     private val logger: ILogger = TimberLogAdapter()
 
@@ -20,7 +21,8 @@ class CalcThreatCoverageAllConstructionAsync(
         if (input != null) {
             logger.info("calculating coverage for all enemies!")
 
-            val allFeatures = mapViewModel.mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
+            val allFeatures =
+                mapViewModel.mapVectorLayersManager.getLayerById(Constants.THREAT_LAYER_ID)
 
 
             mapViewModel.threatAnalyzer.calculateCoverageAlpha(
@@ -36,3 +38,5 @@ class CalcThreatCoverageAllConstructionAsync(
     }
 
 }
+
+class ThreatCoverageData(val pointResolutionMeters: Double, val heightMeters: Double)

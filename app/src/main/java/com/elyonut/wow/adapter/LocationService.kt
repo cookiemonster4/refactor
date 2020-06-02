@@ -7,6 +7,7 @@ import android.location.LocationManager
 import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
+import com.elyonut.wow.utilities.Constants
 import com.mapbox.android.core.location.*
 import java.lang.ref.WeakReference
 
@@ -77,9 +78,7 @@ class LocationService private constructor(private var context: Context) : ILocat
             val lastUpdatedLocation = locationServiceWeakReference.get()?.lastUpdatedLocation
 
             // don't recalculate if staying in the same location
-            if (lastUpdatedLocation?.longitude == location.longitude &&
-                lastUpdatedLocation.latitude == location.latitude
-            ) {
+            if (location.distanceTo(lastUpdatedLocation) <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION) {
                 return
             }
 

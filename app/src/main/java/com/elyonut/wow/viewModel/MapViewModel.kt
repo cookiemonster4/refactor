@@ -468,8 +468,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         allCoverageTask = CalcThreatCoverageAllConstructionAsync(this, progressBar)
         allCoverageTask!!.execute(
             ThreatCoverageData(
-                latLng,
-                coverageRangeMeters,
                 coverageResolutionMeters,
                 coverageSearchHeightMeters
             )
