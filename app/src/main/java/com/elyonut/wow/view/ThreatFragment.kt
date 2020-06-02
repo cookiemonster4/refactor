@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.R
+import com.elyonut.wow.analysis.ThreatAnalyzer
 import com.elyonut.wow.databinding.FragmentThreatListBinding
 import com.elyonut.wow.model.Threat
 
@@ -20,11 +21,12 @@ class ThreatFragment : Fragment() {
 
     private var columnCount = 1
     private var listener: OnListFragmentInteractionListener? = null
-    private lateinit var threatDataset: ArrayList<Threat>
+    private lateinit var threatDataset: List<Threat>
     private lateinit var threatsRecyclerView: RecyclerView
     private lateinit var noBuildingsMessage: TextView
     private var layoutManager: RecyclerView.LayoutManager? = null
     private lateinit var binding: FragmentThreatListBinding
+    private lateinit var threatAnalyzer: ThreatAnalyzer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,26 +40,21 @@ class ThreatFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        threatDataset = arguments!!.getParcelableArrayList("threats")
-//        val view = inflater.inflate(R.layout.fragment_threat_list, container, false)
+        threatDataset = threatAnalyzer.currentThreats
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_threat_list, container, false)
-
         threatsRecyclerView = binding.threatList
         noBuildingsMessage = binding.noBuildingsMessage
-
         threatsRecyclerView.setHasFixedSize(true)
         layoutManager = LinearLayoutManager(context)
         threatsRecyclerView.layoutManager = layoutManager
         threatsRecyclerView.itemAnimator = DefaultItemAnimator()
+        threatsRecyclerView.adapter = ThreatRecyclerViewAdapter(threatDataset, listener, context!!)
+        setFragmentContent()
 
         layoutManager = when {
             columnCount <= 1 -> LinearLayoutManager(context)
             else -> GridLayoutManager(context, columnCount)
         }
-
-        threatsRecyclerView.adapter = ThreatRecyclerViewAdapter(threatDataset, listener, context!!)
-        setFragmentContent()
 
         return binding.root
     }
@@ -74,10 +71,11 @@ class ThreatFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        threatAnalyzer = ThreatAnalyzer.getInstance(context)
         if (context is OnListFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
+            throw RuntimeException("$context must implement OnListFragmentInteractionListener")
         }
     }
 

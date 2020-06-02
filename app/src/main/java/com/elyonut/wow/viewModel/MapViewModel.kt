@@ -454,8 +454,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun calculateCoverageForAll(
-        latLng: LatLng,
-        coverageRangeMeters: Double,
         coverageResolutionMeters: Double,
         coverageSearchHeightMeters: Double,
         progressBar: ProgressBar

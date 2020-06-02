@@ -29,7 +29,7 @@ class ThreatAnalyzer private constructor(context: Context) {
     private val vectorLayersManager = VectorLayersManager.getInstance(context)
     private var locationService: ILocationService = LocationService.getInstance(context)
     private var threatLayer = TempDB.getInstance(context).getThreatLayer().map { Threat(it) }
-    private var currentThreats: List<Threat> = listOf()
+    var currentThreats: List<Threat> = listOf()
     private val logger: ILogger = TimberLogAdapter()
 
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
@@ -88,14 +88,6 @@ class ThreatAnalyzer private constructor(context: Context) {
         } ?: arrayListOf()
     }
 
-    // returns a threatList?
-    fun getThreatFeaturesConstruction(
-        currentLocation: LatLng
-    ): List<FeatureModel> {
-        return filterWithLOSModelFeatures(currentLocation)
-    }
-
-    // Do we need this?
     fun calculateCoverage(
         currentLocation: LatLng,
         rangeMeters: Double,

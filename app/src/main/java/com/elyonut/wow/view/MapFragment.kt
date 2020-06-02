@@ -25,6 +25,7 @@ import com.elyonut.wow.*
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
+import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
@@ -61,13 +62,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     private lateinit var mapViewModel: MapViewModel
     private lateinit var sharedViewModel: SharedViewModel
     private var listenerMap: OnMapFragmentInteractionListener? = null
-
     private lateinit var broadcastReceiver: BroadcastReceiver
     private var zoomFilter = IntentFilter(Constants.ZOOM_LOCATION_ACTION)
     private lateinit var alertsManager: AlertsManager
     private lateinit var binding: FragmentMapBinding
     private lateinit var areaSelectionBinding: AreaSelectionBinding
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -433,8 +432,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                         val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
                         progressBar.visibility = VISIBLE
                         mapViewModel.calculateCoverageForAll(
-                            latLng,
-                            sharedViewModel.coverageRangeMeters,
                             sharedViewModel.coverageResolutionMeters,
                             sharedViewModel.coverageSearchHeightMeters,
                             progressBar
@@ -529,12 +526,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO Maybe navigation
     private fun openThreatListFragment() {
         mapViewModel.currentThreats.value?.let {
-            val bundle = Bundle()
-            bundle.putParcelableArrayList("threats", it)
-
             val transaction = activity!!.supportFragmentManager.beginTransaction()
             val fragment = ThreatFragment()
-            fragment.arguments = bundle
             transaction.apply {
                 replace(R.id.threat_list_fragment_container, fragment).commit()
                 addToBackStack(fragment.javaClass.simpleName)
@@ -568,7 +561,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     // TODO update layers. handle according to datacard
-    private fun onListFragmentInteraction(item: Threat?) {
+    private fun onListFragmentInteraction(item: FeatureModel?) {
         if (item != null) {
             val feature = MapboxParser.parseToMapboxFeature(item)
             val featureCollection = FeatureCollection.fromFeatures(arrayOf(feature))
@@ -595,7 +588,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 dataCardFragmentInstance.arguments = bundle
 
                 // TODO Change to navigation!!!
-                if (activity!!.supportFragmentManager.fragments.find { fragment -> fragment.id == R.id.fragmentParent } == null)
+                if (activity!!.supportFragmentManager.findFragmentById(R.id.fragmentParent) == null)
                     activity!!.supportFragmentManager.beginTransaction().replace(
                         R.id.fragmentParent,
                         dataCardFragmentInstance

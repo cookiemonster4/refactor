@@ -18,7 +18,7 @@ import com.elyonut.wow.model.Threat
 import kotlinx.android.synthetic.main.fragment_threat.view.*
 
 class ThreatRecyclerViewAdapter(
-    private val mValues: ArrayList<Threat>,
+    private val mValues: List<Threat>,
     private val mListener: OnListFragmentInteractionListener?,
     private val context: Context
 ) : RecyclerView.Adapter<ThreatRecyclerViewAdapter.ViewHolder>() {
