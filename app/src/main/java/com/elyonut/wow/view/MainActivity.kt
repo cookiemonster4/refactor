@@ -144,7 +144,9 @@ class MainActivity : AppCompatActivity(),
         })
 
         mainViewModel.shouldOpenThreatsFragment.observe(this, Observer {
-            sharedViewModel.shouldOpenThreatsFragment.value = it
+            if (it) {
+                openThreatListFragment()
+            }
         })
 
         mainViewModel.coordinatesFeaturesInCoverage.observe(
@@ -169,6 +171,16 @@ class MainActivity : AppCompatActivity(),
         sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
         mainViewModel.removeProgressBar.observe(this, Observer { it.visibility = View.GONE })
         mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
+        mainViewModel.mapsState.observe(this, Observer { sharedViewModel.mapState = it })
+    }
+
+    private fun openThreatListFragment() {
+        val transaction = supportFragmentManager.beginTransaction()
+        val fragment = ThreatFragment()
+        transaction.apply {
+            replace(R.id.threat_list_fragment_container, fragment).commit()
+            addToBackStack(fragment.javaClass.simpleName)
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -331,6 +343,29 @@ class MainActivity : AppCompatActivity(),
             (menuItem.actionView as MaterialCheckBox).isChecked = shouldFilter
         }
     }
+
+//    private fun applyExtraOptions(id: Int) {
+//        when (id) {
+//            R.id.threat_list_menu_item -> {
+//                openThreatListFragment()
+//            }
+//            R.id.threat_select_location_buildings -> {
+//                mapViewModel.selectLocationManual = true
+//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
+//            }
+//            R.id.threat_select_location -> {
+//                mapViewModel.selectLocationManualConstruction = true
+//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
+//            }
+//            R.id.point_coverage -> {
+//                mapViewModel.selectLocationManualCoverage = true
+//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
+//            }
+//            R.id.coverage_all -> {
+//                mapViewModel.selectLocationManualCoverageAll = true
+//            }
+//        }
+//    }
 
     private fun initBottomNavigationView() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)

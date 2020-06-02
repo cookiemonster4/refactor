@@ -19,11 +19,13 @@ import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.model.Coordinate
+import com.elyonut.wow.model.LatLngModel
 import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.Constants.Companion.LOCATION_CHECK_INTERVAL
+import com.elyonut.wow.utilities.MapStates
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.NumericFilterTypes
 import com.mapbox.geojson.*
@@ -479,6 +481,24 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 // End of beloved uniqAI onMapClick
 
+    fun onMapClicked(currentMapState: MapStates, latLng: LatLng) {
+        when (currentMapState) {
+            MapStates.LOS_BUILDINGS_TO_LOCATION -> {
+
+            }
+            MapStates.CALCULATE_COORDINATES_IN_RANGE -> {
+
+            }
+            MapStates.DRAWING -> {
+                drawPolygonMode(latLng)
+            }
+            MapStates.REGULAR -> {
+
+            }
+        }
+    }
+
+
     // TODO rename getThreatMetadata
     fun buildingThreatToCurrentLocation(building: Feature): Threat {
         val currentLocation = locationService.getCurrentLocation()
@@ -524,8 +544,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     // End of beloved uniqAI onMapClick
 
     // TODO restructure, part to alertManager. create function zoomOnGivenLocation
-    fun setZoomLocation(threatID: String) {
-        val location = mapVectorLayersManager.getFeatureLocation(threatID)
+    fun zoomOnLocation(threatID: String) {
+        zoomOnGivenLocation(mapVectorLayersManager.getFeatureLocation(threatID))
+    }
+
+    private fun zoomOnGivenLocation(location: LatLngModel) {
         val position = CameraPosition.Builder()
             .target(LatLng(location.latitude, location.longitude))
             .zoom(17.0)

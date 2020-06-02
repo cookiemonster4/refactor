@@ -5,13 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -31,6 +28,7 @@ import com.elyonut.wow.model.Threat
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.BuildingTypeMapping
 import com.elyonut.wow.utilities.Constants
+import com.elyonut.wow.utilities.MapStates
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.viewModel.MapViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
@@ -43,7 +41,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
-import com.mapbox.mapboxsdk.style.layers.FillLayer
 import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.Property.NONE
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
@@ -99,7 +96,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             override fun onReceive(context: Context, intent: Intent) {
                 when (intent.action) {
                     Constants.ZOOM_LOCATION_ACTION -> {
-                        mapViewModel.setZoomLocation(intent.getStringExtra("threatID"))
+                        mapViewModel.zoomOnLocation(intent.getStringExtra("threatID"))
                         (context as FragmentActivity).supportFragmentManager.popBackStack()
                     }
                 }
@@ -146,7 +143,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         sharedViewModel.selectedExperimentalOption.observe(
             this,
-            Observer { applyExperimentalOption(it) }
+            Observer { applyExtraOptions(it) }
         )
 
         sharedViewModel.shouldOpenThreatsFragment.observe(this, Observer {
@@ -392,7 +389,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         if (mapViewModel.isAreaSelectionMode) {
             mapViewModel.drawPolygonMode(latLng)
         } else {
-            if (mapViewModel.selectLocationManual || mapViewModel.selectLocationManualConstruction || mapViewModel.selectLocationManualCoverage || mapViewModel.selectLocationManualCoverageAll) {
+            if (mapViewModel.selectLocationManual || mapViewModel.selectLocationManualConstruction || mapViewModel.selectLocationManualCoverage || mapViewModel.selectLocationManualCoverageAll || sharedViewModel.mapState == MapStates.LOS_BUILDINGS_TO_LOCATION) {
 
                 // Add the marker image to map
                 loadedMapStyle.addImage(
@@ -416,27 +413,29 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 loadedMapStyle.addLayer(symbolLayer)
 
                 when {
-                    mapViewModel.selectLocationManual -> { // מבנים שולטים על נקודה
-                        mapViewModel.updateBuildingsWithinLOS(latLng)
-                        mapViewModel.selectLocationManual = false
-                        mapViewModel.buildingsWithinLOS.value?.let { visualizeThreats(it) }
-                    }
                     mapViewModel.selectLocationManualCoverage -> {
                         sharedViewModel.mapClickedLatlng.postValue(latLng)
                         mapViewModel.selectLocationManualCoverage = false
                     }
-                    mapViewModel.selectLocationManualCoverageAll -> {
-                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
-                        progressBar.visibility = VISIBLE
-                        mapViewModel.calculateCoverageForAll(
-                            sharedViewModel.coverageResolutionMeters,
-                            sharedViewModel.coverageSearchHeightMeters,
-                            progressBar
-                        )
-                        mapViewModel.selectLocationManualCoverageAll = false
-                    }
+//                    mapViewModel.selectLocationManualCoverageAll -> {
+//                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
+//                        progressBar.visibility = VISIBLE
+//                        mapViewModel.calculateCoverageForAll(
+//                            sharedViewModel.coverageResolutionMeters,
+//                            sharedViewModel.coverageSearchHeightMeters,
+//                            progressBar
+//                        )
+//                        mapViewModel.selectLocationManualCoverageAll = false
+//                    }
                 }
 
+                when {
+                    sharedViewModel.mapState == MapStates.LOS_BUILDINGS_TO_LOCATION -> {
+                        mapViewModel.updateBuildingsWithinLOS(latLng)
+                        mapViewModel.selectLocationManual = false
+                        mapViewModel.buildingsWithinLOS.value?.let { visualizeThreats(it) }
+                    }
+                }
             } else { // If we are not in the above states, than we should open a data card if a building was clicked
                 val building = mapViewModel.getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
 
@@ -464,20 +463,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         return true
     }
 
-    private fun addCoverage(coverageFeatures: List<Feature>) {
-        Timber.i("map coordinates:  %s", coverageFeatures.toString())
-        val threatCoverageSource: GeoJsonSource? =
-            map.style?.getSourceAs(
-                Constants.THREAT_COVERAGE_SOURCE_ID
-            )
-
-        threatCoverageSource?.setGeoJson(FeatureCollection.fromFeatures(coverageFeatures))
-
-        mapViewModel.setLayerVisibility(
-            Constants.THREAT_COVERAGE_LAYER_ID,
-            visibility(Property.VISIBLE)
-        )
-    }
+    fun addIconToMap() {}
 
     // From onMapClick
     private fun visualizeThreats(features: List<Feature>) {
@@ -497,14 +483,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     // TODO rename
-    private fun applyExperimentalOption(id: Int) {
+    private fun applyExtraOptions(id: Int) {
         when (id) {
             R.id.threat_list_menu_item -> {
-                openThreatListFragment()
+//                openThreatListFragment()
             }
             R.id.threat_select_location_buildings -> {
-                mapViewModel.selectLocationManual = true
-                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
+//                mapViewModel.selectLocationManual = true
+//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
             R.id.threat_select_location -> {
                 mapViewModel.selectLocationManualConstruction = true
@@ -518,6 +504,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 mapViewModel.selectLocationManualCoverageAll = true
             }
         }
+    }
+
+    private fun addCoverage(coverageFeatures: List<Feature>) {
+        Timber.i("map coordinates:  %s", coverageFeatures.toString())
+        map.style?.getSourceAs<GeoJsonSource>(
+            Constants.THREAT_COVERAGE_SOURCE_ID
+        )?.setGeoJson(FeatureCollection.fromFeatures(coverageFeatures))
+
+        mapViewModel.setLayerVisibility(
+            Constants.THREAT_COVERAGE_LAYER_ID,
+            visibility(Property.VISIBLE)
+        )
     }
 
     // TODO Maybe navigation
@@ -560,36 +558,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO update layers. handle according to datacard
     private fun onListFragmentInteraction(item: FeatureModel?) {
         if (item != null) {
-            val feature = MapboxParser.parseToMapboxFeature(item)
-            val featureCollection = FeatureCollection.fromFeatures(arrayOf(feature))
-            val geoJsonSource = GeoJsonSource("threat-source", featureCollection)
             val loadedMapStyle = map.style
 
             if (loadedMapStyle != null && loadedMapStyle.isFullyLoaded) {
-                loadedMapStyle.removeLayer("threat-source-layer")
-                loadedMapStyle.removeSource("threat-source")
-
-                // colorize the feature
-                loadedMapStyle.addSource(geoJsonSource)
-                val fillLayer = FillLayer("threat-source-layer", "threat-source")
-                fillLayer.setProperties(
-                    PropertyFactory.fillExtrusionColor(Color.RED),
-                    PropertyFactory.fillColor(Color.RED)
-                )
-                loadedMapStyle.addLayer(fillLayer)
-
-                // open card fragment and pass the threat as an argument
-                val bundle = Bundle()
-                bundle.putParcelable("feature", item)
-                val dataCardFragmentInstance = DataCardFragment.newInstance()
-                dataCardFragmentInstance.arguments = bundle
-
-                // TODO Change to navigation!!!
-                if (activity!!.supportFragmentManager.findFragmentById(R.id.fragmentParent) == null)
-                    activity!!.supportFragmentManager.beginTransaction().replace(
-                        R.id.fragmentParent,
-                        dataCardFragmentInstance
-                    ).commit()
+                mapViewModel.zoomOnLocation(item.id)
             }
         }
 

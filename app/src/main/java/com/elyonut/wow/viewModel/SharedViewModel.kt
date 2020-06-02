@@ -8,6 +8,7 @@ import com.elyonut.wow.database.DB
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.NumericFilterTypes
 import com.elyonut.wow.model.Threat
+import com.elyonut.wow.utilities.MapStates
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Polygon
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -27,6 +28,7 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     lateinit var numericType: NumericFilterTypes
     var shouldDefineArea = MutableLiveData<Boolean>()
     var areaOfInterest: Polygon? = null
+    var mapState = MapStates.REGULAR
     var coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
     var coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
     var coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS

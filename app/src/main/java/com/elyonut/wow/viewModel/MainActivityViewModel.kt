@@ -1,8 +1,10 @@
 package com.elyonut.wow.viewModel
 
 import android.app.Application
+import android.content.Context
 import android.view.MenuItem
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +19,7 @@ import com.elyonut.wow.interfaces.IPermissions
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.utilities.Constants
+import com.elyonut.wow.utilities.MapStates
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
@@ -28,6 +31,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     private val mapVectorLayersManager = VectorLayersManager.getInstance(application)
     private val threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
+    private var _mapsState = MutableLiveData<MapStates>()
+    val mapsState: LiveData<MapStates>
+        get() = _mapsState
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()
@@ -144,9 +150,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 )
                 shouldCloseDrawer = false
             }
-            item.groupId == R.id.nav_experiments ->
-                this.selectedExperimentalOption.postValue(item.itemId)
+            item.itemId == R.id.threat_select_location_buildings -> {
+                _mapsState.value = MapStates.LOS_BUILDINGS_TO_LOCATION
+                Toast.makeText(getApplication(), "Select Location", Toast.LENGTH_LONG).show()
+            }
+//            item.groupId == R.id.nav_experiments ->
+//                this.selectedExperimentalOption.postValue(item.itemId)
             item.itemId == R.id.define_area -> {
+                _mapsState.value = MapStates.DRAWING
                 if (shouldDefineArea.value == null || !shouldDefineArea.value!!) {
                     shouldDefineArea.postValue(true)
                 }
@@ -158,7 +169,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 coverageSettingsSelected.postValue(true)
                 shouldCloseDrawer = false
             }
-            item.itemId == R.id.visibility_status -> {
+            item.itemId == R.id.visibility_status || item.itemId == R.id.threat_list_menu_item -> {
                 shouldOpenThreatsFragment.postValue(true)
             }
         }
