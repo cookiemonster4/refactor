@@ -62,11 +62,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var map: MapboxMap
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions = PermissionsService.getInstance(application)
-    val mapVectorLayersManager = VectorLayersManager.getInstance(application)
+    val vectorLayersManager = VectorLayersManager.getInstance(application)
     var selectedBuildingId = MutableLiveData<String>()
     var currentThreats = MutableLiveData<ArrayList<Threat>>()
     var mapLayers: LiveData<List<LayerModel>> =
-        Transformations.map(mapVectorLayersManager.layers, ::layersUpdated)
+        Transformations.map(vectorLayersManager.layers, ::layersUpdated)
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     private val logger: ILogger = TimberLogAdapter()
     var isAreaSelectionMode = false
@@ -521,7 +521,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             ), threatCoordinates, threatHeight
         )
 
-        return threatAnalyzer.featureModelToThreat(
+        return threatAnalyzer.featureToThreat(
             MapboxParser.parseToFeatureModel(building),
             currentLatLng,
             isLOS
@@ -548,7 +548,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO restructure, part to alertManager. create function zoomOnGivenLocation
     fun zoomOnLocation(threatID: String) {
-        zoomOnGivenLocation(mapVectorLayersManager.getFeatureLocation(threatID))
+        zoomOnGivenLocation(vectorLayersManager.getFeatureLocation(threatID))
     }
 
     private fun zoomOnGivenLocation(location: LatLngModel) {
@@ -566,7 +566,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     // TODO move to threat/alerts
     fun getFeatureName(threatID: String): String {
-        return mapVectorLayersManager.getFeatureName(threatID)
+        return vectorLayersManager.getFeatureName(threatID)
     }
 
     // TODO rename
@@ -631,7 +631,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     fun filterLayerByAllTypes(shouldFilter: Boolean) {
         val types =
-            mapVectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
+            vectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
                 ?.toTypedArray()
         val filters = types?.map { type -> Pair(type, shouldFilter) }
         val layer = map.style!!.getLayer(Constants.THREAT_LAYER_ID)

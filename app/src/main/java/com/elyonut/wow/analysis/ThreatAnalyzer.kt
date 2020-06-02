@@ -25,12 +25,12 @@ import kotlinx.coroutines.withContext
 import java.util.stream.Collectors
 
 class ThreatAnalyzer private constructor(context: Context) {
-    private var topographyService = TopographyService
-    private val vectorLayersManager = VectorLayersManager.getInstance(context)
-    private var locationService: ILocationService = LocationService.getInstance(context)
-    private var threatLayer = TempDB.getInstance(context).getThreatLayer().map { Threat(it) }
-    var currentThreats: List<Threat> = listOf()
     private val logger: ILogger = TimberLogAdapter()
+    private val topographyService = TopographyService
+    private val vectorLayersManager = VectorLayersManager.getInstance(context)
+    private val locationService: ILocationService = LocationService.getInstance(context)
+    private val threatLayer = TempDB.getInstance(context).getThreatLayer().map { Threat(it) }
+    var currentThreats: List<Threat> = listOf()
 
     companion object : SingletonHolder<ThreatAnalyzer, Context>(::ThreatAnalyzer)
 
@@ -67,7 +67,7 @@ class ThreatAnalyzer private constructor(context: Context) {
 
     private fun calculateThreats(latLng: LatLng): List<Threat> {
         return filterWithLOSModelFeatures(latLng).map { threatFeature ->
-            featureModelToThreat(threatFeature, latLng, true)
+            featureToThreat(threatFeature, latLng, true)
         }
     }
 
@@ -77,17 +77,18 @@ class ThreatAnalyzer private constructor(context: Context) {
         currentLocation: LatLng,
         buildingAtLocation: Feature?
     ): List<Feature> {
-        val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
+        val currentLocationCoordinate = Coordinate(currentLocation.latitude, currentLocation.longitude)
         val buildings =
             vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.map {
                 MapboxParser.parseToMapboxFeature(it)
             }
 
         return buildings?.filter {
-            topographyService.isThreatBuilding(currentLocationCoord, it, buildingAtLocation)
+            topographyService.isThreatBuilding(currentLocationCoordinate, it, buildingAtLocation)
         } ?: arrayListOf()
     }
 
+    // Do we need this?
     fun calculateCoverage(
         currentLocation: LatLng,
         rangeMeters: Double,
@@ -148,10 +149,10 @@ class ThreatAnalyzer private constructor(context: Context) {
     private fun filterWithLOSModelFeatures(
         currentLocation: LatLng
     ): List<FeatureModel> {
-        val currentLocationCoord = Coordinate(currentLocation.latitude, currentLocation.longitude)
+        val currentLocationCoordinate = Coordinate(currentLocation.latitude, currentLocation.longitude)
         return threatLayer.parallelStream().filter { threat ->
             topographyService.isThreat(
-                currentLocationCoord,
+                currentLocationCoordinate,
                 threat
             )
         }.collect(
@@ -163,10 +164,10 @@ class ThreatAnalyzer private constructor(context: Context) {
         coverageSquare: List<Coordinate>,
         currentLocation: LatLng
     ): List<Coordinate> {
-        val currentLocationCoord =
+        val currentLocationCoordinate =
             Coordinate(currentLocation.latitude, currentLocation.longitude)
         val currentLocationExploded =
-            topographyService.explodeLocationCoordinate(currentLocationCoord)
+            topographyService.explodeLocationCoordinate(currentLocationCoordinate)
 
         return coverageSquare.filter { coord ->
             topographyService.isLOS(
@@ -201,7 +202,6 @@ class ThreatAnalyzer private constructor(context: Context) {
 
         // Either fromCache was false or the object was not found, so
         // call forceMissionCoverage to create it
-
         if (visiblePoints == null || visiblePoints.isEmpty()) {
             val currentLocationCoord =
                 Coordinate(currentLocation.latitude, currentLocation.longitude)
@@ -253,7 +253,6 @@ class ThreatAnalyzer private constructor(context: Context) {
 
         // Either fromCache was false or the object was not found, so
         // call forceMissionCoverage to create it
-
         if (visiblePoints == null || visiblePoints.isEmpty()) {
             visiblePoints = filterWithLOSCoordinatesAlpha(
                 explodedCoordinates,
@@ -306,20 +305,20 @@ class ThreatAnalyzer private constructor(context: Context) {
     }
 
     // Needs to be without Model in the name when we delete the other function
-    fun featureModelToThreat(
-        featureModel: FeatureModel,
+    fun featureToThreat(
+        feature: FeatureModel,
         currentLocation: LatLng,
         isLos: Boolean
     ): Threat {
-        val threat = Threat(featureModel)
+        val threat = Threat(feature)
         enrichThreat(threat, currentLocation, isLos)
         return threat
     }
 
-    // Where should this be? here ot in Threat class? needs to be rewritten without mapbox
+    // Where should this be? here or in Threat class? needs to be rewritten without mapbox
     private fun enrichThreat(threat: Threat, currentLocation: LatLng, isLOS: Boolean) {
         threat.azimuth = bearingToAzimuth(
-            TurfMeasurement.bearing( // how to get without mapbox
+            TurfMeasurement.bearing( // how to get without mapbox?
                 Point.fromLngLat(currentLocation.longitude, currentLocation.latitude),
                 Point.fromLngLat(threat.longitude, threat.latitude)
             )

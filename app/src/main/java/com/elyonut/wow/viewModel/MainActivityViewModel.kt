@@ -1,7 +1,6 @@
 package com.elyonut.wow.viewModel
 
 import android.app.Application
-import android.content.Context
 import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -29,7 +28,7 @@ import timber.log.Timber
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val mapVectorLayersManager = VectorLayersManager.getInstance(application)
+    private val vectorLayersManager = VectorLayersManager.getInstance(application)
     private val threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
     private var _mapsState = MutableLiveData<MapStates>()
     val mapsState: LiveData<MapStates>
@@ -58,7 +57,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val removeProgressBar: LiveData<ProgressBar>
         get() = _removeProgressBar
     var mapLayers: LiveData<List<LayerModel>> =
-        Transformations.map(mapVectorLayersManager.layers, ::layersUpdated)
+        Transformations.map(vectorLayersManager.layers, ::layersUpdated)
 
     private fun layersUpdated(layers: List<LayerModel>) = layers
 
@@ -176,6 +175,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun getLayerTypeValues(): List<String>? {
-        return mapVectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
+        return vectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
     }
 }
