@@ -32,7 +32,6 @@ import com.elyonut.wow.utilities.MapStates
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.viewModel.MapViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
@@ -136,57 +135,42 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 disableAreaSelection()
             }
         })
+        mapViewModel.currentThreats.observe(this, Observer {
+            if (it.isNotEmpty()) {
+                currentThreatsUpdated()
+            }
+        })
+        mapViewModel.isFocusedOnLocation.observe(this, Observer {
+            setFocusOnUserLocationButtonIcon(it)
+        })
 
+        sharedViewModel.selectedThreatItem.observe(this, Observer { onListFragmentInteraction(it) })
+        sharedViewModel.shouldApplyFilter.observe(this, Observer { filter(it) })
+        sharedViewModel.mapStyleURL.observe(this, Observer { mapViewModel.setMapStyle(it) })
+        sharedViewModel.coordinatesFeaturesInCoverage.observe(this, Observer { addCoverage(it) })
         sharedViewModel.selectedLayerId.observe(this, Observer {
             it?.let { mapViewModel.layerSelected(it) }
         })
-
         sharedViewModel.selectedExperimentalOption.observe(
             this,
             Observer { applyExtraOptions(it) }
         )
-
         sharedViewModel.shouldOpenThreatsFragment.observe(this, Observer {
             if (it) {
                 openThreatListFragment()
             }
         })
-
-        sharedViewModel.selectedThreatItem.observe(
-            this,
-            Observer { onListFragmentInteraction(it) }
-        )
-
-        sharedViewModel.shouldApplyFilter.observe(this,
-            Observer { filter(it) }
-        )
-
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (it) {
                 enableAreaSelection()
             }
         })
-
-        sharedViewModel.chosenTypeToFilter.observe(this, Observer {
-            mapViewModel.filterLayerByType(it)
-
-        })
-
+        sharedViewModel.chosenTypeToFilter.observe(
+            this,
+            Observer { mapViewModel.filterLayerByType(it) })
         sharedViewModel.isSelectAllChecked.observe(this, Observer {
             mapViewModel.filterLayerByAllTypes(it)
         })
-
-        mapViewModel.isFocusedOnLocation.observe(this, Observer {
-            setFocusOnUserLocationButtonIcon(it)
-        })
-
-        alertsManager.alerts.observe(this, Observer { alerts ->
-            if (alerts.isNotEmpty()) {
-                alerts.sortedBy { alert -> alert.time }.firstOrNull { alert -> !alert.isRead }
-                    ?.let { setAlertPopUp(it) }
-            }
-        })
-
         sharedViewModel.shouldRemoveSelectedBuildingLayer.observe(
             this,
             Observer { shouldRemoveLayer ->
@@ -197,15 +181,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 }
             })
 
-        sharedViewModel.mapStyleURL.observe(this, Observer {
-            mapViewModel.setMapStyle(it)
-        })
-
-        sharedViewModel.coordinatesFeaturesInCoverage.observe(this, Observer { addCoverage(it) })
-
-        mapViewModel.currentThreats.observe(this, Observer {
-            if (it.isNotEmpty()) {
-                currentThreatUpdated()
+        alertsManager.alerts.observe(this, Observer { alerts ->
+            if (alerts.isNotEmpty()) {
+                alerts.sortedBy { alert -> alert.time }.firstOrNull { alert -> !alert.isRead }
+                    ?.let { setAlertPopUp(it) }
             }
         })
     }
@@ -233,10 +212,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    private fun setFocusOnUserLocationButtonIcon(isfocusedOnUserLocation: Boolean) {
-        val focusOnUserLocationButton: FloatingActionButton = binding.focusOnUserLocation
+    private fun setFocusOnUserLocationButtonIcon(isFocusedOnUserLocation: Boolean) {
+        val focusOnUserLocationButton = binding.focusOnUserLocation
 
-        if (isfocusedOnUserLocation) {
+        if (isFocusedOnUserLocation) {
             focusOnUserLocationButton.setImageResource(R.drawable.ic_my_location_blue)
         } else {
             focusOnUserLocationButton.setImageResource(R.drawable.ic_my_location_black)
@@ -302,8 +281,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
     // End of alert handling
 
-    private fun currentThreatUpdated() {
-        sharedViewModel.isVisible.value = true
+    private fun currentThreatsUpdated() {
+        sharedViewModel.isVisible.value =
+            true // Why always true? does it get to here when threr are no threats?
         mapViewModel.currentThreatsUpdated()
     }
 
@@ -328,11 +308,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     // TODO Maybe navigation
     private fun showDescriptionFragment() {
-        val dataCardFragmentInstance = DataCardFragment.newInstance()
-
         activity!!.supportFragmentManager.beginTransaction().replace(
             R.id.fragmentParent,
-            dataCardFragmentInstance
+            DataCardFragment.newInstance()
         ).commit()
     }
 
@@ -429,8 +407,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 //                    }
                 }
 
-                when {
-                    sharedViewModel.mapState == MapStates.LOS_BUILDINGS_TO_LOCATION -> {
+                when (sharedViewModel.mapState) {
+                    MapStates.LOS_BUILDINGS_TO_LOCATION -> {
                         mapViewModel.updateBuildingsWithinLOS(latLng)
                         mapViewModel.selectLocationManual = false
                         mapViewModel.buildingsWithinLOS.value?.let { visualizeThreats(it) }
@@ -485,13 +463,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO rename
     private fun applyExtraOptions(id: Int) {
         when (id) {
-            R.id.threat_list_menu_item -> {
-//                openThreatListFragment()
-            }
-            R.id.threat_select_location_buildings -> {
-//                mapViewModel.selectLocationManual = true
-//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
-            }
             R.id.threat_select_location -> {
                 mapViewModel.selectLocationManualConstruction = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
@@ -557,7 +528,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     // TODO update layers. handle according to datacard
     private fun onListFragmentInteraction(item: FeatureModel?) {
-        if (item != null) {
+        item?.let {
             val loadedMapStyle = map.style
 
             if (loadedMapStyle != null && loadedMapStyle.isFullyLoaded) {

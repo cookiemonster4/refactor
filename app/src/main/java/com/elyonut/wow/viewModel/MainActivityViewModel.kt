@@ -154,8 +154,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 _mapsState.value = MapStates.LOS_BUILDINGS_TO_LOCATION
                 Toast.makeText(getApplication(), "Select Location", Toast.LENGTH_LONG).show()
             }
-//            item.groupId == R.id.nav_experiments ->
-//                this.selectedExperimentalOption.postValue(item.itemId)
             item.itemId == R.id.define_area -> {
                 _mapsState.value = MapStates.DRAWING
                 if (shouldDefineArea.value == null || !shouldDefineArea.value!!) {
@@ -181,4 +179,3 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         return mapVectorLayersManager.getValuesOfLayerProperty(Constants.THREAT_LAYER_ID, "type")
     }
 }
-

@@ -101,7 +101,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             mapLayers.value?.find { layerModel -> layerModel.id == Constants.ACTIVE_THREATS_LAYER_ID }?.features
                 ?: arrayListOf()
         if (threatLayer.isNotEmpty()) {
-            currentThreats.value = threatLayer as ArrayList<Threat>
+            currentThreats.value =
+                threatLayer as ArrayList<Threat> // Will be fixed when we delete current threats :)
         }
     }
 
@@ -461,6 +462,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
+    // Should we delete this?
     fun calculateCoverageForAll(
         coverageResolutionMeters: Double,
         coverageSearchHeightMeters: Double,
@@ -481,6 +483,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 // End of beloved uniqAI onMapClick
 
+    // TODO Not finished!
     fun onMapClicked(currentMapState: MapStates, latLng: LatLng) {
         when (currentMapState) {
             MapStates.LOS_BUILDINGS_TO_LOCATION -> {

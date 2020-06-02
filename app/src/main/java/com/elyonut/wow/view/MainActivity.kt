@@ -81,7 +81,6 @@ class MainActivity : AppCompatActivity(),
 
         alertsFragmentInstance = AlertsFragment.newInstance()
         navigationView = findViewById(R.id.navigationView)
-
         setObservers()
         mainViewModel.locationSetUp()
         initAreaOfInterest()
@@ -89,13 +88,17 @@ class MainActivity : AppCompatActivity(),
         initNavigationMenu()
         initFilterSection()
         initBottomNavigationView()
-
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun setObservers() {
         mainViewModel.isPermissionRequestNeeded.observe(this, Observer { requestPermissions() })
-        mainViewModel.isPermissionDialogShown.observe(this, Observer { showAlertDialog() })
+        mainViewModel.isPermissionDialogShown.observe(
+            this,
+            Observer { showLocationServiceAlertDialog() })
+        mainViewModel.removeProgressBar.observe(this, Observer { it.visibility = View.GONE })
+        mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
+        mainViewModel.mapsState.observe(this, Observer { sharedViewModel.mapState = it })
 
         mainViewModel.chosenLayerId.observe(this, Observer {
             mainViewModel.chosenLayerId.value?.let {
@@ -153,6 +156,8 @@ class MainActivity : AppCompatActivity(),
             this,
             Observer { sharedViewModel.coordinatesFeaturesInCoverage.postValue(it) })
 
+        sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
+        sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (!it) {
                 mainViewModel.shouldDefineArea.value = it
@@ -163,21 +168,14 @@ class MainActivity : AppCompatActivity(),
             editAlertsBadge(it)
         })
 
-        sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
         sharedViewModel.coverageSearchHeightMetersChecked.observe(
             this,
             Observer { mainViewModel.coverageSearchHeightMetersCheckedChanged(it) })
-
-        sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
-        mainViewModel.removeProgressBar.observe(this, Observer { it.visibility = View.GONE })
-        mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
-        mainViewModel.mapsState.observe(this, Observer { sharedViewModel.mapState = it })
     }
 
     private fun openThreatListFragment() {
-        val transaction = supportFragmentManager.beginTransaction()
         val fragment = ThreatFragment()
-        transaction.apply {
+        supportFragmentManager.beginTransaction().apply {
             replace(R.id.threat_list_fragment_container, fragment).commit()
             addToBackStack(fragment.javaClass.simpleName)
         }
@@ -185,8 +183,7 @@ class MainActivity : AppCompatActivity(),
 
     @SuppressLint("InflateParams")
     private fun updateLayersCheckbox(layers: List<LayerModel>) {
-        val menu = navigationView.menu
-        val layersSubMenu = menu.getItem(Menus.LAYERS_MENU).subMenu
+        val layersSubMenu = navigationView.menu.getItem(Menus.LAYERS_MENU).subMenu
 
         if (layersSubMenu.size() != layers.size) {
             layers.forEachIndexed { index, layerModel ->
@@ -240,7 +237,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun showAlertDialog() {
+    private fun showLocationServiceAlertDialog() {
         AlertDialog.Builder(this, R.style.AlertDialogTheme)
             .setTitle(getString(R.string.turn_on_location_title))
             .setMessage(getString(R.string.turn_on_location))
@@ -280,8 +277,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun filterButtonClicked() {
         val filterFragment = FilterFragment.newInstance()
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.apply {
+        supportFragmentManager.beginTransaction().apply {
             add(R.id.fragmentMenuParent, filterFragment).commit()
             addToBackStack(filterFragment.javaClass.simpleName)
         }
@@ -343,29 +339,6 @@ class MainActivity : AppCompatActivity(),
             (menuItem.actionView as MaterialCheckBox).isChecked = shouldFilter
         }
     }
-
-//    private fun applyExtraOptions(id: Int) {
-//        when (id) {
-//            R.id.threat_list_menu_item -> {
-//                openThreatListFragment()
-//            }
-//            R.id.threat_select_location_buildings -> {
-//                mapViewModel.selectLocationManual = true
-//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
-//            }
-//            R.id.threat_select_location -> {
-//                mapViewModel.selectLocationManualConstruction = true
-//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
-//            }
-//            R.id.point_coverage -> {
-//                mapViewModel.selectLocationManualCoverage = true
-//                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
-//            }
-//            R.id.coverage_all -> {
-//                mapViewModel.selectLocationManualCoverageAll = true
-//            }
-//        }
-//    }
 
     private fun initBottomNavigationView() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
