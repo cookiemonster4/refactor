@@ -107,15 +107,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    // TODO maybe change to init drawings + should the map be responsibe? or other class
+    // TODO maybe change to init drawings + should the map be responsible? or other class
     private fun initArea() {
-        if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value =
-                sharedViewModel.areaOfInterest // TODO Should be encapsulated
-
+        sharedViewModel.areaOfInterest?.let {
+            mapViewModel.areaOfInterestUpdated(it)
             val polygonPoints = ArrayList<Point>()
-            sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
-                it.forEach {
+            it.coordinates().forEach { coordinate ->
+                coordinate.forEach {
                     polygonPoints.add(it)
                 }
             }
@@ -125,7 +123,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun setObservers() {
-        mapViewModel.areaOfInterest.observe(this, Observer {
+        mapViewModel._areaOfInterest.observe(this, Observer {
             sharedViewModel.areaOfInterest = it
         })
         mapViewModel.selectedBuildingId.observe(
@@ -182,7 +180,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
 
         mapViewModel.isFocusedOnLocation.observe(this, Observer {
-            setCurrentLocationButtonIcon(it)
+            setFocusOnUserLocationButtonIcon(it)
         })
 
         alertsManager.alerts.observe(this, Observer { alerts ->
@@ -238,14 +236,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    // TODO SelfCentered instead current location
-    private fun setCurrentLocationButtonIcon(isInCurrentLocation: Boolean) {
-        val currentLocationButton: FloatingActionButton = binding.currentLocation
+    private fun setFocusOnUserLocationButtonIcon(isfocusedOnUserLocation: Boolean) {
+        val focusOnUserLocationButton: FloatingActionButton = binding.focusOnUserLocation
 
-        if (isInCurrentLocation) {
-            currentLocationButton.setImageResource(R.drawable.ic_my_location_blue)
+        if (isfocusedOnUserLocation) {
+            focusOnUserLocationButton.setImageResource(R.drawable.ic_my_location_blue)
         } else {
-            currentLocationButton.setImageResource(R.drawable.ic_my_location_black)
+            focusOnUserLocationButton.setImageResource(R.drawable.ic_my_location_black)
         }
     }
 
@@ -556,7 +553,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private fun defineAreaSelectionMode(shouldEnable: Boolean) {
         binding.navigationButton.isEnabled = !shouldEnable
-        binding.currentLocation.isEnabled = !shouldEnable
+        binding.focusOnUserLocation.isEnabled = !shouldEnable
         mapViewModel.isAreaSelectionMode = shouldEnable
     }
 

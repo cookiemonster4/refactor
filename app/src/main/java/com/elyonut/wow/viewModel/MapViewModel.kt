@@ -68,7 +68,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     private val logger: ILogger = TimberLogAdapter()
     var isAreaSelectionMode = false
-    var areaOfInterest = MutableLiveData<Polygon>()
+    var _areaOfInterest = MutableLiveData<Polygon>()
+    val areaOfInterest: LiveData<Polygon>
+        get() = _areaOfInterest
     var lineLayerPointList = ArrayList<Point>()
     private var currentLineLayerPointList = ArrayList<Point>()
     private var currentCircleLayerFeatureList = ArrayList<Feature>()
@@ -84,6 +86,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         logger.initLogger()
+    }
+
+    fun areaOfInterestUpdated(polygon: Polygon) {
+        _areaOfInterest.value = polygon
     }
 
     private fun layersUpdated(layers: List<LayerModel>) = layers
@@ -351,9 +357,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         lineLayerPointList = currentLineLayerPointList
 
         if (lineLayerPointList.isEmpty()) {
-            areaOfInterest.postValue(null)
+            _areaOfInterest.postValue(null)
         } else {
-            areaOfInterest.postValue(Polygon.fromLngLats(listOf(lineLayerPointList)))
+            _areaOfInterest.postValue(Polygon.fromLngLats(listOf(lineLayerPointList)))
         }
 
         shouldDisableAreaSelection.value = true
@@ -436,7 +442,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 // End of area of interest
 
     // TODO check if it follows me and if not maybe make generic
-    fun focusOnMyLocationClicked() {
+    fun focusOnUserLocationClicked() {
         if (map.locationComponent.isLocationComponentActivated) {
             map.locationComponent.apply {
                 cameraMode = CameraMode.TRACKING
