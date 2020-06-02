@@ -5,22 +5,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.AlertsManager
-import com.elyonut.wow.viewModel.AlertsViewModelFactory
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.AlertsAdapter
 import com.elyonut.wow.databinding.FragmentAlertsBinding
-import com.elyonut.wow.interfaces.OnClickInterface
 import com.elyonut.wow.model.AlertModel
 import com.elyonut.wow.viewModel.AlertsViewModel
+import com.elyonut.wow.viewModel.AlertsViewModelFactory
 import com.elyonut.wow.viewModel.SharedViewModel
 
 class AlertsFragment : Fragment() {

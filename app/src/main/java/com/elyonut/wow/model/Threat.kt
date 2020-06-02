@@ -97,14 +97,5 @@ class Threat(id: String, geometry: PolygonModel, properties: JsonObject) :
         override fun newArray(size: Int): Array<Threat?> {
             return arrayOfNulls(size)
         }
-
-        fun color(threat: Threat): Int {
-            return when (threat.level) {
-                ThreatLevel.None -> RiskStatus.NONE.color
-                ThreatLevel.Low -> RiskStatus.LOW.color
-                ThreatLevel.Medium -> RiskStatus.MEDIUM.color
-                ThreatLevel.High -> RiskStatus.HIGH.color
-            }
-        }
     }
 }

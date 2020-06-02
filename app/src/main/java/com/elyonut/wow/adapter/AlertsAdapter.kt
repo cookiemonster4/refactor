@@ -5,14 +5,10 @@ import android.graphics.Color
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.AlertItemBinding
-import com.elyonut.wow.interfaces.OnClickInterface
 import com.elyonut.wow.model.AlertModel
-import java.util.*
 
 class AlertsAdapter(
     var context: Context,
