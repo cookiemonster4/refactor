@@ -55,6 +55,7 @@ import kotlin.collections.map
 import kotlin.collections.toTypedArray
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
+    private val logger: ILogger = TimberLogAdapter()
     var selectLocationManual: Boolean = false
     var selectLocationManualConstruction: Boolean = false
     var selectLocationManualCoverage: Boolean = false
@@ -63,12 +64,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var locationService: ILocationService = LocationService.getInstance(getApplication())
     private val permissions: IPermissions = PermissionsService.getInstance(application)
     val vectorLayersManager = VectorLayersManager.getInstance(application)
-    var selectedBuildingId = MutableLiveData<String>()
+    private var topographyService = TopographyService
+    var threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
     var currentThreats = MutableLiveData<ArrayList<Threat>>()
     var mapLayers: LiveData<List<LayerModel>> =
         Transformations.map(vectorLayersManager.layers, ::layersUpdated)
+    var selectedBuildingId = MutableLiveData<String>()
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
-    private val logger: ILogger = TimberLogAdapter()
     var isAreaSelectionMode = false
     private var _areaOfInterest = MutableLiveData<Polygon>()
     val areaOfInterest: LiveData<Polygon>
@@ -79,8 +81,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var circleSource: GeoJsonSource // areaOfInterest
     private lateinit var fillSource: GeoJsonSource // areaOfInterest
     private lateinit var firstPointOfPolygon: Point // areaOfInterest
-    private var topographyService = TopographyService
-    var threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
     private var allCoverageTask: CalcThreatCoverageAllConstructionAsync? = null
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()

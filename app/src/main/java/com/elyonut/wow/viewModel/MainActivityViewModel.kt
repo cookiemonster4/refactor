@@ -27,7 +27,6 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
-
     private val vectorLayersManager = VectorLayersManager.getInstance(application)
     private val threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
     private var _mapsState = MutableLiveData<MapStates>()
