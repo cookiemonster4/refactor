@@ -26,7 +26,6 @@ class TempDB private constructor(private var context: Context) {
         val restaurantsFeatures = gson.fromJson(restaurantsBuffer, Array<FeatureModel>::class.java)
         val centerTLVFeatures = gson.fromJson(centerTLVBuffer, Array<FeatureModel>::class.java)
 
-//        val layerModel = LayerModel(Constants.THREAT_LAYER_ID, "בניינים", threatLayer)
         val restaurantsLayerModel =
             LayerModel("restaurants", "מסעדות", restaurantsFeatures.toList())
         val centerTLVLayerModel =
@@ -34,7 +33,6 @@ class TempDB private constructor(private var context: Context) {
 
         layers.add(restaurantsLayerModel)
         layers.add(centerTLVLayerModel)
-//        layers.add(layerModel)
     }
 
     companion object : SingletonHolder<TempDB, Context>(::TempDB)
