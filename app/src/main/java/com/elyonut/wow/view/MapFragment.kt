@@ -456,9 +456,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 mapViewModel.selectLocationManualCoverage = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
-            R.id.coverage_all -> {
-                mapViewModel.selectLocationManualCoverageAll = true
-            }
         }
     }
 
