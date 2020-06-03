@@ -207,17 +207,6 @@ class MainActivity : AppCompatActivity(),
         mainViewModel.mapClicked(latLng)
     }
 
-    private fun toggleViewVisibility(
-        view: View,
-        isVisible: Boolean
-    ) {
-        if (isVisible) {
-            view.visibility = View.VISIBLE
-        } else {
-            view.visibility = View.GONE
-        }
-    }
-
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
             this,
