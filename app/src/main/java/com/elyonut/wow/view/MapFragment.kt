@@ -119,6 +119,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private fun setObservers() {
         mapViewModel.buildingsWithinLOS.observe(this, Observer { visualizeThreats(it) })
+        mapViewModel.locationClickedIcon.observe(this, Observer { addIconToMap(it) })
         mapViewModel.calculateCoverage.observe(
             this,
             Observer { sharedViewModel.mapClickedLatlng.postValue(it) })
@@ -340,8 +341,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // TODO reformat, move to viewModel, CR
     override fun onMapClick(latLng: LatLng): Boolean {
 
-        // return mapViewModel.onMapClick(map, latLng)
-
         val loadedMapStyle = map.style
 
         if (loadedMapStyle == null || !loadedMapStyle.isFullyLoaded) {
@@ -349,16 +348,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
 
         // What are these layers? why do we delete them?
-        loadedMapStyle.removeLayer("threat-source-layer")
-        loadedMapStyle.removeSource("threat-source")
-        loadedMapStyle.removeLayer("layer-selected-location")
-        loadedMapStyle.removeSource("source-marker-click")
-        loadedMapStyle.removeImage("marker-icon-alertID")
+        loadedMapStyle.removeLayer("layer-selected-location") // icon
+        loadedMapStyle.removeSource("source-marker-click") // icon
+        loadedMapStyle.removeImage("marker-icon-alertID") // icon
 
         mapViewModel.onMapClicked(sharedViewModel.mapState, latLng)
-//        val selectedBuildingSource =
-//            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
-//        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
 
         mapViewModel.setLayerVisibility(Constants.THREAT_COVERAGE_LAYER_ID, visibility(NONE))
 
@@ -369,31 +363,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             if (mapViewModel.selectLocationManual || mapViewModel.selectLocationManualConstruction || mapViewModel.selectLocationManualCoverage || mapViewModel.selectLocationManualCoverageAll || sharedViewModel.mapState == MapStates.LOS_BUILDINGS_TO_LOCATION) {
 
                 // Add the marker image to map
-                loadedMapStyle.addImage(
-                    "marker-icon-alertID",
-                    BitmapFactory.decodeResource(
-                        App.resources_, R.drawable.mapbox_marker_icon_default
-                    )
-                )
 
-                val geoJsonSource = GeoJsonSource(
-                    "source-marker-click",
-                    Feature.fromGeometry(Point.fromLngLat(latLng.longitude, latLng.latitude))
-                )
-
-                loadedMapStyle.addSource(geoJsonSource)
-
-                val symbolLayer = SymbolLayer("layer-selected-location", "source-marker-click")
-                symbolLayer.withProperties(
-                    PropertyFactory.iconImage("marker-icon-alertID")
-                )
-                loadedMapStyle.addLayer(symbolLayer)
 
                 when {
-                    mapViewModel.selectLocationManualCoverage -> {
-                        sharedViewModel.mapClickedLatlng.postValue(latLng)
-                        mapViewModel.selectLocationManualCoverage = false
-                    }
+//                    mapViewModel.selectLocationManualCoverage -> {
+//                        sharedViewModel.mapClickedLatlng.postValue(latLng)
+//                        mapViewModel.selectLocationManualCoverage = false
+//                    }
 //                    mapViewModel.selectLocationManualCoverageAll -> {
 //                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
 //                        progressBar.visibility = VISIBLE
@@ -411,7 +387,29 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         return true
     }
 
-    fun addIconToMap() {}
+    fun addIconToMap(latLng: LatLng) {
+        map.style?.let {
+            it.addImage(
+                "marker-icon-alertID",
+                BitmapFactory.decodeResource(
+                    App.resources_, R.drawable.mapbox_marker_icon_default
+                )
+            )
+
+            val geoJsonSource = GeoJsonSource(
+                "source-marker-click",
+                Feature.fromGeometry(Point.fromLngLat(latLng.longitude, latLng.latitude))
+            )
+
+            it.addSource(geoJsonSource)
+
+            val symbolLayer = SymbolLayer("layer-selected-location", "source-marker-click")
+            symbolLayer.withProperties(
+                PropertyFactory.iconImage("marker-icon-alertID")
+            )
+            it.addLayer(symbolLayer)
+        }
+    }
 
     private fun visualizeThreats(features: List<Feature>) {
 
@@ -421,8 +419,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             return
         }
 
-        loadedMapStyle.removeLayer("threat-source-layer")
-        loadedMapStyle.removeSource("threat-source")
+//        loadedMapStyle.removeLayer("threat-source-layer")
+//        loadedMapStyle.removeSource("threat-source")
 
         val selectedBuildingSource =
             loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)

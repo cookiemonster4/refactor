@@ -78,6 +78,19 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         latLng: LatLng
     ) {
         _isProgressBarVisible.postValue(false)
+        when (_mapsState.value) {
+            MapStates.LOS_BUILDINGS_TO_LOCATION -> {
+                // How to get the building at location? How to pass it here?
+                _mapsState.value = MapStates.REGULAR
+            }
+            MapStates.CALCULATE_COORDINATES_IN_RANGE -> {
+                calculateCoverage(latLng)
+            }
+        }
+
+    }
+
+    private fun calculateCoverage(latLng: LatLng) {
         val coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
         val coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
         val coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
@@ -110,6 +123,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 )
             })
             _isProgressBarVisible.postValue(true)
+            _mapsState.postValue(MapStates.REGULAR) // Maybe make it a toggle? a mode that should be stopped, like the area of interest
         }
     }
 

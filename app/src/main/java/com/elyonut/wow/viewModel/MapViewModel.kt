@@ -67,7 +67,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var mapLayers: LiveData<List<LayerModel>> =
         Transformations.map(vectorLayersManager.layers, ::layersUpdated)
     var selectedBuilding = MutableLiveData<FeatureModel>()
-    var buildingsWithinLOS = MutableLiveData<List<Feature>>()
+    private var _buildingsWithinLOS = MutableLiveData<List<Feature>>()
+    val buildingsWithinLOS: LiveData<List<Feature>>
+        get() = _buildingsWithinLOS
     var isAreaSelectionMode = false
     private var _areaOfInterest = MutableLiveData<Polygon>()
     val areaOfInterest: LiveData<Polygon>
@@ -85,6 +87,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var _calculateCoverage = MutableLiveData<LatLng>()
     val calculateCoverage: LiveData<LatLng>
         get() = _calculateCoverage
+    private var _locationClickedIcon = MutableLiveData<LatLng>()
+    val locationClickedIcon: LiveData<LatLng>
+        get() = _locationClickedIcon
 
     init {
         logger.initLogger()
@@ -451,9 +456,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Beggining of onMapClick by our beloved uniqAI
-    fun updateBuildingsWithinLOS(latLng: LatLng) {
-        buildingsWithinLOS.value = threatAnalyzer.getBuildingsWithinLOS(
+    // Beginning of onMapClick by our beloved uniqAI
+    private fun updateBuildingsWithinLOS(latLng: LatLng) {
+        _buildingsWithinLOS.value = threatAnalyzer.getBuildingsWithinLOS(
             latLng,
             getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
         )
@@ -484,10 +489,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun onMapClicked(currentMapState: MapStates, latLng: LatLng) {
         when (currentMapState) {
             MapStates.LOS_BUILDINGS_TO_LOCATION -> {
+                _locationClickedIcon.value = latLng
                 updateBuildingsWithinLOS(latLng)
                 selectLocationManual = false
             }
             MapStates.CALCULATE_COORDINATES_IN_RANGE -> {
+                _locationClickedIcon.value = latLng
                 _calculateCoverage.postValue(latLng)
             }
             MapStates.DRAWING -> {
@@ -496,7 +503,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             MapStates.REGULAR -> {
                 val selectedBuildingSource =
                     map.style?.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
-//                selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
 
                 getBuildingAtLocation(
                     latLng,
