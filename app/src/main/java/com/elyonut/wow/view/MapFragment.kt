@@ -469,7 +469,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun addCoverage(coverageFeatures: List<Feature>) {
-        Timber.i("map coordinates:  %s", coverageFeatures.toString())
         map.style?.getSourceAs<GeoJsonSource>(
             Constants.THREAT_COVERAGE_SOURCE_ID
         )?.setGeoJson(FeatureCollection.fromFeatures(coverageFeatures))
