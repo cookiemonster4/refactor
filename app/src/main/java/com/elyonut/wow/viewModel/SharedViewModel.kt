@@ -51,10 +51,9 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         this.coverageRangeMeters = coverageRange
         this.coverageResolutionMeters = resolution
 
-        if (height != null) {
-            this.coverageSearchHeightMeters = height
+        height?.let {
+            this.coverageSearchHeightMeters = it
         }
-
         this.coverageSearchHeightMetersChecked.postValue(heightChecked)
     }
 }

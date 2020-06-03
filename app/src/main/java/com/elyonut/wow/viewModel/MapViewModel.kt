@@ -100,6 +100,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         val threatLayer =
             mapLayers.value?.find { layerModel -> layerModel.id == Constants.ACTIVE_THREATS_LAYER_ID }?.features
                 ?: arrayListOf()
+
         if (threatLayer.isNotEmpty()) {
             currentThreats.value =
                 threatLayer as ArrayList<Threat> // Will be fixed when we delete current threats :)

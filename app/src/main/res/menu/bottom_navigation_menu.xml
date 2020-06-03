@@ -5,7 +5,7 @@
         android:icon="@drawable/ic_alert"
         android:title="@string/alerts" />
     <item
-        android:id="@+id/visibility_status"
+        android:id="@+id/awareness_status"
         android:icon="@drawable/ic_visibility_off"
         android:title="@string/invisible"
         />

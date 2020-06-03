@@ -23,7 +23,6 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.geometry.LatLng
 import kotlinx.coroutines.*
-import timber.log.Timber
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val vectorLayersManager = VectorLayersManager.getInstance(application)
@@ -160,7 +159,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 coverageSettingsSelected.postValue(true)
                 shouldCloseDrawer = false
             }
-            item.itemId == R.id.visibility_status || item.itemId == R.id.threat_list_menu_item -> {
+            item.itemId == R.id.awareness_status || item.itemId == R.id.threat_list_menu_item -> {
                 shouldOpenThreatsFragment.postValue(true)
             }
         }
