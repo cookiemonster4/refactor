@@ -110,10 +110,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                     )
                 )
             })
-            Timber.i(
-                "main activity coordinates:  %s",
-                coordinatesFeaturesInCoverage.value.toString()
-            )
             _isProgressBarVisible.postValue(false)
         }
     }
