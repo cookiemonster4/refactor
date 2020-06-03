@@ -46,7 +46,6 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.util.*
@@ -150,11 +149,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             this,
             Observer { applyExtraOptions(it) }
         )
-        sharedViewModel.shouldOpenThreatsFragment.observe(this, Observer {
-            if (it) {
-                openThreatListFragment()
-            }
-        })
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (it) {
                 enableAreaSelection()
@@ -477,18 +471,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             Constants.THREAT_COVERAGE_LAYER_ID,
             visibility(Property.VISIBLE)
         )
-    }
-
-    // TODO Maybe navigation
-    private fun openThreatListFragment() {
-        mapViewModel.currentThreats.value?.let {
-            val transaction = activity!!.supportFragmentManager.beginTransaction()
-            val fragment = ThreatFragment()
-            transaction.apply {
-                replace(R.id.threat_list_fragment_container, fragment).commit()
-                addToBackStack(fragment.javaClass.simpleName)
-            }
-        }
     }
 
     private fun enableAreaSelection() {
