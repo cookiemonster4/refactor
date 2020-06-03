@@ -408,7 +408,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             } else { // If we are not in the above states, than we should open a data card if a building was clicked
                 val building = mapViewModel.getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
 
-                if (building != null) {
+                building?.let {
                     selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeature(building))
 
                     val threat = mapViewModel.buildingThreatToCurrentLocation(building)
