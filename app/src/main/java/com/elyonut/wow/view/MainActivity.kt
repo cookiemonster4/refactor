@@ -35,6 +35,7 @@ import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.Menus
+import com.elyonut.wow.utilities.toggleViewVisibility
 import com.elyonut.wow.viewModel.MainActivityViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity(),
     private val gson = Gson()
     private lateinit var alertsFragmentInstance: AlertsFragment
     private lateinit var navigationView: NavigationView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +83,7 @@ class MainActivity : AppCompatActivity(),
 
         alertsFragmentInstance = AlertsFragment.newInstance()
         navigationView = findViewById(R.id.navigationView)
+        progressBar = findViewById(R.id.progressBar)
         setObservers()
         mainViewModel.locationSetUp()
         initAreaOfInterest()
@@ -96,7 +99,9 @@ class MainActivity : AppCompatActivity(),
         mainViewModel.isPermissionDialogShown.observe(
             this,
             Observer { showLocationServiceAlertDialog() })
-        mainViewModel.removeProgressBar.observe(this, Observer { it.visibility = View.GONE })
+        mainViewModel.isProgressBarVisible.observe(
+            this,
+            Observer { progressBar.toggleViewVisibility(it) })
         mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
         mainViewModel.mapsState.observe(this, Observer { sharedViewModel.mapState = it })
 
@@ -199,9 +204,18 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun mapClicked(latLng: LatLng) {
-        val progressBar: ProgressBar = findViewById(R.id.progressBar)
-        progressBar.visibility = View.VISIBLE
-        mainViewModel.mapClicked(latLng, progressBar)
+        mainViewModel.mapClicked(latLng)
+    }
+
+    private fun toggleViewVisibility(
+        view: View,
+        isVisible: Boolean
+    ) {
+        if (isVisible) {
+            view.visibility = View.VISIBLE
+        } else {
+            view.visibility = View.GONE
+        }
     }
 
     private fun requestPermissions() {

@@ -2,7 +2,6 @@ package com.elyonut.wow.viewModel
 
 import android.app.Application
 import android.view.MenuItem
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -52,9 +51,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         PermissionsService.getInstance(application)
     private var coverageSearchHeightMetersChecked: Boolean = false
     val coordinatesFeaturesInCoverage = MutableLiveData<List<Feature>>()
-    private val _removeProgressBar = MutableLiveData<ProgressBar>()
-    val removeProgressBar: LiveData<ProgressBar>
-        get() = _removeProgressBar
+    private val _isProgressBarVisible = MutableLiveData<Boolean>()
+    val isProgressBarVisible: LiveData<Boolean>
+        get() = _isProgressBarVisible
     var mapLayers: LiveData<List<LayerModel>> =
         Transformations.map(vectorLayersManager.layers, ::layersUpdated)
 
@@ -77,9 +76,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun mapClicked(
-        latLng: LatLng,
-        progressBar: ProgressBar
+        latLng: LatLng
     ) {
+        _isProgressBarVisible.postValue(true)
         val coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
         val coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
         val coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
@@ -115,7 +114,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 "main activity coordinates:  %s",
                 coordinatesFeaturesInCoverage.value.toString()
             )
-            _removeProgressBar.postValue(progressBar)
+            _isProgressBarVisible.postValue(false)
         }
     }
 
