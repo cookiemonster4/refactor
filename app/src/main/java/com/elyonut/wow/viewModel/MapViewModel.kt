@@ -18,10 +18,7 @@ import com.elyonut.wow.analysis.*
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.interfaces.IPermissions
-import com.elyonut.wow.model.Coordinate
-import com.elyonut.wow.model.LatLngModel
-import com.elyonut.wow.model.LayerModel
-import com.elyonut.wow.model.Threat
+import com.elyonut.wow.model.*
 import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.Constants
 import com.elyonut.wow.utilities.Constants.Companion.LOCATION_CHECK_INTERVAL
@@ -69,7 +66,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var currentThreats = MutableLiveData<ArrayList<Threat>>()
     var mapLayers: LiveData<List<LayerModel>> =
         Transformations.map(vectorLayersManager.layers, ::layersUpdated)
-    var selectedBuildingId = MutableLiveData<String>()
+    var selectedBuilding = MutableLiveData<FeatureModel>()
     var buildingsWithinLOS = MutableLiveData<List<Feature>>()
     var isAreaSelectionMode = false
     private var _areaOfInterest = MutableLiveData<Polygon>()
@@ -85,6 +82,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     var threatAlerts = MutableLiveData<ArrayList<Threat>>()
     var isFocusedOnLocation = MutableLiveData<Boolean>()
     var shouldDisableAreaSelection = MutableLiveData<Boolean>()
+    private var _calculateCoverage = MutableLiveData<LatLng>()
+    val calculateCoverage: LiveData<LatLng>
+        get() = _calculateCoverage
 
     init {
         logger.initLogger()
@@ -484,16 +484,27 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun onMapClicked(currentMapState: MapStates, latLng: LatLng) {
         when (currentMapState) {
             MapStates.LOS_BUILDINGS_TO_LOCATION -> {
-
+                updateBuildingsWithinLOS(latLng)
+                selectLocationManual = false
             }
             MapStates.CALCULATE_COORDINATES_IN_RANGE -> {
-
+                _calculateCoverage.postValue(latLng)
             }
             MapStates.DRAWING -> {
                 drawPolygonMode(latLng)
             }
             MapStates.REGULAR -> {
+                val selectedBuildingSource =
+                    map.style?.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
+//                selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
 
+                getBuildingAtLocation(
+                    latLng,
+                    Constants.THREAT_LAYER_ID
+                )?.let {
+                    selectedBuilding.value = MapboxParser.parseToFeatureModel(it)
+                    selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(arrayListOf(it)))
+                }
             }
         }
     }

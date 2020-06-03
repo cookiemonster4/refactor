@@ -191,14 +191,14 @@ class ThreatAnalyzer private constructor(context: Context) {
         )
 
         var visiblePoints: List<Coordinate>? = null
-        if (featureIdAtLocation != null && fromCache) { // we store only features in cache
-            visiblePoints = CoverageCacheManager.getCoverage(
-                featureIdAtLocation,
-                rangeMeters,
-                pointResolutionMeters,
-                heightMeters
-            )
-        }
+//        if (featureIdAtLocation != null && fromCache) { // we store only features in cache
+//            visiblePoints = CoverageCacheManager.getCoverage(
+//                featureIdAtLocation,
+//                rangeMeters,
+//                pointResolutionMeters,
+//                heightMeters
+//            )
+//        }
 
         // Either fromCache was false or the object was not found, so
         // call forceMissionCoverage to create it
@@ -214,19 +214,19 @@ class ThreatAnalyzer private constructor(context: Context) {
                 heightMeters
             )
 
-            if (featureIdAtLocation != null && fromCache) { // we store only features in cache
-                CoverageCacheManager.removeCoverage(
-                    featureIdAtLocation,
-                    heightMeters
-                ) //remove any existing points (lower resolution / range) on the same height
-                CoverageCacheManager.addCoverage(
-                    featureIdAtLocation,
-                    rangeMeters,
-                    pointResolutionMeters,
-                    heightMeters,
-                    visiblePoints
-                )
-            }
+//            if (featureIdAtLocation != null && fromCache) { // we store only features in cache
+//                CoverageCacheManager.removeCoverage(
+//                    featureIdAtLocation,
+//                    heightMeters
+//                ) //remove any existing points (lower resolution / range) on the same height
+//                CoverageCacheManager.addCoverage(
+//                    featureIdAtLocation,
+//                    rangeMeters,
+//                    pointResolutionMeters,
+//                    heightMeters,
+//                    visiblePoints
+//                )
+//            }
         }
 
         return visiblePoints

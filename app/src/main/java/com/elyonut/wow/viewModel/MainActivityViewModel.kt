@@ -77,7 +77,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     fun mapClicked(
         latLng: LatLng
     ) {
-        _isProgressBarVisible.postValue(true)
+        _isProgressBarVisible.postValue(false)
         val coverageRangeMeters: Double = Constants.DEFAULT_COVERAGE_RANGE_METERS
         val coverageResolutionMeters: Double = Constants.DEFAULT_COVERAGE_RESOLUTION_METERS
         val coverageSearchHeightMeters: Double = Constants.DEFAULT_COVERAGE_HEIGHT_METERS
@@ -109,7 +109,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                     )
                 )
             })
-            _isProgressBarVisible.postValue(false)
+            _isProgressBarVisible.postValue(true)
         }
     }
 
@@ -142,9 +142,12 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 )
                 shouldCloseDrawer = false
             }
-            item.itemId == R.id.threat_select_location_buildings -> {
+            item.itemId == R.id.los_buildings_to_location -> {
                 _mapsState.value = MapStates.LOS_BUILDINGS_TO_LOCATION
                 Toast.makeText(getApplication(), "Select Location", Toast.LENGTH_LONG).show()
+            }
+            item.itemId == R.id.calculate_coverage -> {
+                _mapsState.value = MapStates.CALCULATE_COORDINATES_IN_RANGE
             }
             item.itemId == R.id.define_area -> {
                 _mapsState.value = MapStates.DRAWING

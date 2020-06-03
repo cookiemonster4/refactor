@@ -118,12 +118,16 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun setObservers() {
+        mapViewModel.buildingsWithinLOS.observe(this, Observer { visualizeThreats(it) })
+        mapViewModel.calculateCoverage.observe(
+            this,
+            Observer { sharedViewModel.mapClickedLatlng.postValue(it) })
         mapViewModel.areaOfInterest.observe(this, Observer {
             sharedViewModel.areaOfInterest = it
         })
-        mapViewModel.selectedBuildingId.observe(
+        mapViewModel.selectedBuilding.observe(
             this,
-            Observer { showDescriptionFragment() }
+            Observer { openDataCardFragment(it) }
         )
 
         mapViewModel.threatAlerts.observe(this, Observer {
@@ -141,7 +145,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         sharedViewModel.selectedThreatItem.observe(this, Observer { onListFragmentInteraction(it) })
         sharedViewModel.shouldApplyFilter.observe(this, Observer { filter(it) })
         sharedViewModel.mapStyleURL.observe(this, Observer { mapViewModel.setMapStyle(it) })
-        sharedViewModel.coordinatesFeaturesInCoverage.observe(this, Observer { addCoverage(it) })
         sharedViewModel.selectedLayerId.observe(this, Observer {
             it?.let { mapViewModel.layerSelected(it) }
         })
@@ -178,8 +181,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         })
     }
 
-    private fun setLayersObservers() {
+    private fun setLateObservers() {
         mapViewModel.mapLayers.observe(this, Observer { layersUpdated(it) })
+        sharedViewModel.coordinatesFeaturesInCoverage.observe(this, Observer { addCoverage(it) })
     }
 
     private fun layersUpdated(layers: List<LayerModel>) {
@@ -292,10 +296,19 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     // TODO Maybe navigation
-    private fun showDescriptionFragment() {
+    private fun openDataCardFragment(feature: FeatureModel) {
+        // Need to change to use our feature and not mapbox, this is temporarily
+        val threat =
+            mapViewModel.buildingThreatToCurrentLocation(MapboxParser.parseToMapboxFeature(feature))
+
+        val bundle = Bundle()
+        bundle.putParcelable("feature", threat)
+
+        val dataCardFragmentInstance = DataCardFragment.newInstance()
+        dataCardFragmentInstance.arguments = bundle
         activity!!.supportFragmentManager.beginTransaction().replace(
             R.id.fragmentParent,
-            DataCardFragment.newInstance()
+            dataCardFragmentInstance
         ).commit()
     }
 
@@ -303,7 +316,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         map = mapboxMap
         map.addOnMapClickListener(this)
         mapViewModel.onMapReady(map)
-        setLayersObservers()
+        setLateObservers()
     }
 
     private fun initMapLayersButton() { // Data binding? is there a way use?
@@ -342,9 +355,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         loadedMapStyle.removeSource("source-marker-click")
         loadedMapStyle.removeImage("marker-icon-alertID")
 
-        val selectedBuildingSource =
-            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
-        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
+        mapViewModel.onMapClicked(sharedViewModel.mapState, latLng)
+//        val selectedBuildingSource =
+//            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
+//        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
 
         mapViewModel.setLayerVisibility(Constants.THREAT_COVERAGE_LAYER_ID, visibility(NONE))
 
@@ -391,35 +405,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 //                        mapViewModel.selectLocationManualCoverageAll = false
 //                    }
                 }
-
-                when (sharedViewModel.mapState) {
-                    MapStates.LOS_BUILDINGS_TO_LOCATION -> {
-                        mapViewModel.updateBuildingsWithinLOS(latLng)
-                        mapViewModel.selectLocationManual = false
-                        mapViewModel.buildingsWithinLOS.value?.let { visualizeThreats(it) }
-                    }
-                }
-            } else { // If we are not in the above states, than we should open a data card if a building was clicked
-                val building = mapViewModel.getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
-
-                building?.let {
-                    selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeature(building))
-
-                    val threat = mapViewModel.buildingThreatToCurrentLocation(building)
-
-                    val bundle = Bundle()
-                    bundle.putParcelable("feature", threat)
-
-                    // take to function!
-                    val dataCardFragmentInstance = DataCardFragment.newInstance()
-                    dataCardFragmentInstance.arguments = bundle
-                    activity!!.supportFragmentManager.beginTransaction().replace(
-                        R.id.fragmentParent,
-                        dataCardFragmentInstance
-                    ).commit()
-                    activity!!.supportFragmentManager.fragments
-                    activity!!.supportFragmentManager.fragments
-                }
             }
         }
 
@@ -428,7 +413,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     fun addIconToMap() {}
 
-    // From onMapClick
     private fun visualizeThreats(features: List<Feature>) {
 
         val loadedMapStyle = map.style
@@ -452,7 +436,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 mapViewModel.selectLocationManualConstruction = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
-            R.id.point_coverage -> {
+            R.id.calculate_coverage -> {
                 mapViewModel.selectLocationManualCoverage = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
