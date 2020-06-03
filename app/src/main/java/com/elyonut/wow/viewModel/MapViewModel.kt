@@ -103,6 +103,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         if (threatLayer.isNotEmpty()) {
             currentThreats.value =
                 threatLayer as ArrayList<Threat> // Will be fixed when we delete current threats :)
+            threatAlerts.value = currentThreats.value
         }
     }
 
@@ -162,11 +163,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             initLineLayer(style)
             callback?.invoke()
         }
-    }
-
-    // TODO Move to alertsManager
-    fun currentThreatsUpdated() {
-        threatAlerts.value = currentThreats.value
     }
 
     // TODO make generic

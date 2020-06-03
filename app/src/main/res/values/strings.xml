@@ -44,7 +44,7 @@
     <string name="type_title">סוג קבוצה: %s</string>
     <string name="range_title">טווח: %s</string>
     <string name="map_types">סוג מפה</string>
-    <string name="visible">גלוי</string>
+    <string name="exposed">חשוף</string>
     <string name="invisible">נסתר</string>
     <string name="area_of_interest">תחום עניין</string>
     <string name="alerts">התראות</string>

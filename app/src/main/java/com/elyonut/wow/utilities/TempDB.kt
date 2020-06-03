@@ -8,7 +8,7 @@ import com.google.gson.GsonBuilder
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class TempDB private constructor(private var context: Context) {
+class TempDB private constructor(context: Context) {
     private val layers = ArrayList<LayerModel>()
     private var threatLayer: List<FeatureModel> = listOf()
 

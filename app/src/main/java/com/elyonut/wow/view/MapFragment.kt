@@ -135,11 +135,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 disableAreaSelection()
             }
         })
-        mapViewModel.currentThreats.observe(this, Observer {
-            if (it.isNotEmpty()) {
-                currentThreatsUpdated()
-            }
-        })
         mapViewModel.isFocusedOnLocation.observe(this, Observer {
             setFocusOnUserLocationButtonIcon(it)
         })
@@ -194,6 +189,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun layersUpdated(layers: List<LayerModel>) {
+        sharedViewModel.isExposed.value =
+            true // Why always true? does it get to here when there are no threats?
         mapViewModel.updateCurrentThreats()
         updateMapSources(layers)
     }
@@ -280,12 +277,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         ).setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit()
     }
     // End of alert handling
-
-    private fun currentThreatsUpdated() {
-        sharedViewModel.isVisible.value =
-            true // Why always true? does it get to here when threr are no threats?
-        mapViewModel.currentThreatsUpdated()
-    }
 
     // TODO Remove filter
     private fun filter(shouldApplyFilter: Boolean) {

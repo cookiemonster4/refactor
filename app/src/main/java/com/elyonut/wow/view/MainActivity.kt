@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity(),
             this,
             Observer { sharedViewModel.coordinatesFeaturesInCoverage.postValue(it) })
 
-        sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
+        sharedViewModel.isExposed.observe(this, Observer { changeAwarenessTabState(it) })
         sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (!it) {
@@ -354,12 +354,12 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
-    private fun changVisibilityState(isVisible: Boolean) {
+    private fun changeAwarenessTabState(isExposed: Boolean) {
         val awarenessTab =
             findViewById<BottomNavigationView>(R.id.bottom_navigation).menu[Menus.AWARENESS]
 
-        if (isVisible) {
-            awarenessTab.title = getString(R.string.visible)
+        if (isExposed) {
+            awarenessTab.title = getString(R.string.exposed)
             awarenessTab.icon = getDrawable(R.drawable.ic_visibility)
         } else {
             awarenessTab.title = getString(R.string.invisible)
