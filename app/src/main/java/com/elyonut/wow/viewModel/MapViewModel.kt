@@ -90,6 +90,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var _locationClickedIcon = MutableLiveData<LatLng>()
     val locationClickedIcon: LiveData<LatLng>
         get() = _locationClickedIcon
+    private var _mapStateChanged = MutableLiveData<MapStates>()
+    val mapStateChanged: LiveData<MapStates>
+        get() = _mapStateChanged
 
     init {
         logger.initLogger()
@@ -296,7 +299,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     // Beginning area of interest
 // TODO maybe rename things (including function)
 // TODO rewrite generic drawing
-    fun drawPolygonMode(latLng: LatLng) {
+    private fun drawPolygonMode(latLng: LatLng) {
         val mapTargetPoint = Point.fromLngLat(latLng.longitude, latLng.latitude)
 
         if (currentCircleLayerFeatureList.isEmpty()) {
@@ -368,6 +371,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         shouldDisableAreaSelection.value = true
+        _mapStateChanged.value = MapStates.REGULAR
     }
 
     fun cancelAreaClicked() {
@@ -376,6 +380,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         circleSource.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         fillSource.setGeoJson(makePolygonFeatureCollection(lineLayerPointList))
         shouldDisableAreaSelection.value = true
+        _mapStateChanged.value = MapStates.REGULAR
     }
 
     private fun makeLineFeatureCollection(pointArrayList: ArrayList<Point>): FeatureCollection {
@@ -491,6 +496,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             MapStates.LOS_BUILDINGS_TO_LOCATION -> {
                 _locationClickedIcon.value = latLng
                 updateBuildingsWithinLOS(latLng)
+                _mapStateChanged.value = MapStates.REGULAR
                 selectLocationManual = false
             }
             MapStates.CALCULATE_COORDINATES_IN_RANGE -> {

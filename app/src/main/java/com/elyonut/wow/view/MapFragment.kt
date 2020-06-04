@@ -142,6 +142,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         mapViewModel.isFocusedOnLocation.observe(this, Observer {
             setFocusOnUserLocationButtonIcon(it)
         })
+        mapViewModel.mapStateChanged.observe(this, Observer { sharedViewModel.mapState = it })
 
         sharedViewModel.selectedThreatItem.observe(this, Observer { onListFragmentInteraction(it) })
         sharedViewModel.shouldApplyFilter.observe(this, Observer { filter(it) })
@@ -340,14 +341,15 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     // TODO reformat, move to viewModel, CR
     override fun onMapClick(latLng: LatLng): Boolean {
-
         val loadedMapStyle = map.style
 
         if (loadedMapStyle == null || !loadedMapStyle.isFullyLoaded) {
             return false
         }
 
-        // What are these layers? why do we delete them?
+        val selectedBuildingSource =
+            map.style?.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
+        selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
         loadedMapStyle.removeLayer("layer-selected-location") // icon
         loadedMapStyle.removeSource("source-marker-click") // icon
         loadedMapStyle.removeImage("marker-icon-alertID") // icon
@@ -356,38 +358,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
         mapViewModel.setLayerVisibility(Constants.THREAT_COVERAGE_LAYER_ID, visibility(NONE))
 
-        // Checking in which state are we - maybe we should add an enum
-        if (mapViewModel.isAreaSelectionMode) {
-            mapViewModel.drawPolygonMode(latLng)
-        } else {
-            if (mapViewModel.selectLocationManual || mapViewModel.selectLocationManualConstruction || mapViewModel.selectLocationManualCoverage || mapViewModel.selectLocationManualCoverageAll || sharedViewModel.mapState == MapStates.LOS_BUILDINGS_TO_LOCATION) {
-
-                // Add the marker image to map
-
-
-                when {
-//                    mapViewModel.selectLocationManualCoverage -> {
-//                        sharedViewModel.mapClickedLatlng.postValue(latLng)
-//                        mapViewModel.selectLocationManualCoverage = false
-//                    }
-//                    mapViewModel.selectLocationManualCoverageAll -> {
-//                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
-//                        progressBar.visibility = VISIBLE
-//                        mapViewModel.calculateCoverageForAll(
-//                            sharedViewModel.coverageResolutionMeters,
-//                            sharedViewModel.coverageSearchHeightMeters,
-//                            progressBar
-//                        )
-//                        mapViewModel.selectLocationManualCoverageAll = false
-//                    }
-                }
-            }
-        }
-
         return true
     }
 
-    fun addIconToMap(latLng: LatLng) {
+    private fun addIconToMap(latLng: LatLng) {
         map.style?.let {
             it.addImage(
                 "marker-icon-alertID",

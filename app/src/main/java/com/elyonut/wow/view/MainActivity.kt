@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity(),
             this,
             Observer { progressBar.toggleViewVisibility(it) })
         mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
-        mainViewModel.mapsState.observe(this, Observer { sharedViewModel.mapState = it })
+        mainViewModel.mapStateChanged.observe(this, Observer { sharedViewModel.mapState = it })
 
         mainViewModel.chosenLayerId.observe(this, Observer {
             mainViewModel.chosenLayerId.value?.let {

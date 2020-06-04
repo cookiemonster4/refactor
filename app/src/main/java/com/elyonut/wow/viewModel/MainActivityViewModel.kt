@@ -27,9 +27,9 @@ import kotlinx.coroutines.*
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val vectorLayersManager = VectorLayersManager.getInstance(application)
     private val threatAnalyzer = ThreatAnalyzer.getInstance(getApplication())
-    private var _mapsState = MutableLiveData<MapStates>()
-    val mapsState: LiveData<MapStates>
-        get() = _mapsState
+    private var _mapStateChanged = MutableLiveData<MapStates>()
+    val mapStateChanged: LiveData<MapStates>
+        get() = _mapStateChanged
     val chosenLayerId = MutableLiveData<String>()
     val selectedExperimentalOption = MutableLiveData<Int>()
     val filterSelected = MutableLiveData<Boolean>()
@@ -78,10 +78,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         latLng: LatLng
     ) {
         _isProgressBarVisible.postValue(false)
-        when (_mapsState.value) {
+        when (_mapStateChanged.value) {
             MapStates.LOS_BUILDINGS_TO_LOCATION -> {
                 // How to get the building at location? How to pass it here?
-                _mapsState.value = MapStates.REGULAR
+                _mapStateChanged.value = MapStates.REGULAR
             }
             MapStates.CALCULATE_COORDINATES_IN_RANGE -> {
                 calculateCoverage(latLng)
@@ -123,7 +123,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 )
             })
             _isProgressBarVisible.postValue(true)
-            _mapsState.postValue(MapStates.REGULAR) // Maybe make it a toggle? a mode that should be stopped, like the area of interest
+            _mapStateChanged.postValue(MapStates.REGULAR) // Maybe make it a toggle? a mode that should be stopped, like the area of interest
         }
     }
 
@@ -157,14 +157,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 shouldCloseDrawer = false
             }
             item.itemId == R.id.los_buildings_to_location -> {
-                _mapsState.value = MapStates.LOS_BUILDINGS_TO_LOCATION
+                _mapStateChanged.value = MapStates.LOS_BUILDINGS_TO_LOCATION
                 Toast.makeText(getApplication(), "Select Location", Toast.LENGTH_LONG).show()
             }
             item.itemId == R.id.calculate_coverage -> {
-                _mapsState.value = MapStates.CALCULATE_COORDINATES_IN_RANGE
+                _mapStateChanged.value = MapStates.CALCULATE_COORDINATES_IN_RANGE
             }
             item.itemId == R.id.define_area -> {
-                _mapsState.value = MapStates.DRAWING
+                _mapStateChanged.value = MapStates.DRAWING
                 if (shouldDefineArea.value == null || !shouldDefineArea.value!!) {
                     shouldDefineArea.postValue(true)
                 }
