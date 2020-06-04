@@ -173,9 +173,9 @@ class ThreatAnalyzer private constructor(context: Context) {
         val currentLocationExploded =
             topographyService.explodeLocationCoordinate(currentLocationCoordinate)
 
-        return coverageSquare.filter { coord ->
+        return coverageSquare.filter { coordinate ->
             topographyService.isLOS(
-                coord,
+                coordinate,
                 currentLocationExploded
             )
         }
