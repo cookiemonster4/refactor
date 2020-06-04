@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.elyonut.wow.model.AlertModel
 
-@Database(entities = [AlertModel::class], version = 1, exportSchema = false)
+@Database(entities = [AlertModel::class], version = 2, exportSchema = false)
 abstract class DB : RoomDatabase() {
     abstract val alertDatabaseDao: AlertDatabaseDao
 

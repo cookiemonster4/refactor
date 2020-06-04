@@ -8,13 +8,13 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        resourses = resources
+        resources_ = resources
     }
 
     companion object {
         var instance: App? = null
             private set
-        lateinit var resourses: Resources
+        lateinit var resources_: Resources
             private set
     }
 

@@ -5,8 +5,8 @@
     <data>
 
         <variable
-            name="threat"
-            type="com.elyonut.wow.model.Threat" />
+            name="feature"
+            type="com.elyonut.wow.model.FeatureModel" />
 
         <variable
             name="dataCardViewModel"
@@ -29,13 +29,6 @@
             android:layout_height="238dp"
             app:layout_constraintTop_toBottomOf="parent">
 
-            <ImageView
-                android:id="@+id/buildingStateColor"
-                android:layout_width="9dp"
-                android:layout_height="match_parent"
-                android:background="@color/lowRisk"
-                android:contentDescription="@string/status_color" />
-
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/card_content"
                 android:layout_width="match_parent"
@@ -56,7 +49,7 @@
                     android:layout_height="70dp"
                     android:layout_marginTop="8dp"
                     android:contentDescription="@string/type_image"
-                    android:imageUrl="@{dataCardViewModel.getImageUrl(threat.type)}"
+                    android:imageUrl="@{feature.getImageUrl()}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/linearLayout"
                     app:layout_constraintTop_toTopOf="@+id/linearLayout" />
@@ -103,40 +96,21 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:text="@{threat.name}"
+                        android:text="@{feature.getTitle()}"
                         android:textSize="22sp" />
 
                     <TextView
-                        android:id="@+id/knowledgeType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{@string/knowledgeType_title(threat.knowledgeType)}" />
-
-                    <TextView
-                        android:id="@+id/eAmount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{@string/eAmount_title(threat.eAmount)}" />
-
-                    <TextView
-                        android:id="@+id/type"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{@string/type_title(threat.type)}" />
-
-                    <TextView
-                        android:id="@+id/range"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{@string/range_title(threat.range)}"
-                        android:textColor="@android:color/secondary_text_light" />
+                        android:text="@{feature.toStringProperties()}"
+                        tools:text="לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית נולום ארווס סאפיאן - פוסיליס קוויס, אקווזמן קוואזי במר מודוף. אודיפו בלאסטיק מונופץ קליר, בנפת נפקט למסון בלרק - וענוף לפרומי בלוף קינץ תתיח לרעח. לת צשחמי הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף."
+                        tools:visibility="visible" />
 
                     <TextView
                         android:id="@+id/moreContent"
                         android:layout_width="wrap_content"
                         android:layout_height="177dp"
                         android:visibility="gone"
-                        app:moreContentFormatted="@{threat}"
                         tools:text="לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית נולום ארווס סאפיאן - פוסיליס קוויס, אקווזמן קוואזי במר מודוף. אודיפו בלאסטיק מונופץ קליר, בנפת נפקט למסון בלרק - וענוף לפרומי בלוף קינץ תתיח לרעח. לת צשחמי הועניב היושבב שערש שמחויט - שלושע ותלברו חשלו שעותלשך וחאית נובש ערששף. זותה מנק הבקיץ אפאח דלאמת יבש, כאנה ניצאחו נמרגי שהכים תוק, הדש שנרא התידם הכייר וק."
                         tools:visibility="visible" />
 

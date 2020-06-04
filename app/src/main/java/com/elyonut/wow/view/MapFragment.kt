@@ -5,13 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -22,18 +19,19 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.*
-import com.elyonut.wow.database.DB
 import com.elyonut.wow.databinding.AreaSelectionBinding
 import com.elyonut.wow.databinding.FragmentMapBinding
 import com.elyonut.wow.model.AlertModel
-import com.elyonut.wow.model.RiskStatus
+import com.elyonut.wow.model.FeatureModel
+import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
+import com.elyonut.wow.parser.MapboxParser
 import com.elyonut.wow.utilities.BuildingTypeMapping
 import com.elyonut.wow.utilities.Constants
+import com.elyonut.wow.utilities.MapStates
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.viewModel.MapViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
@@ -42,7 +40,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
-import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.Property.NONE
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
@@ -59,13 +57,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     private lateinit var mapViewModel: MapViewModel
     private lateinit var sharedViewModel: SharedViewModel
     private var listenerMap: OnMapFragmentInteractionListener? = null
-
     private lateinit var broadcastReceiver: BroadcastReceiver
     private var zoomFilter = IntentFilter(Constants.ZOOM_LOCATION_ACTION)
     private lateinit var alertsManager: AlertsManager
     private lateinit var binding: FragmentMapBinding
     private lateinit var areaSelectionBinding: AreaSelectionBinding
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -98,7 +94,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             override fun onReceive(context: Context, intent: Intent) {
                 when (intent.action) {
                     Constants.ZOOM_LOCATION_ACTION -> {
-                        mapViewModel.setZoomLocation(intent.getStringExtra("threatID"))
+                        mapViewModel.zoomOnLocation(intent.getStringExtra("threatID"))
                         (context as FragmentActivity).supportFragmentManager.popBackStack()
                     }
                 }
@@ -106,14 +102,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         }
     }
 
-    // TODO maybe change to init drawings + should the map be responsibe? or other class
+    // TODO maybe change to init drawings + should the map be responsible? or other class
     private fun initArea() {
-        if (sharedViewModel.areaOfInterest != null) {
-            mapViewModel.areaOfInterest.value = sharedViewModel.areaOfInterest // TODO Should be encapsulated
-
+        sharedViewModel.areaOfInterest?.let {
+            mapViewModel.areaOfInterestUpdated(it)
             val polygonPoints = ArrayList<Point>()
-            sharedViewModel.areaOfInterest!!.coordinates().forEach { it ->
-                it.forEach {
+            it.coordinates().forEach { coordinate ->
+                coordinate.forEach {
                     polygonPoints.add(it)
                 }
             }
@@ -123,18 +118,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     private fun setObservers() {
+        mapViewModel.buildingsWithinLOS.observe(this, Observer { visualizeThreats(it) })
+        mapViewModel.locationClickedIcon.observe(this, Observer { addIconToMap(it) })
+        mapViewModel.calculateCoverage.observe(
+            this,
+            Observer { sharedViewModel.mapClickedLatlng.postValue(it) })
         mapViewModel.areaOfInterest.observe(this, Observer {
             sharedViewModel.areaOfInterest = it
         })
-        mapViewModel.selectedBuildingId.observe(
+        mapViewModel.selectedBuilding.observe(
             this,
-            Observer { showDescriptionFragment() }
+            Observer { openDataCardFragment(it) }
         )
-        mapViewModel.isLocationAdapterInitialized.observe(
-            this,
-            Observer {
-                observeRiskStatus(it)
-            })
 
         mapViewModel.threatAlerts.observe(this, Observer {
             sendNotification(it)
@@ -144,59 +139,33 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 disableAreaSelection()
             }
         })
+        mapViewModel.isFocusedOnLocation.observe(this, Observer {
+            setFocusOnUserLocationButtonIcon(it)
+        })
+        mapViewModel.mapStateChanged.observe(this, Observer { sharedViewModel.mapState = it })
 
+        sharedViewModel.selectedThreatItem.observe(this, Observer { onListFragmentInteraction(it) })
+        sharedViewModel.shouldApplyFilter.observe(this, Observer { filter(it) })
+        sharedViewModel.mapStyleURL.observe(this, Observer { mapViewModel.setMapStyle(it) })
         sharedViewModel.selectedLayerId.observe(this, Observer {
             it?.let { mapViewModel.layerSelected(it) }
         })
-
         sharedViewModel.selectedExperimentalOption.observe(
             this,
-            Observer { applyExperimentalOption(it) }
+            Observer { applyExtraOptions(it) }
         )
-
-        sharedViewModel.shouldOpenThreatsFragment.observe(this, Observer {
-            if (it) {
-                openThreatListFragment()
-            }
-        })
-
-        sharedViewModel.selectedThreatItem.observe(
-            this,
-            Observer { onListFragmentInteraction(it) }
-        )
-
-        sharedViewModel.shouldApplyFilter.observe(this,
-            Observer { filter(it) }
-        )
-
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (it) {
                 enableAreaSelection()
             }
         })
-
-        sharedViewModel.chosenTypeToFilter.observe(this, Observer {
-            mapViewModel.filterLayerByType(it)
-
-        })
-
+        sharedViewModel.chosenTypeToFilter.observe(
+            this,
+            Observer { mapViewModel.filterLayerByType(it) })
         sharedViewModel.isSelectAllChecked.observe(this, Observer {
             mapViewModel.filterLayerByAllTypes(it)
         })
-
-        mapViewModel.isFocusedOnLocation.observe(this, Observer {
-            setCurrentLocationButtonIcon(it)
-        })
-
-        alertsManager.alerts.observe(this, Observer {
-            alerts ->
-            if(alerts.isNotEmpty()) {
-                val alertToPop = alerts.sortedBy { alert -> alert.time }?.first { alert -> !alert.isRead  }
-                setAlertPopUp(alertToPop)
-            }
-        })
-
-        sharedViewModel.shoulRemoveSelectedBuildingLayer.observe(
+        sharedViewModel.shouldRemoveSelectedBuildingLayer.observe(
             this,
             Observer { shouldRemoveLayer ->
                 if (shouldRemoveLayer) {
@@ -206,19 +175,47 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
                 }
             })
 
-        sharedViewModel.mapStyleURL.observe(this, Observer {
-            mapViewModel.setMapStyle(it)
+        alertsManager.alerts.observe(this, Observer { alerts ->
+            if (alerts.isNotEmpty()) {
+                alerts.sortedBy { alert -> alert.time }.firstOrNull { alert -> !alert.isRead }
+                    ?.let { setAlertPopUp(it) }
+            }
         })
     }
 
-    // TODO SelfCentered instead current location
-    private fun setCurrentLocationButtonIcon(isInCurrentLocation: Boolean) {
-        val currentLocationButton: FloatingActionButton = binding.currentLocation
+    private fun setLateObservers() {
+        mapViewModel.mapLayers.observe(this, Observer { layersUpdated(it) })
+        sharedViewModel.coordinatesFeaturesInCoverage.observe(this, Observer { addCoverage(it) })
+    }
 
-        if (isInCurrentLocation) {
-            currentLocationButton.setImageResource(R.drawable.ic_my_location_blue)
+    private fun layersUpdated(layers: List<LayerModel>) {
+        sharedViewModel.isExposed.value =
+            true // Why always true? does it get to here when there are no threats?
+        mapViewModel.updateCurrentThreats()
+        updateMapSources(layers)
+    }
+
+    private fun updateMapSources(layers: List<LayerModel>) {
+        layers.forEach { layer ->
+            map.style?.getSourceAs<GeoJsonSource>(layer.id)?.let { geojson ->
+                geojson.setGeoJson(
+                    FeatureCollection.fromFeatures(
+                        layer.features.map { feature ->
+                            MapboxParser.parseToMapboxFeature(feature)
+                        }
+                    )
+                )
+            }
+        }
+    }
+
+    private fun setFocusOnUserLocationButtonIcon(isFocusedOnUserLocation: Boolean) {
+        val focusOnUserLocationButton = binding.focusOnUserLocation
+
+        if (isFocusedOnUserLocation) {
+            focusOnUserLocationButton.setImageResource(R.drawable.ic_my_location_blue)
         } else {
-            currentLocationButton.setImageResource(R.drawable.ic_my_location_black)
+            focusOnUserLocationButton.setImageResource(R.drawable.ic_my_location_black)
         }
     }
 
@@ -226,13 +223,16 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     // Beggining of alert handling
     private fun sendNotification(threatAlerts: ArrayList<Threat>) {
         threatAlerts.forEach { threat ->
-            if (shouldSendAlert(threat.feature.id()!!)) {
+            if (shouldSendAlert(threat.id)) {
+
                 val message =
-                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(threat.feature.id()!!)
+                    getString(R.string.inside_threat_notification_content) + " " + mapViewModel.getFeatureName(
+                        threat.id
+                    )
                 val featureType =
-                    threat.type
+                    threat.enemyType
                 addAlertToContainer(
-                    threat.feature.id()!!,
+                    threat.id,
                     message,
                     BuildingTypeMapping.mapping[featureType]!!
                 )
@@ -278,19 +278,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
     // End of alert handling
 
-    private fun observeRiskStatus(isLocationAdapterInitialized: Boolean) {
-        if (isLocationAdapterInitialized) {
-            val riskStatusObserver = Observer<RiskStatus> { newStatus ->
-                sharedViewModel.isVisible.value =
-                    (newStatus == RiskStatus.HIGH || newStatus == RiskStatus.MEDIUM)
-                mapViewModel.checkRiskStatus()
-            }
-
-            mapViewModel.riskStatus.observe(this, riskStatusObserver)
-        }
-
-    }
-
     // TODO Remove filter
     private fun filter(shouldApplyFilter: Boolean) {
         if (!shouldApplyFilter) {
@@ -311,9 +298,16 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     // TODO Maybe navigation
-    private fun showDescriptionFragment() {
-        val dataCardFragmentInstance = DataCardFragment.newInstance()
+    private fun openDataCardFragment(feature: FeatureModel) {
+        // Need to change to use our feature and not mapbox, this is temporarily
+        val threat =
+            mapViewModel.buildingThreatToCurrentLocation(MapboxParser.parseToMapboxFeature(feature))
 
+        val bundle = Bundle()
+        bundle.putParcelable("feature", threat)
+
+        val dataCardFragmentInstance = DataCardFragment.newInstance()
+        dataCardFragmentInstance.arguments = bundle
         activity!!.supportFragmentManager.beginTransaction().replace(
             R.id.fragmentParent,
             dataCardFragmentInstance
@@ -324,6 +318,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
         map = mapboxMap
         map.addOnMapClickListener(this)
         mapViewModel.onMapReady(map)
+        setLateObservers()
     }
 
     private fun initMapLayersButton() { // Data binding? is there a way use?
@@ -346,131 +341,50 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     // TODO reformat, move to viewModel, CR
     override fun onMapClick(latLng: LatLng): Boolean {
-
-        // return mapViewModel.onMapClick(map, latLng)
-
         val loadedMapStyle = map.style
 
         if (loadedMapStyle == null || !loadedMapStyle.isFullyLoaded) {
             return false
         }
 
-        loadedMapStyle.removeLayer("threat-source-layer")
-        loadedMapStyle.removeSource("threat-source")
-        loadedMapStyle.removeLayer("layer-selected-location")
-        loadedMapStyle.removeSource("source-marker-click")
-        loadedMapStyle.removeImage("marker-icon-alertID")
-
         val selectedBuildingSource =
-            loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
+            map.style?.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
         selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(ArrayList()))
+        loadedMapStyle.removeLayer("layer-selected-location") // icon
+        loadedMapStyle.removeSource("source-marker-click") // icon
+        loadedMapStyle.removeImage("marker-icon-alertID") // icon
+
+        mapViewModel.onMapClicked(sharedViewModel.mapState, latLng)
 
         mapViewModel.setLayerVisibility(Constants.THREAT_COVERAGE_LAYER_ID, visibility(NONE))
-
-        if (mapViewModel.isAreaSelectionMode) {
-            mapViewModel.drawPolygonMode(latLng)
-        } else {
-            if (mapViewModel.selectLocationManual || mapViewModel.selectLocationManualConstruction || mapViewModel.selectLocationManualCoverage || mapViewModel.selectLocationManualCoverageAll) {
-
-                // Add the marker image to map
-                loadedMapStyle.addImage(
-                    "marker-icon-alertID",
-                    BitmapFactory.decodeResource(
-                        App.resourses, R.drawable.mapbox_marker_icon_default
-                    )
-                )
-
-                val geoJsonSource = GeoJsonSource(
-                    "source-marker-click",
-                    Feature.fromGeometry(Point.fromLngLat(latLng.longitude, latLng.latitude))
-                )
-
-                loadedMapStyle.addSource(geoJsonSource)
-
-                val symbolLayer = SymbolLayer("layer-selected-location", "source-marker-click")
-                symbolLayer.withProperties(
-                    PropertyFactory.iconImage("marker-icon-alertID")
-                )
-                loadedMapStyle.addLayer(symbolLayer)
-
-                when {
-                    mapViewModel.selectLocationManual -> {
-                        mapViewModel.updateThreatFeaturesBuildings(mapView, latLng)
-                        mapViewModel.selectLocationManual = false
-                        mapViewModel.threatFeatures.value?.let { visualizeThreats(it) }
-                    }
-                    mapViewModel.selectLocationManualConstruction -> {
-
-                        mapViewModel.updateThreatFeaturesConstruction(latLng)
-                        mapViewModel.selectLocationManualConstruction = false
-                    }
-                    mapViewModel.selectLocationManualCoverage -> {
-                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
-                        progressBar.visibility = VISIBLE
-                        if (sharedViewModel.coverageSearchHeightMetersChecked) {
-                            mapViewModel.calculateCoverageFromPoint(
-                                latLng,
-                                sharedViewModel.coverageRangeMeters,
-                                sharedViewModel.coverageResolutionMeters,
-                                sharedViewModel.coverageSearchHeightMeters,
-                                progressBar
-                            )
-                        } else {
-                            mapViewModel.calculateCoverageFromPoint(
-                                latLng,
-                                sharedViewModel.coverageRangeMeters,
-                                sharedViewModel.coverageResolutionMeters,
-                                Constants.DEFAULT_COVERAGE_HEIGHT_METERS,
-                                progressBar
-                            )
-                        }
-                        mapViewModel.selectLocationManualCoverage = false
-                    }
-                    mapViewModel.selectLocationManualCoverageAll -> {
-                        val progressBar: ProgressBar = view!!.findViewById(R.id.progressBar)
-                        progressBar.visibility = VISIBLE
-                        mapViewModel.calculateCoverageForAll(
-                            latLng,
-                            sharedViewModel.coverageRangeMeters,
-                            sharedViewModel.coverageResolutionMeters,
-                            sharedViewModel.coverageSearchHeightMeters,
-                            progressBar
-                        )
-                        mapViewModel.selectLocationManualCoverageAll = false
-                    }
-                }
-
-
-            } else {
-
-                val point = map.projection.toScreenLocation(latLng)
-                val features = map.queryRenderedFeatures(point, Constants.THREAT_LAYER_ID)
-
-                if (features.size > 0) {
-                    selectedBuildingSource?.setGeoJson(FeatureCollection.fromFeatures(features))
-
-                    val threat = mapViewModel.buildingThreatToCurrentLocation(features[0])
-
-                    val bundle = Bundle()
-                    bundle.putParcelable("threat", threat)
-
-                    // take to function!
-                    val dataCardFragmentInstance = DataCardFragment.newInstance()
-                    dataCardFragmentInstance.arguments = bundle
-                    activity!!.supportFragmentManager.beginTransaction().replace(
-                        R.id.fragmentParent,
-                        dataCardFragmentInstance
-                    ).commit()
-                    activity!!.supportFragmentManager.fragments
-                    activity!!.supportFragmentManager.fragments
-                }
-            }
-        }
 
         return true
     }
 
-    // From onMapClick
+    private fun addIconToMap(latLng: LatLng) {
+        map.style?.let {
+            it.addImage(
+                "marker-icon-alertID",
+                BitmapFactory.decodeResource(
+                    App.resources_, R.drawable.mapbox_marker_icon_default
+                )
+            )
+
+            val geoJsonSource = GeoJsonSource(
+                "source-marker-click",
+                Feature.fromGeometry(Point.fromLngLat(latLng.longitude, latLng.latitude))
+            )
+
+            it.addSource(geoJsonSource)
+
+            val symbolLayer = SymbolLayer("layer-selected-location", "source-marker-click")
+            symbolLayer.withProperties(
+                PropertyFactory.iconImage("marker-icon-alertID")
+            )
+            it.addLayer(symbolLayer)
+        }
+    }
+
     private fun visualizeThreats(features: List<Feature>) {
 
         val loadedMapStyle = map.style
@@ -479,8 +393,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
             return
         }
 
-        loadedMapStyle.removeLayer("threat-source-layer")
-        loadedMapStyle.removeSource("threat-source")
+//        loadedMapStyle.removeLayer("threat-source-layer")
+//        loadedMapStyle.removeSource("threat-source")
 
         val selectedBuildingSource =
             loadedMapStyle.getSourceAs<GeoJsonSource>(Constants.SELECTED_BUILDING_SOURCE_ID)
@@ -488,40 +402,28 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
     }
 
     // TODO rename
-    private fun applyExperimentalOption(id: Int) {
+    private fun applyExtraOptions(id: Int) {
         when (id) {
-            R.id.threat_list_menu_item -> {
-                openThreatListFragment()
-            }
-            R.id.threat_select_location_buildings -> {
-                mapViewModel.selectLocationManual = true
-                Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
-            }
             R.id.threat_select_location -> {
                 mapViewModel.selectLocationManualConstruction = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
-            R.id.point_coverage -> {
+            R.id.calculate_coverage -> {
                 mapViewModel.selectLocationManualCoverage = true
                 Toast.makeText(listenerMap as Context, "Select Location", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    // TODO Maybe navigation
-    private fun openThreatListFragment() {
-        mapViewModel.threats.value?.let {
-            val bundle = Bundle()
-            bundle.putParcelableArrayList("threats", it)
+    private fun addCoverage(coverageFeatures: List<Feature>) {
+        map.style?.getSourceAs<GeoJsonSource>(
+            Constants.THREAT_COVERAGE_SOURCE_ID
+        )?.setGeoJson(FeatureCollection.fromFeatures(coverageFeatures))
 
-            val transaction = activity!!.supportFragmentManager.beginTransaction()
-            val fragment = ThreatFragment()
-            fragment.arguments = bundle
-            transaction.apply {
-                replace(R.id.threat_list_fragment_container, fragment).commit()
-                addToBackStack(fragment.javaClass.simpleName)
-            }
-        }
+        mapViewModel.setLayerVisibility(
+            Constants.THREAT_COVERAGE_LAYER_ID,
+            visibility(Property.VISIBLE)
+        )
     }
 
     private fun enableAreaSelection() {
@@ -545,43 +447,17 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     private fun defineAreaSelectionMode(shouldEnable: Boolean) {
         binding.navigationButton.isEnabled = !shouldEnable
-        binding.currentLocation.isEnabled = !shouldEnable
+        binding.focusOnUserLocation.isEnabled = !shouldEnable
         mapViewModel.isAreaSelectionMode = shouldEnable
     }
 
     // TODO update layers. handle according to datacard
-    private fun onListFragmentInteraction(item: Threat?) {
-        if (item != null) {
-            val feature = item.feature
-            val featureCollection = FeatureCollection.fromFeatures(arrayOf(feature))
-            val geoJsonSource = GeoJsonSource("threat-source", featureCollection)
+    private fun onListFragmentInteraction(item: FeatureModel?) {
+        item?.let {
             val loadedMapStyle = map.style
 
             if (loadedMapStyle != null && loadedMapStyle.isFullyLoaded) {
-                loadedMapStyle.removeLayer("threat-source-layer")
-                loadedMapStyle.removeSource("threat-source")
-
-                // colorize the feature
-                loadedMapStyle.addSource(geoJsonSource)
-                val fillLayer = FillLayer("threat-source-layer", "threat-source")
-                fillLayer.setProperties(
-                    PropertyFactory.fillExtrusionColor(Color.RED),
-                    PropertyFactory.fillColor(Color.RED)
-                )
-                loadedMapStyle.addLayer(fillLayer)
-
-                // open card fragment and pass the threat as an argument
-                val bundle = Bundle()
-                bundle.putParcelable("threat", item)
-                val dataCardFragmentInstance = DataCardFragment.newInstance()
-                dataCardFragmentInstance.arguments = bundle
-
-                // TODO Change to navigation!!!
-                if (activity!!.supportFragmentManager.fragments.find { fragment -> fragment.id == R.id.fragmentParent } == null)
-                    activity!!.supportFragmentManager.beginTransaction().replace(
-                        R.id.fragmentParent,
-                        dataCardFragmentInstance
-                    ).commit()
+                mapViewModel.zoomOnLocation(item.id)
             }
         }
 
@@ -625,9 +501,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, MapboxMap.OnMapClickListener
 
     override fun onDestroy() {
         super.onDestroy()
-        if (mapViewModel.riskStatus.hasObservers()) {
-            mapViewModel.riskStatus.removeObservers(this)
-        }
         mapViewModel.clean()
         map.removeOnMapClickListener(this)
         mapView.onDestroy()

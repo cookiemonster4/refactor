@@ -7,25 +7,19 @@ import com.elyonut.wow.analysis.quadtree.Envelope
 import com.elyonut.wow.model.Coordinate
 import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.model.PolygonModel
+import com.elyonut.wow.model.Threat
 import com.mapbox.geojson.*
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.maps.MapboxMap
 import java.io.InputStream
 import kotlin.math.*
 
-
-class TopographyService {
-
-    private var mapboxMap: MapboxMap
-    private val LOS_HEIGHT_METERS = 1.5
+object TopographyService {
+    private const val LOS_HEIGHT_METERS = 1.5
     private val vectorIndex: VectorEnvelopeIndex = VectorEnvelopeIndex()
 
     var explodedMap: ArrayMap<String, List<Coordinate>> = ArrayMap()
 
-    constructor(mapboxMap: MapboxMap) {
-        this.mapboxMap = mapboxMap
-
-        val stream: InputStream = App.resourses.assets.open("tlv-buildings.geojson")
+    init {
+        val stream: InputStream = App.resources_.assets.open("tlv-buildings.geojson")
         val size = stream.available()
         val buffer = ByteArray(size)
         stream.read(buffer)
@@ -35,11 +29,16 @@ class TopographyService {
         this.vectorIndex.loadBuildingFromGeoJson(jsonObj)
     }
 
-    fun isThreatBuilding(currentLocation: Coordinate, feature: Feature): Boolean {
-        val threatCoordinates = getGeometryCoordinates(feature.geometry()!!)
-        val threatType = feature.getProperty("type")?.asString
+    fun isThreatBuilding(
+        currentLocation: Coordinate,
+        building: Feature,
+        buildingAtLocation: Feature?
+    ): Boolean {
+        val threatCoordinates = getGeometryCoordinates(building.geometry()!!)
+        val threatType = building.getProperty("type")?.asString
+
         if (threatType != null && threatType.contains("mikush")) {
-            return isMikushInRange(currentLocation, threatCoordinates)
+            return isInRange(currentLocation, threatCoordinates, KnowledgeBase.MIKUSH_RANGE_METERS)
         }
 
         val threatRangeMeters = KnowledgeBase.getRangeMeters(threatType)
@@ -47,22 +46,20 @@ class TopographyService {
         var inRange = false
         for (coord in threatCoordinates) {
             val distance = distanceMeters(currentLocation, coord)
-            if (distance <= threatRangeMeters) {
-                inRange = true
+            inRange = distance <= threatRangeMeters
+            if (inRange) {
                 break
             }
+
+            return false
         }
 
-        if (inRange) {
-            val threatHeight = feature.getNumberProperty("height").toDouble()
-            return isLOS(currentLocation, threatCoordinates, threatHeight)
-        }
-
-
-        return false
+        val threatHeight = building.getNumberProperty("height").toDouble()
+        return isLOS(buildingAtLocation, currentLocation, threatCoordinates, threatHeight)
     }
 
     fun isLOS(
+        buildingAtLocation: Feature? = null,
         currentLocation: Coordinate,
         threatCoordinates: List<Coordinate>,
         threatHeight: Double
@@ -70,8 +67,6 @@ class TopographyService {
 
         var locationCoordinates = listOf(currentLocation)
 
-        val buildingAtLocation =
-            getBuildingAtLocation(LatLng(currentLocation.latitude, currentLocation.longitude))
         if (buildingAtLocation != null) {
             locationCoordinates = getCoordinatesForAnalysis(buildingAtLocation.geometry()!!)
             val locationHeight = buildingAtLocation.getNumberProperty("height").toDouble()
@@ -85,17 +80,17 @@ class TopographyService {
 
     }
 
-    fun isThreat(currentLocation: Coordinate, featureModel: FeatureModel): Boolean {
+    fun isThreat(currentLocation: Coordinate, threat: Threat): Boolean {
 
-        val threatType = featureModel.properties?.get("type")?.asString
-        if (threatType != null && threatType.contains("mikush")) {
-            val coordinates = getCoordinates(featureModel.geometry)
-            return isMikushInRange(currentLocation, coordinates)
+        val threatType = threat.enemyType
+        if (threatType.contains("mikush")) {
+            val coordinates = getCoordinates(threat.geometry)
+            return isInRange(currentLocation, coordinates, KnowledgeBase.MIKUSH_RANGE_METERS)
         }
 
         val threatRangeMeters = KnowledgeBase.getRangeMeters(threatType)
 
-        val threatCoordinates = getCoordinates(featureModel.geometry)
+        val threatCoordinates = getCoordinates(threat.geometry)
 
         var inRange = false
         for (coord in threatCoordinates) {
@@ -107,9 +102,9 @@ class TopographyService {
         }
 
         if (inRange) {
-            val threatHeight = featureModel.properties?.get("height")!!.asDouble
+            val threatHeight = threat.properties?.get("height")!!.asDouble
             val threatCoordinatesExploded =
-                getExplodedFromCache(featureModel.id!!, threatCoordinates, threatHeight)
+                getExplodedFromCache(threat.id!!, threatCoordinates, threatHeight)
 
             return isLOSLocalIndex(currentLocation, threatCoordinatesExploded)
         }
@@ -123,7 +118,6 @@ class TopographyService {
         val buildingAtLocation =
             vectorIndex.getVectorQuad(currentLocation.longitude, currentLocation.latitude)
         if (buildingAtLocation != null) {
-            // locationCoordinates = getCoordinatesForAnalysis(buildingAtLocation.polygon)
             locationCoordinates = getGeometryCoordinates(buildingAtLocation.polygon)
             val locationHeight = buildingAtLocation.properties["height"]!!.toDouble()
             locationCoordinates.forEach { bc -> bc.heightMeters = locationHeight }
@@ -131,14 +125,7 @@ class TopographyService {
         return locationCoordinates
     }
 
-    fun explodeFeatureCoordinate(featureModel: FeatureModel): List<Coordinate> {
-
-        val featureCoords = getCoordinates(featureModel.geometry)
-        val threatHeight = featureModel.properties?.get("height")!!.asDouble
-        return getExplodedFromCache(featureModel.id!!, featureCoords, threatHeight)
-    }
-
-    fun getBuildingsAtZone(featureModel: FeatureModel): List<VectorEnvelope>{
+    fun getBuildingsAtZone(featureModel: FeatureModel): List<VectorEnvelope> {
         val featureCoords = getCoordinates(featureModel.geometry)
 
         val multipleVectors =
@@ -160,11 +147,7 @@ class TopographyService {
     }
 
     fun isInsideBuilding(location: Coordinate): Boolean {
-        val buildingAtLocation = vectorIndex.getVectorQuad(location.longitude, location.latitude)
-        if (buildingAtLocation != null) {
-            return true
-        }
-        return false
+        return vectorIndex.getVectorQuad(location.longitude, location.latitude) != null
     }
 
 
@@ -183,18 +166,14 @@ class TopographyService {
         return explodedThreatCoordinates
     }
 
-    private fun isMikushInRange(
-        currentLocation: Coordinate,
-        coordinates: List<Coordinate>
+    private fun isInRange(
+        location: Coordinate,
+        coordinates: List<Coordinate>,
+        range: Double
     ): Boolean {
-
-        for (coord in coordinates) {
-            val distance = distanceMeters(currentLocation, coord)
-            if (distance <= KnowledgeBase.MIKUSH_RANGE_METERS)
-                return true
+        return coordinates.any { coordinate ->
+            distanceMeters(location, coordinate) <= range
         }
-
-        return false
     }
 
     private fun isLOSLocalIndex(
@@ -276,7 +255,6 @@ class TopographyService {
             candidate.heightMeters = getHeight(candidate)
             val maxHeight = canDistance * currTan
             val canHeight = candidate.heightMeters - min.heightMeters
-            //   console.log(canHeight + "," + maxHeight);
             if (canHeight > maxHeight) {
                 return false
             }
@@ -388,29 +366,6 @@ class TopographyService {
             return vectorIndex.getHeight(c1.longitude, c1.latitude)
         }
         return c1.heightMeters
-    }
-
-    private fun getHeightMapBox(c1: Coordinate): Double {
-        if (c1.heightMeters == -10000.0) {
-            val buildingAtLocation = getBuildingAtLocation(LatLng(c1.latitude, c1.longitude))
-            return buildingAtLocation?.getNumberProperty("height")?.toDouble() ?: LOS_HEIGHT_METERS
-        }
-        return c1.heightMeters
-    }
-
-    private fun getBuildingAtLocation(
-        location: LatLng
-    ): Feature? {
-
-        val point = mapboxMap.projection.toScreenLocation(location)
-        val features = mapboxMap.queryRenderedFeatures(point, Constants.BUILDINGS_LAYER_ID) //????
-
-        if (features.isNullOrEmpty())
-            return null
-
-        val sortedByName =
-            features.sortedBy { myObject -> myObject.getNumberProperty("height").toDouble() }
-        return sortedByName.last()
     }
 
     private fun getCoordinatesForAnalysis(featureGeometry: Geometry): List<Coordinate> {

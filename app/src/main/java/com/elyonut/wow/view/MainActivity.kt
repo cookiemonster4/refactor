@@ -1,5 +1,6 @@
 package com.elyonut.wow.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -7,11 +8,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.Menu
-import android.view.MenuItem
-import android.view.SubMenu
-import android.view.WindowManager
+import android.view.*
 import android.widget.CheckBox
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -32,9 +31,11 @@ import com.elyonut.wow.interfaces.ILogger
 import com.elyonut.wow.R
 import com.elyonut.wow.adapter.TimberLogAdapter
 import com.elyonut.wow.model.AlertModel
+import com.elyonut.wow.model.LayerModel
 import com.elyonut.wow.model.Threat
 import com.elyonut.wow.utilities.Maps
 import com.elyonut.wow.utilities.Menus
+import com.elyonut.wow.utilities.toggleViewVisibility
 import com.elyonut.wow.viewModel.MainActivityViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -43,9 +44,8 @@ import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import com.mapbox.geojson.Polygon
 import com.mapbox.mapboxsdk.Mapbox
-import kotlinx.android.synthetic.main.activity_main.*
+import com.mapbox.mapboxsdk.geometry.LatLng
 import kotlinx.android.synthetic.main.app_bar_main.*
-import java.util.*
 
 private const val PERMISSION_REQUEST_ACCESS_LOCATION = 101
 
@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity(),
     private lateinit var sharedPreferences: SharedPreferences
     private val gson = Gson()
     private lateinit var alertsFragmentInstance: AlertsFragment
+    private lateinit var navigationView: NavigationView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +82,8 @@ class MainActivity : AppCompatActivity(),
             ViewModelProviders.of(this)[SharedViewModel::class.java]
 
         alertsFragmentInstance = AlertsFragment.newInstance()
-
+        navigationView = findViewById(R.id.navigationView)
+        progressBar = findViewById(R.id.progressBar)
         setObservers()
         mainViewModel.locationSetUp()
         initAreaOfInterest()
@@ -88,13 +91,19 @@ class MainActivity : AppCompatActivity(),
         initNavigationMenu()
         initFilterSection()
         initBottomNavigationView()
-
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun setObservers() {
         mainViewModel.isPermissionRequestNeeded.observe(this, Observer { requestPermissions() })
-        mainViewModel.isPermissionDialogShown.observe(this, Observer { showAlertDialog() })
+        mainViewModel.isPermissionDialogShown.observe(
+            this,
+            Observer { showLocationServiceAlertDialog() })
+        mainViewModel.isProgressBarVisible.observe(
+            this,
+            Observer { progressBar.toggleViewVisibility(it) })
+        mainViewModel.mapLayers.observe(this, Observer { updateLayersCheckbox(it) })
+        mainViewModel.mapStateChanged.observe(this, Observer { sharedViewModel.mapState = it })
 
         mainViewModel.chosenLayerId.observe(this, Observer {
             mainViewModel.chosenLayerId.value?.let {
@@ -143,20 +152,59 @@ class MainActivity : AppCompatActivity(),
         })
 
         mainViewModel.shouldOpenThreatsFragment.observe(this, Observer {
-            sharedViewModel.shouldOpenThreatsFragment.value = it
+            if (it) {
+                openThreatListFragment()
+            }
         })
 
+        mainViewModel.coordinatesFeaturesInCoverage.observe(
+            this,
+            Observer { sharedViewModel.coordinatesFeaturesInCoverage.postValue(it) })
+
+        sharedViewModel.isExposed.observe(this, Observer { changeAwarenessTabState(it) })
+        sharedViewModel.mapClickedLatlng.observe(this, Observer { mapClicked(it) })
         sharedViewModel.shouldDefineArea.observe(this, Observer {
             if (!it) {
                 mainViewModel.shouldDefineArea.value = it
             }
         })
 
-        sharedViewModel.alertsManager.alerts.observe(this, Observer<List<AlertModel>> {
+        sharedViewModel.alertsManager.alerts.observe(this, Observer {
             editAlertsBadge(it)
         })
 
-        sharedViewModel.isVisible.observe(this, Observer { changVisibilityState(it) })
+        sharedViewModel.coverageSearchHeightMetersChecked.observe(
+            this,
+            Observer { mainViewModel.coverageSearchHeightMetersCheckedChanged(it) })
+    }
+
+    private fun openThreatListFragment() {
+        val fragment = ThreatFragment()
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.threat_list_fragment_container, fragment).commit()
+            addToBackStack(fragment.javaClass.simpleName)
+        }
+    }
+
+    @SuppressLint("InflateParams")
+    private fun updateLayersCheckbox(layers: List<LayerModel>) {
+        val layersSubMenu = navigationView.menu.getItem(Menus.LAYERS_MENU).subMenu
+
+        if (layersSubMenu.size() != layers.size) {
+            layers.forEachIndexed { index, layerModel ->
+                val menuItem = layersSubMenu.add(R.id.nav_layers, index, index, layerModel.name)
+                val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox
+                checkBoxView.tag = layerModel
+                menuItem.actionView = checkBoxView
+                checkBoxView.setOnCheckedChangeListener { _, _ ->
+                    (::onNavigationItemSelected)(menuItem)
+                }
+            }
+        }
+    }
+
+    private fun mapClicked(latLng: LatLng) {
+        mainViewModel.mapClicked(latLng)
     }
 
     private fun requestPermissions() {
@@ -192,7 +240,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun showAlertDialog() {
+    private fun showLocationServiceAlertDialog() {
         AlertDialog.Builder(this, R.style.AlertDialogTheme)
             .setTitle(getString(R.string.turn_on_location_title))
             .setMessage(getString(R.string.turn_on_location))
@@ -218,7 +266,7 @@ class MainActivity : AppCompatActivity(),
 
         if (areaOfInterestJson != "") {
             sharedViewModel.areaOfInterest =
-                gson.fromJson<Polygon>(areaOfInterestJson, Polygon::class.java)
+                gson.fromJson(areaOfInterestJson, Polygon::class.java)
         } else {
             AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle(getString(R.string.area_not_defined))
@@ -232,8 +280,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun filterButtonClicked() {
         val filterFragment = FilterFragment.newInstance()
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.apply {
+        supportFragmentManager.beginTransaction().apply {
             add(R.id.fragmentMenuParent, filterFragment).commit()
             addToBackStack(filterFragment.javaClass.simpleName)
         }
@@ -256,27 +303,12 @@ class MainActivity : AppCompatActivity(),
         toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
+    // Do we need this function??
     private fun initNavigationMenu() {
-        val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setNavigationItemSelectedListener(this)
-
-        val layers = mainViewModel.getLayersList()?.toTypedArray()
-
-        if (layers != null) {
-            val menu = navigationView.menu
-            val layersSubMenu = menu.getItem(Menus.LAYERS_MENU).subMenu
-            layers.forEachIndexed { index, layerModel ->
-                val menuItem = layersSubMenu.add(R.id.nav_layers, index, index, layerModel.name)
-                val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox
-                checkBoxView.tag = layerModel
-                menuItem.actionView = checkBoxView
-                checkBoxView.setOnCheckedChangeListener { _, _ ->
-                    (::onNavigationItemSelected)(menuItem)
-                }
-            }
-        }
     }
 
+    // TODO fix to observe layers from view model, how to do this?
     private fun initFilterSection() {
         val layerTypeValues = mainViewModel.getLayerTypeValues()?.toTypedArray()
         addSubMenuItem(
@@ -293,6 +325,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    @SuppressLint("InflateParams")
     private fun addSubMenuItem(subMenu: SubMenu, id: Int, name: String) {
         val menuItem = subMenu.add(R.id.filter_options, id, Menu.NONE, name)
         val checkBoxView = layoutInflater.inflate(R.layout.widget_check, null) as CheckBox
@@ -324,12 +357,12 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
-    private fun changVisibilityState(isVisible: Boolean) {
+    private fun changeAwarenessTabState(isExposed: Boolean) {
         val awarenessTab =
             findViewById<BottomNavigationView>(R.id.bottom_navigation).menu[Menus.AWARENESS]
 
-        if (isVisible) {
-            awarenessTab.title = getString(R.string.visible)
+        if (isExposed) {
+            awarenessTab.title = getString(R.string.exposed)
             awarenessTab.icon = getDrawable(R.drawable.ic_visibility)
         } else {
             awarenessTab.title = getString(R.string.invisible)

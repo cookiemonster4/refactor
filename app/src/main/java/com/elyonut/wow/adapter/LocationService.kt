@@ -7,6 +7,7 @@ import android.location.LocationManager
 import com.elyonut.wow.SingletonHolder
 import com.elyonut.wow.interfaces.ILocationService
 import com.elyonut.wow.interfaces.ILogger
+import com.elyonut.wow.utilities.Constants
 import com.mapbox.android.core.location.*
 import java.lang.ref.WeakReference
 
@@ -17,7 +18,7 @@ private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
 class LocationService private constructor(private var context: Context) : ILocationService {
     private val logger: ILogger = TimberLogAdapter()
     private var lastUpdatedLocation = Location("")
-    val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
+    private val locationChangedSubscribers = mutableListOf<(Location) -> Unit>()
     private var callback = LocationUpdatesCallback(this)
     private var locationManager: LocationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -77,9 +78,7 @@ class LocationService private constructor(private var context: Context) : ILocat
             val lastUpdatedLocation = locationServiceWeakReference.get()?.lastUpdatedLocation
 
             // don't recalculate if staying in the same location
-            if (lastUpdatedLocation?.longitude == location.longitude &&
-                lastUpdatedLocation.latitude == location.latitude
-            ) {
+            if (location.distanceTo(lastUpdatedLocation) <= Constants.MAX_DISTANCE_TO_CURRENT_LOCATION) {
                 return
             }
 

@@ -1,7 +1,6 @@
 package com.elyonut.wow.view
 
 import android.content.Context
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.elyonut.wow.utilities.OnSwipeTouchListener
 import com.elyonut.wow.R
 import com.elyonut.wow.databinding.FragmentDataCardBinding
-import com.elyonut.wow.model.Threat
+import com.elyonut.wow.model.FeatureModel
 import com.elyonut.wow.viewModel.DataCardViewModel
 import com.elyonut.wow.viewModel.SharedViewModel
 
@@ -42,25 +41,17 @@ class DataCardFragment : Fragment() {
         sharedViewModel =
             activity?.run { ViewModelProviders.of(activity!!)[SharedViewModel::class.java] }!!
 
-        val threat: Threat = arguments!!.getParcelable("threat")!!
+        val feature: FeatureModel = arguments!!.getParcelable("feature")!!
 
-        binding.threat = threat
+        binding.feature = feature
         binding.dataCardViewModel = dataCardViewModel
         binding.buildingDataCard.layoutParams =
             dataCardViewModel.getRelativeLayoutParams(CARD_SIZE_RELATION_TO_SCREEN)
 
         initObservers()
         initClosingCard()
-        initBuildingStateColor(threat)
 
         return binding.root
-    }
-
-    private fun initBuildingStateColor(threat: Threat) {
-            binding.buildingStateColor.background.setColorFilter(
-            Threat.color(threat),
-            PorterDuff.Mode.MULTIPLY
-        )
     }
 
     private fun initObservers() {
@@ -120,7 +111,7 @@ class DataCardFragment : Fragment() {
 
     private fun onCloseCard() {
         dataCardViewModel.close()
-        sharedViewModel.shoulRemoveSelectedBuildingLayer.value = true
+        sharedViewModel.shouldRemoveSelectedBuildingLayer.value = true
     }
 
     override fun onAttach(context: Context) {

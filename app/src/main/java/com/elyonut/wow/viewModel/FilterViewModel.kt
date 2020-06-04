@@ -3,16 +3,15 @@ package com.elyonut.wow.viewModel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.elyonut.wow.LayerManager
+import com.elyonut.wow.VectorLayersManager
 import com.elyonut.wow.utilities.NumericFilterTypes
-import com.elyonut.wow.utilities.TempDB
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
 class FilterViewModel(application: Application) : AndroidViewModel(application) {
     // TODO: null handling
 
-    private val layerManager = LayerManager(TempDB((application)))
+    private val vectorLayersManager = VectorLayersManager.getInstance(application)
     private lateinit var propertiesList: List<String>
     private var propertiesHashMap = HashMap<String, KClass<*>>()
     var chosenLayerId = MutableLiveData<String>()
@@ -24,7 +23,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     val shouldApplyFilter = MutableLiveData<Boolean>()
 
     init {
-        layersIdsList = layerManager.initLayersIdList()!!
+        layersIdsList = vectorLayersManager.initLayersIdList()!!
         numberFilterOptions =
             NumericFilterTypes.values().map { filterType -> filterType.hebrewName }.toList()
     }
@@ -34,7 +33,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun initPropertiesList(layerId: String): List<String>? {
-        propertiesHashMap = layerManager.getLayerProperties(layerId)
+        propertiesHashMap = vectorLayersManager.getLayerProperties(layerId)
         propertiesList = propertiesHashMap.keys.toList()
         chosenProperty.value = propertiesList.first()
 
@@ -69,12 +68,12 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     fun onPropertyItemSelected(position: Int) {
         propertiesHashMap =
-            layerManager.getLayerProperties(chosenLayerId.value!!)
+            vectorLayersManager.getLayerProperties(chosenLayerId.value!!)
         chosenProperty.value = propertiesList[position]
     }
 
     fun initStringPropertyOptions(propertyName: String): List<String>? {
-        return layerManager.getValuesOfLayerProperty(
+        return vectorLayersManager.getValuesOfLayerProperty(
             chosenLayerId.value!!,
             propertyName
         ) // TODO: null handling

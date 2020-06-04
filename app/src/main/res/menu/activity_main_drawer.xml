@@ -39,11 +39,11 @@
                     android:id="@+id/threat_list_menu_item"
                     android:title="@string/threat_list" />
                 <item
-                    android:id="@+id/threat_select_location_buildings"
+                    android:id="@+id/los_buildings_to_location"
                     android:title="@string/threats_on_map_with_location_buildings" />
 
                 <item
-                    android:id="@+id/point_coverage"
+                    android:id="@+id/calculate_coverage"
                     android:title="@string/calculate_point_coverage" />
             </group>
 
