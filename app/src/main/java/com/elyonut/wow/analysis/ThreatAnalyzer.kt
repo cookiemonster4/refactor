@@ -76,15 +76,18 @@ class ThreatAnalyzer private constructor(context: Context) {
     fun getBuildingsWithinLOS(
         currentLocation: LatLng,
         buildingAtLocation: Feature?
-    ): List<Feature> {
-        val currentLocationCoordinate = Coordinate(currentLocation.latitude, currentLocation.longitude)
+    ): List<FeatureModel> {
+        val currentLocationCoordinate =
+            Coordinate(currentLocation.latitude, currentLocation.longitude)
         val buildings =
-            vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)?.map {
-                MapboxParser.parseToMapboxFeature(it)
-            }
+            vectorLayersManager.getLayerById(Constants.BUILDINGS_LAYER_ID)
 
         return buildings?.filter {
-            topographyService.isThreatBuilding(currentLocationCoordinate, it, buildingAtLocation)
+            topographyService.isThreatBuilding(
+                currentLocationCoordinate,
+                MapboxParser.parseToMapboxFeature(it),
+                buildingAtLocation
+            )
         } ?: arrayListOf()
     }
 
@@ -149,7 +152,8 @@ class ThreatAnalyzer private constructor(context: Context) {
     private fun filterWithLOSModelFeatures(
         currentLocation: LatLng
     ): List<FeatureModel> {
-        val currentLocationCoordinate = Coordinate(currentLocation.latitude, currentLocation.longitude)
+        val currentLocationCoordinate =
+            Coordinate(currentLocation.latitude, currentLocation.longitude)
         return threatLayer.parallelStream().filter { threat ->
             topographyService.isThreat(
                 currentLocationCoordinate,

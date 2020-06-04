@@ -460,8 +460,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private fun updateBuildingsWithinLOS(latLng: LatLng) {
         _buildingsWithinLOS.value = threatAnalyzer.getBuildingsWithinLOS(
             latLng,
-            getBuildingAtLocation(latLng, Constants.THREAT_LAYER_ID)
-        )
+            getBuildingAtLocation(latLng, Constants.BUILDINGS_LAYER_ID)
+        ).map { MapboxParser.parseToMapboxFeature(it) }
     }
 
     // Should we delete this?
